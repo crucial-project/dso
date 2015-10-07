@@ -1,6 +1,6 @@
 # Atomic Object Factory module
 
-The class org.infinispan.AtomicObjectFactory implements a factory of atomic objects.
+This repository contains an Infinispan module that implements a factory of atomic objects.
 This factory is universal in the sense that it can instantiate an object of any (serializable) class
 atop an Infinispan cache, making transparently the object replicated and durable,
 while ensuring strong consistency despite concurrent access.
