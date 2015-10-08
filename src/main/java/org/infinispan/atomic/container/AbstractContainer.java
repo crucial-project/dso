@@ -86,7 +86,7 @@ public abstract class AbstractContainer {
       registeredCalls.put(call.getCallID(), future);
 
       cache.put(reference, call);
-      System.out.println(cache.get(reference));
+      // System.out.println(cache.get(reference));
 
       Object ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
       registeredCalls.remove(call.getCallID());
