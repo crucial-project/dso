@@ -6,6 +6,8 @@ import org.infinispan.notifications.cachelistener.filter.AbstractCacheEventFilte
 import org.infinispan.notifications.cachelistener.filter.CacheAware;
 import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
 import org.infinispan.notifications.cachelistener.filter.EventType;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEventFilterConverter<K, V, C>
       implements Serializable, CacheAware {
+
+   private static Log log = LogFactory.getLog(CompositeCacheEventFilterConverter.class);
 
    private static ConcurrentHashMap<Cache, ObjectFilterConverter> registry
          = new ConcurrentHashMap<>();
@@ -42,6 +46,7 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
    @Override
    public C filterAndConvert(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata,
          EventType eventType) {
+      log.trace(this+" filterAndConvert()");
       C ret = null;
       for (CacheEventConverter<? super K, ? super V, ? super C> converter : converters) {
          ret = (C) converter.convert(key, oldValue, oldMetadata, newValue, newMetadata, eventType);
@@ -50,4 +55,10 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
       }
       return ret;
    }
+
+   @Override
+   public String toString(){
+      return "CompositeCacheEventFilterConverter";
+   }
+
 }

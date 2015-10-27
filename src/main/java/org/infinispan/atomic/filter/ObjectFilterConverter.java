@@ -1,6 +1,7 @@
 package org.infinispan.atomic.filter;
 
 import org.infinispan.Cache;
+import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.object.*;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.filter.AbstractCacheEventFilterConverter;
@@ -23,7 +24,6 @@ import static org.infinispan.atomic.object.Utils.unmarshall;
 
 /**
  * @author Pierre Sutra
- * @since 7.2
  */
 public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Reference,Call,CallFuture>
       implements CacheAware<Reference,Call>, Externalizable{
@@ -48,6 +48,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
    @Override
    public void setCache(Cache <Reference,Call> cache) {
       this.cache = cache;
+      AtomicObjectFactory.forCache(cache);
    }
 
    @Override
@@ -165,7 +166,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                      } else {
 
-                        throw new IllegalStateException("Cannot rebuild object [" + reference + "]");
+                        throw new IllegalStateException("Cannot rebuild object [" + reference + "]; having: "+oldValue.getClass());
 
                      }
 

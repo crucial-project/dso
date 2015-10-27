@@ -6,9 +6,9 @@ import com.google.common.cache.RemovalNotification;
 import org.infinispan.Cache;
 import org.infinispan.InvalidCacheUsageException;
 import org.infinispan.atomic.container.AbstractContainer;
-import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.container.local.LocalContainer;
 import org.infinispan.atomic.container.remote.RemoteContainer;
+import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.object.Utils;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
@@ -18,6 +18,7 @@ import org.infinispan.util.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -26,7 +27,6 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * @author Pierre Sutra
- * @since 7.2
  */
 public class AtomicObjectFactory {
 
@@ -35,6 +35,7 @@ public class AtomicObjectFactory {
    private static Log log = LogFactory.getLog(AtomicObjectFactory.class);
    private static Map<String,AtomicObjectFactory> factories = new HashMap<>();
    public synchronized static AtomicObjectFactory forCache(String cacheName){
+      assert factories.containsKey(cacheName);
       return factories.get(cacheName);
    }
    public synchronized static AtomicObjectFactory forCache(BasicCache cache){
@@ -115,7 +116,15 @@ public class AtomicObjectFactory {
 
    public <T> T getInstanceOf(Reference reference)
          throws InvalidCacheUsageException{
-      return (T) getInstanceOf(reference, false, null, false);
+      Constructor constructor = reference.getClazz().getConstructors()[0];
+      List<Object> args = new ArrayList<>();
+      for(Class clazz : constructor.getParameterTypes()) {
+         if (!clazz.isPrimitive())
+            args.add(null);
+         else
+            args.add(Utils.getDefaultValue(clazz));
+      }
+      return (T) getInstanceOf(reference, false, null, false, args.toArray(new Object[]{}));
    } 
    
    /**
@@ -177,20 +186,17 @@ public class AtomicObjectFactory {
     * @return an object of the class <i>clazz</i>
     * @throws InvalidCacheUsageException
     */
-   public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, Method equalsMethod, boolean forceNew, Object ... initArgs)
+   public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization,
+         Method equalsMethod, boolean forceNew, Object ... initArgs)
          throws InvalidCacheUsageException {
       Reference<T> reference = new Reference(clazz,key);
       return getInstanceOf(reference,withReadOptimization,equalsMethod,forceNew,initArgs);
    }
 
-
-   public synchronized  <T> T getInstanceOf(Reference<T> reference, boolean withReadOptimization, Method equalsMethod, boolean forceNew, Object ... initArgs)
+   public synchronized  <T> T getInstanceOf(Reference<T> reference, boolean withReadOptimization,
+         Method equalsMethod, boolean forceNew, Object ... initArgs)
          throws InvalidCacheUsageException {
 
-      if (Utils.isDistributed(reference.getClazz()) 
-            && !Utils.hasDefaultConstructor(reference.getClazz()))
-         throw new InvalidCacheUsageException("Should have a default constructor.");
-      
       if( !(Serializable.class.isAssignableFrom(reference.getClazz()))){
          throw new InvalidCacheUsageException("Should be serializable.");
       }

@@ -29,7 +29,7 @@ import static org.infinispan.atomic.object.Utils.hasReadOnlyMethods;
 public abstract class AbstractContainer {
 
    // class fields
-   public static final int TTIMEOUT_TIME = 5000;
+   public static final int TTIMEOUT_TIME = 1000;
    protected static final Map<UUID, CallFuture> registeredCalls = new ConcurrentHashMap<>();
    protected static final Log log = LogFactory.getLog(BaseContainer.class);
    protected static final MethodFilter methodFilter = new MethodFilter() {
@@ -85,14 +85,19 @@ public abstract class AbstractContainer {
       CallFuture future = new CallFuture(call.getCallID());
       registeredCalls.put(call.getCallID(), future);
 
-      cache.put(reference, call);
-      // System.out.println(cache.get(reference));
-
-      Object ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
-      registeredCalls.remove(call.getCallID());
-      if(!future.isDone()){
-         throw new org.infinispan.util.concurrent.TimeoutException("Unable to execute "+call);
+      Object ret = null;
+      while(!future.isDone()) {
+         try {
+            cache.put(reference, call);
+            ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
+         }catch (Exception e) {
+            if (!future.isDone()) {
+               e.printStackTrace();
+            }
+         }
       }
+
+      registeredCalls.remove(call.getCallID());
 
       if (readOptimization && future.getState()!=null ) {
          this.state = future.getState();

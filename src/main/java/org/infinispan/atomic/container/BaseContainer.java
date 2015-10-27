@@ -38,16 +38,14 @@ public abstract class BaseContainer extends AbstractContainer {
       isOpen = false;
 
       // build the proxy
-      MethodHandler handler = new MyMethodHandler();
+      MethodHandler handler = new BaseContainerMethodHandler();
       ProxyFactory fact = new ProxyFactory();
       fact.setSuperclass(reference.getClazz());
       fact.setFilter(methodFilter);
-      fact.setInterfaces(new Class[]{WriteReplace.class});
+      fact.setInterfaces(new Class[] { WriteReplace.class });
       fact.setUseWriteReplace(false);
-      proxy = initObject(fact.createClass(), initArgs);
+      proxy = initObject(fact.createClass(),initArgs);
       ((ProxyObject)proxy).setHandler(handler);
-
-
    }
    
    @Override
@@ -93,7 +91,7 @@ public abstract class BaseContainer extends AbstractContainer {
       return "Container["+listenerID()+":"+getReference()+"]";
    }
 
-   private class MyMethodHandler implements MethodHandler, Serializable{
+   private class BaseContainerMethodHandler implements MethodHandler, Serializable{
 
       public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable {
 

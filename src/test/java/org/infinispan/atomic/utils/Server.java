@@ -8,6 +8,7 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
+import org.infinispan.transaction.TransactionMode;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -23,8 +24,7 @@ import static org.infinispan.test.AbstractCacheTest.getDefaultClusteredCacheConf
 public class Server implements Runnable {
 
    private static final String defaultServer ="localhost:11222";
-   private boolean USE_TRANSACTIONS = false;
-   private CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
+      private CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
       
    @Option(name = "-server", required = true, usage = "ip:port or ip of the server")
    private String server = defaultServer;
@@ -82,18 +82,17 @@ public class Server implements Runnable {
 
       GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
       gbuilder.transport().clusterName("aof-cluster");
-      gbuilder.transport().nodeName("aof-server-"+host);
+      gbuilder.transport().nodeName("aof-server-" + host);
+      gbuilder.transport().addProperty("configurationFile", "jgroups-aof.xml");
 
-      ConfigurationBuilder builder= getDefaultClusteredCacheConfig(CACHE_MODE, USE_TRANSACTIONS);
+      ConfigurationBuilder builder= getDefaultClusteredCacheConfig(CACHE_MODE);
       builder
-            .clustering()
-            .hash()
-            .numOwners(replicationFactor)
-            .compatibility()
-            .enable();
+            .clustering().hash().numOwners(replicationFactor)
+            .compatibility().enable();
       builder.locking()
             .concurrencyLevel(10000)
-            .useLockStriping(false);
+            .lockAcquisitionTimeout(2000);
+      builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
 
       if (usePersistency)
          builder.persistence()

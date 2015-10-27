@@ -27,7 +27,7 @@ public class Reference<T> implements Externalizable{
 
    @Override
    public int hashCode(){
-      return clazz.hashCode() + key.hashCode();
+      return key.hashCode();
    }
 
    @Override

@@ -6,6 +6,7 @@ import org.infinispan.atomic.object.CallInvoke;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.utils.SimpleObject;
 import org.infinispan.atomic.utils.SimpleShardedObject;
+import org.infinispan.atomic.utils.SimpleShardedObjectInterface;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
@@ -137,6 +138,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       String field = object.getField();
       assert field.equals("something");
       Call lastCall = (Call) container(0).getCache().get(new Reference<>(SimpleObject.class,"test"));
+      assertTrue(lastCall!=null);
       assertEquals(lastCall.getClass(),CallInvoke.class);
       assert ((CallInvoke)lastCall).method.equals("setField");
    }
@@ -225,14 +227,14 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       BasicCache<Object,Object> cache2 = container2.getCache();
       AtomicObjectFactory factory2 = new AtomicObjectFactory(cache2);
 
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < 10; i++) {
          for (int j = 0; j <= i; j++) {
             Map map2 = factory2.getInstanceOf(HashMap.class, "map"+i);
             map2.put(j,i);
          }
       }
 
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < 10; i++) {
          for (int j = 0; j <= i; j++) {
             Map map2 = factory1.getInstanceOf(HashMap.class, "map"+i);
             assertTrue(map2.get(j).equals(i));
@@ -259,7 +261,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    public void baseShardTest() throws Exception {
       SimpleShardedObject object = new SimpleShardedObject();
       SimpleShardedObject object2 = new SimpleShardedObject(object);
-      SimpleShardedObject object3 = object2.getShard();
+      SimpleShardedObjectInterface object3 = object2.getShard();
       assert object3.equals(object);
    }
 

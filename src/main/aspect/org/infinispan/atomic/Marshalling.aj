@@ -30,6 +30,7 @@ public aspect Marshalling {
 
    public void Marshallable.readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
       AtomicObjectFactory factory = AtomicObjectFactory.forCache("");
+      assert factory!=null;
       try {
          for (Field field : this.getClass().getFields()) {
             if (!Modifier.isTransient(field.getModifiers())) {

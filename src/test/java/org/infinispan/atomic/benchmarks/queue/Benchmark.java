@@ -64,6 +64,7 @@ public class Benchmark {
          }
          avgTime=avgTime/futures.size();
          System.out.println("Average time: " + avgTime);
+         assert queue.isEmpty();
       } catch (InterruptedException | ExecutionException e) {
          e.printStackTrace();
       }
