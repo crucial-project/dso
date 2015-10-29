@@ -34,10 +34,13 @@ public class AtomicObjectFactory {
    
    private static Log log = LogFactory.getLog(AtomicObjectFactory.class);
    private static Map<String,AtomicObjectFactory> factories = new HashMap<>();
+
+   @Deprecated
    public synchronized static AtomicObjectFactory forCache(String cacheName){
       assert factories.containsKey(cacheName);
       return factories.get(cacheName);
    }
+
    public synchronized static AtomicObjectFactory forCache(BasicCache cache){
       String cacheName = 
             (cache.getName().equals(BasicCacheContainer.DEFAULT_CACHE_NAME))
@@ -80,7 +83,7 @@ public class AtomicObjectFactory {
     * @param c a cache,  it must be synchronous.and non-transactional
     */
    public AtomicObjectFactory(BasicCache<Object, Object> c) throws InvalidCacheUsageException{
-      this(c,MAX_CONTAINERS);
+      this(c, MAX_CONTAINERS);
    }
 
 
@@ -111,7 +114,7 @@ public class AtomicObjectFactory {
                }
             })
             .build().asMap();
-      log.info(this+"Created");
+      log.info(this+" Created");
    }
 
    public <T> T getInstanceOf(Reference reference)

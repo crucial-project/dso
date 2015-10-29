@@ -14,6 +14,7 @@ import org.infinispan.util.logging.LogFactory;
 public class FilterConverterFactory implements CacheEventFilterConverterFactory {
 
    public static final String FACTORY_NAME = "org.infinispan.atomic.filter.CacheEventFilterFactory";
+
    private static Log log = LogFactory.getLog(ListenerBasedCacheEventFilterConverter.class);
 
    private ObjectFilterConverter objectFilterConverter = new ObjectFilterConverter();

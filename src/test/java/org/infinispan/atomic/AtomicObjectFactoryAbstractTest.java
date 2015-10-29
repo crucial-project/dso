@@ -4,9 +4,10 @@ import org.infinispan.Cache;
 import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.CallInvoke;
 import org.infinispan.atomic.object.Reference;
-import org.infinispan.atomic.utils.SimpleObject;
+import org.infinispan.atomic.utils.AdvancedShardedObject;
 import org.infinispan.atomic.utils.SimpleShardedObject;
-import org.infinispan.atomic.utils.SimpleShardedObjectInterface;
+import org.infinispan.atomic.utils.ShardedObject;
+import org.infinispan.atomic.utils.SimpleObject;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
@@ -39,8 +40,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    protected static Log log = LogFactory.getLog(AtomicObjectFactoryAbstractTest.class);
 
-   protected static int NMANAGERS = 3;
-   protected static final int REPLICATION_FACTOR = 1;
+   protected static int NMANAGERS = 4;
+   protected static final int REPLICATION_FACTOR = 2;
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
    protected static final boolean USE_TRANSACTIONS = false;
    protected static int NCALLS = 100;
@@ -159,7 +160,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       for(int i=0; i<NCALLS*f;i++){
          object.getField();
       }
-      System.out.println("op/sec:"+((float)(NCALLS*f))/((float)(System.currentTimeMillis() - start))*1000);
+      System.out.println("op/sec:" + ((float) (NCALLS * f)) / ((float) (System.currentTimeMillis() - start)) * 1000);
 
    } 
    
@@ -217,6 +218,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
       assertTrue(containers().size()>=2);
 
+      int numMaps = 2;
+
       Iterator<BasicCacheContainer> it = containers().iterator();
 
       BasicCacheContainer container1 = it.next();
@@ -227,14 +230,14 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       BasicCache<Object,Object> cache2 = container2.getCache();
       AtomicObjectFactory factory2 = new AtomicObjectFactory(cache2);
 
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < numMaps; i++) {
          for (int j = 0; j <= i; j++) {
             Map map2 = factory2.getInstanceOf(HashMap.class, "map"+i);
             map2.put(j,i);
          }
       }
 
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < numMaps; i++) {
          for (int j = 0; j <= i; j++) {
             Map map2 = factory1.getInstanceOf(HashMap.class, "map"+i);
             assertTrue(map2.get(j).equals(i));
@@ -258,13 +261,21 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
    
    @Test
-   public void baseShardTest() throws Exception {
+   public void baseCompositionTest() throws Exception {
       SimpleShardedObject object = new SimpleShardedObject();
       SimpleShardedObject object2 = new SimpleShardedObject(object);
-      SimpleShardedObjectInterface object3 = object2.getShard();
+      ShardedObject object3 = object2.getShard();
       assert object3.equals(object);
    }
 
+   @Test
+   public void advancedCompositionTest() throws Exception {
+      AdvancedShardedObject object1 = new AdvancedShardedObject();
+      AdvancedShardedObject object2 = new AdvancedShardedObject(object1);
+      assert object1.flipValue();
+      assert !((AdvancedShardedObject)object2.getShard()).flipValue();
+      assert object2.flipValue();
+   }
 
    @Test(enabled = false)
    public void baseScalability() throws Exception {

@@ -94,6 +94,7 @@ public abstract class AbstractContainer {
             if (!future.isDone()) {
                e.printStackTrace();
             }
+            Thread.sleep(1000);
          }
       }
 
@@ -115,8 +116,8 @@ public abstract class AbstractContainer {
       try {
          assert (future.isDone());
          if (!registeredCalls.containsKey(future.getCallID())) {
-            log.warn("Future " + future.getCallID() + " trashed");
-            return; // duplicate ?
+            log.trace("Future " + future.getCallID() + " ignored");
+            return; // duplicate received
          }
          CallFuture clientFuture = registeredCalls.get(future.getCallID());
          assert (clientFuture!=null);

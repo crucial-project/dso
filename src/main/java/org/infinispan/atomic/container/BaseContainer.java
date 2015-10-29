@@ -6,6 +6,7 @@ import javassist.util.proxy.ProxyObject;
 import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.atomic.object.*;
+import org.infinispan.atomic.utils.UUIDGenerator;
 import org.infinispan.commons.api.BasicCache;
 
 import java.io.IOException;
@@ -22,11 +23,11 @@ import static org.infinispan.atomic.object.Utils.initObject;
  * @author Pierre Sutra
   */
 public abstract class BaseContainer extends AbstractContainer {
-   
+
    // object's fields
    private AtomicInteger pendingCalls;
    private boolean isOpen;
-   
+
    public BaseContainer(final BasicCache<Reference,Call> c, Reference reference, final boolean readOptimization,
          final boolean forceNew, final Object... initArgs)
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
@@ -34,8 +35,8 @@ public abstract class BaseContainer extends AbstractContainer {
          java.util.concurrent.TimeoutException {
 
       super(c, reference, readOptimization, forceNew, initArgs);
-      pendingCalls = new AtomicInteger();
-      isOpen = false;
+      this.pendingCalls = new AtomicInteger();
+      this.isOpen = false;
 
       // build the proxy
       MethodHandler handler = new BaseContainerMethodHandler();
@@ -44,7 +45,7 @@ public abstract class BaseContainer extends AbstractContainer {
       fact.setFilter(methodFilter);
       fact.setInterfaces(new Class[] { WriteReplace.class });
       fact.setUseWriteReplace(false);
-      proxy = initObject(fact.createClass(),initArgs);
+      this.proxy = initObject(fact.createClass(),initArgs);
       ((ProxyObject)proxy).setHandler(handler);
    }
    
@@ -58,7 +59,7 @@ public abstract class BaseContainer extends AbstractContainer {
 
          if (log.isTraceEnabled()) log.trace(this + "Opening.");
          
-         execute(new CallOpen(listenerID(), forceNew, initArgs, readOptimization));
+         execute(new CallOpen(listenerID(), UUIDGenerator.generate(), forceNew, initArgs, readOptimization));
          isOpen = true;
 
          if (log.isTraceEnabled()) log.trace(this+  "Opened.");
@@ -77,7 +78,7 @@ public abstract class BaseContainer extends AbstractContainer {
       if (isOpen) {
 
          isOpen = false;
-         execute(new CallClose(listenerID()));
+         execute(new CallClose(listenerID(), UUIDGenerator.generate()));
          forceNew = false;
 
       }
@@ -119,13 +120,17 @@ public abstract class BaseContainer extends AbstractContainer {
          Object ret = execute(
                new CallInvoke(
                      listenerID(),
+                     UUIDGenerator.getThreadLocal()==null ?
+                           UUIDGenerator.generate() : UUIDGenerator.getThreadLocal().generate(),
                      m.getName(),
                      args)
          );
 
+
          pendingCalls.decrementAndGet();
 
-         return (ret instanceof Reference) ? unreference((Reference)ret, AtomicObjectFactory.forCache(cache)) : ret;
+         return (ret instanceof Reference)
+               ? unreference((Reference)ret,AtomicObjectFactory.forCache(cache)) : ret;
 
       }
 
@@ -139,5 +144,5 @@ public abstract class BaseContainer extends AbstractContainer {
    public interface WriteReplace {
       Object writeReplace() throws java.io.ObjectStreamException;
    }
-   
+
 }

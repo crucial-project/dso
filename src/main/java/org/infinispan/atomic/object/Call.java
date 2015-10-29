@@ -18,8 +18,8 @@ public class Call implements Externalizable {
    @Deprecated
    public Call(){}
 
-   public Call(UUID listenerID){
-      this.callID = UUID.randomUUID();
+   public Call(UUID listenerID, UUID callID){
+      this.callID = callID;
       this.listenerID = listenerID;
    }
 

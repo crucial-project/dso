@@ -4,6 +4,7 @@ import org.infinispan.atomic.container.BaseContainer;
 import org.infinispan.atomic.filter.FilterConverterFactory;
 import org.infinispan.atomic.object.CallFuture;
 import org.infinispan.atomic.object.Reference;
+import org.infinispan.atomic.utils.UUIDGenerator;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
 import org.infinispan.client.hotrod.annotation.ClientListener;
@@ -31,7 +32,7 @@ public class RemoteContainer extends BaseContainer {
          Listener listener = new Listener();
          ((RemoteCacheImpl) cache).addClientListener(listener, new Object[] { listener.getId() }, null);
          listeners.put(cache, listener);
-         log.debug("Remote listener "+listener.getId()+" installed");
+         if (log.isTraceEnabled()) log.trace("Remote listener "+listener.getId()+" installed");
       }
       return listeners.get(cache).getId();
    }
@@ -46,15 +47,17 @@ public class RemoteContainer extends BaseContainer {
 
    private UUID listenerID;
    
-   public RemoteContainer(BasicCache c, Reference reference,
-         boolean readOptimization, boolean forceNew,
+   public RemoteContainer(
+         BasicCache c,
+         Reference reference,
+         boolean readOptimization,
+         boolean forceNew,
          Object... initArgs)
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException,
          ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException {
       super(c, reference, readOptimization, forceNew, initArgs);
       listenerID = installListener(cache);
-      if (log.isTraceEnabled()) log.trace(this+"Created successfully");
    }
 
 
@@ -85,7 +88,7 @@ public class RemoteContainer extends BaseContainer {
       private UUID id;
 
       public Listener(){
-         id = UUID.randomUUID();
+         id = UUIDGenerator.generate();
       }
 
       public UUID getId(){

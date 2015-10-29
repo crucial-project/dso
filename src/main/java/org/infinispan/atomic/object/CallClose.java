@@ -12,8 +12,8 @@ public class CallClose extends Call {
    @Deprecated
    public CallClose(){}
 
-   public CallClose(UUID callerID) {
-      super(callerID);
+   public CallClose(UUID callerID, UUID callID) {
+      super(callerID, callID);
    }
 
    @Override

@@ -99,6 +99,9 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
          blockUntilCacheStatusAchieved(
                manager(j).getCache(), ComponentStatus.RUNNING, 10000);
       }
+
+      waitForClusterToForm();
+
       assertEquals(manager(0).getTransport().getMembers().size(),NMANAGERS);
 
       AtomicObjectFactory.forCache(cache(0));

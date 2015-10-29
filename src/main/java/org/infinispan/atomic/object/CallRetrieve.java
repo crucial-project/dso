@@ -11,8 +11,8 @@ public class CallRetrieve extends Call {
    @Deprecated
    public CallRetrieve(){}
    
-   public CallRetrieve(UUID callerID) {
-      super(callerID);
+   public CallRetrieve(UUID callerID, UUID callID) {
+      super(callerID, callID);
    }
    
    @Override

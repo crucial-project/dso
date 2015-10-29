@@ -17,6 +17,7 @@ public class ListenerBasedCacheEventFilterConverter<K,V> extends AbstractCacheEv
       implements Serializable{
 
    private static Log log = LogFactory.getLog(ListenerBasedCacheEventFilterConverter.class);
+
    private UUID listenerID;
    
    public ListenerBasedCacheEventFilterConverter(Object[] parameters){
@@ -33,7 +34,10 @@ public class ListenerBasedCacheEventFilterConverter<K,V> extends AbstractCacheEv
    public Object filterAndConvert(Object key, Object oldValue, Metadata oldMetadata, Object newValue,
          Metadata newMetadata, EventType eventType) {
 
+      if (log.isTraceEnabled()) log.trace(this + " - filterAndConvert()");
+
       if (eventType.isPreEvent()) {
+         if (log.isTraceEnabled()) log.trace(this + "Pre event "+newValue);
          return null; // filter out pre events
       }
 
@@ -41,11 +45,12 @@ public class ListenerBasedCacheEventFilterConverter<K,V> extends AbstractCacheEv
          Call call = (Call) newValue;
          assert call.getListenerID() != null;
          if (!call.getListenerID().equals(listenerID)) {
-            if (log.isDebugEnabled())
-               log.trace(this + "Wrong listener");
+            if (log.isTraceEnabled()) log.trace(this + "Wrong listener "+call);
             return null;
          }
       }
+
+      if (log.isTraceEnabled()) log.trace(this+" Passed "+newValue);
 
       return true;
    }

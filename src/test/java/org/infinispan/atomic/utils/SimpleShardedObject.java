@@ -10,25 +10,25 @@ import java.util.UUID;
  * @author Pierre Sutra
  */
 @Distributed
-public class SimpleShardedObject implements SimpleShardedObjectInterface{
+public class SimpleShardedObject implements ShardedObject {
    
    @Key
    public UUID id;
    
-   public SimpleShardedObjectInterface shard;
+   public ShardedObject shard;
 
    public SimpleShardedObject(){
       id = UUID.randomUUID();
    }
    
-   public SimpleShardedObject(SimpleShardedObjectInterface shard) {
+   public SimpleShardedObject(ShardedObject shard) {
       id = UUID.randomUUID();
       this.shard = shard;
    }
    
    @ReadOnly
    @Override
-   public SimpleShardedObjectInterface getShard(){
+   public ShardedObject getShard(){
       return shard;
    }
 

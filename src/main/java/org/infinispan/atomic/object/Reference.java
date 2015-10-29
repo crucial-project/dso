@@ -49,7 +49,8 @@ public class Reference<T> implements Externalizable{
    
    public Class getClazz(){ return clazz;}
 
-   @Override public void writeExternal(ObjectOutput objectOutput) throws IOException {
+   @Override
+   public void writeExternal(ObjectOutput objectOutput) throws IOException {
       objectOutput.writeObject(clazz);
       objectOutput.writeObject(key);
    }
@@ -59,7 +60,9 @@ public class Reference<T> implements Externalizable{
       clazz = (Class) objectInput.readObject();
       key = objectInput.readObject();
    }
-   
+
+   // Static helpers
+
    public static Object unreference(Reference reference, AtomicObjectFactory factory) {
       return factory.getInstanceOf(reference);
    }
@@ -75,5 +78,5 @@ public class Reference<T> implements Externalizable{
       }
       return ret.toArray();
    }
-   
+
 }

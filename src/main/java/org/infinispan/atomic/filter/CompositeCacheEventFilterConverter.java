@@ -18,24 +18,25 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEventFilterConverter<K, V, C>
       implements Serializable, CacheAware {
 
-   private static Log log = LogFactory.getLog(CompositeCacheEventFilterConverter.class);
+   private static final Log log = LogFactory.getLog(CompositeCacheEventFilterConverter.class);
 
-   private static ConcurrentHashMap<Cache, ObjectFilterConverter> registry
+   private static final ConcurrentHashMap<Cache, ObjectFilterConverter> registry
          = new ConcurrentHashMap<>();
 
    private final CacheEventConverter<? super K, ? super V,? super C>[] converters;
 
    public CompositeCacheEventFilterConverter(CacheEventConverter<? super K, ? super V, ? super C>... converters) {
-      this.converters= converters;
+      this.converters = converters;
    }
 
    @Override
    public void setCache(Cache cache) {
       for (int i=0; i <converters.length; i++) {
          CacheEventConverter<? super K, ? super V, ? super C> converter = converters[i];
+         // FIXME there should be no marshalling of FC but instead a factory call
          if (converter instanceof ObjectFilterConverter) {
-            ((CacheAware) converter).setCache(cache);
-            if (!registry.contains(cache)) {
+            if (!registry.containsKey(cache)) {
+               ((CacheAware) converter).setCache(cache);
                registry.putIfAbsent(cache, (ObjectFilterConverter) converter);
             }
             converters[i] = (CacheEventConverter<? super K, ? super V, ? super C>) registry.get(cache);
@@ -46,8 +47,9 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
    @Override
    public C filterAndConvert(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata,
          EventType eventType) {
-      log.trace(this+" filterAndConvert()");
+      if (log.isTraceEnabled()) log.trace(this+" filterAndConvert() "+newValue+" ("+eventType.getType()+")");
       C ret = null;
+      assert converters.length==2;
       for (CacheEventConverter<? super K, ? super V, ? super C> converter : converters) {
          ret = (C) converter.convert(key, oldValue, oldMetadata, newValue, newMetadata, eventType);
          if (ret == null)

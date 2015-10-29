@@ -17,8 +17,8 @@ public class CallPersist extends Call implements Externalizable{
    @Deprecated
    public CallPersist(){}
 
-   public CallPersist(UUID callerID, byte[] bytes) {
-      super(callerID);
+   public CallPersist(UUID callerID, UUID callID, byte[] bytes) {
+      super(callerID, callID);
       this.bytes = bytes;
    }
 
