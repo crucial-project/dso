@@ -3,6 +3,7 @@ package org.infinispan.atomic.container.local;
 import org.infinispan.AdvancedCache;
 import org.infinispan.atomic.container.BaseContainer;
 import org.infinispan.atomic.filter.FilterConverterFactory;
+import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.CallFuture;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.utils.UUIDGenerator;
@@ -43,6 +44,7 @@ public class LocalContainer extends BaseContainer {
    }
    
    private UUID listenerID;
+   private AdvancedCache<Reference,Call> cache;
       
    public LocalContainer(
          BasicCache c,
@@ -53,7 +55,8 @@ public class LocalContainer extends BaseContainer {
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException,
          ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException {
-      super(c, reference, readOptimization, forceNew, initArgs);
+      super(reference, readOptimization, forceNew, initArgs);
+      this.cache = ((org.infinispan.Cache)c).getAdvancedCache();
       listenerID = installListener(cache);
       if (log.isTraceEnabled()) log.trace(this+"Created successfully");
    }
@@ -61,6 +64,16 @@ public class LocalContainer extends BaseContainer {
    @Override 
    public UUID listenerID() {
       return listenerID;
+   }
+
+   @Override
+   public void put(Reference reference, Call call) {
+      cache.put(reference, call);
+   }
+
+   @Override
+   public BasicCache getCache() {
+      return cache;
    }
 
    @org.infinispan.notifications.Listener(sync = true, clustered = true)

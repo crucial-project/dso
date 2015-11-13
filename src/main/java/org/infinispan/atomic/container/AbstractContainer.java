@@ -39,7 +39,6 @@ public abstract class AbstractContainer {
       }
    };
 
-   protected BasicCache<Reference,Call> cache;
    protected final Reference reference;
    protected boolean readOptimization;
    protected Object proxy;
@@ -48,12 +47,10 @@ public abstract class AbstractContainer {
    protected Object[] initArgs;
 
    public AbstractContainer(
-         final BasicCache cache,
          final Reference reference,
          final boolean readOptimization,
          final boolean forceNew,
          final Object... initArgs){
-      this.cache = cache;
       this.reference = reference;
       this.readOptimization = readOptimization && hasReadOnlyMethods(reference.getClazz());
       this.forceNew = forceNew;
@@ -76,6 +73,10 @@ public abstract class AbstractContainer {
 
    public abstract UUID listenerID();
 
+   public abstract void put(Reference reference, Call call);
+
+   public abstract BasicCache getCache();
+
    protected Object execute(Call call)
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
@@ -88,7 +89,7 @@ public abstract class AbstractContainer {
       Object ret = null;
       while(!future.isDone()) {
          try {
-            cache.put(reference, call);
+            put(reference, call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
          }catch (Exception e) {
             if (!future.isDone()) {

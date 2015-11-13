@@ -2,9 +2,11 @@ package org.infinispan.atomic.container.remote;
 
 import org.infinispan.atomic.container.BaseContainer;
 import org.infinispan.atomic.filter.FilterConverterFactory;
+import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.CallFuture;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.utils.UUIDGenerator;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
 import org.infinispan.client.hotrod.annotation.ClientListener;
@@ -46,6 +48,7 @@ public class RemoteContainer extends BaseContainer {
    }
 
    private UUID listenerID;
+   private RemoteCache<Reference,Call> cache;
    
    public RemoteContainer(
          BasicCache c,
@@ -56,7 +59,8 @@ public class RemoteContainer extends BaseContainer {
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException,
          ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException {
-      super(c, reference, readOptimization, forceNew, initArgs);
+      super(reference, readOptimization, forceNew, initArgs);
+      cache = (RemoteCache<Reference, Call>) c;
       listenerID = installListener(cache);
    }
 
@@ -78,6 +82,15 @@ public class RemoteContainer extends BaseContainer {
    @Override
    public UUID listenerID() {
       return listenerID;
+   }
+
+   @Override
+   public void put(Reference reference, Call call) {
+      cache.put(reference,call);
+   }
+
+   @Override public BasicCache getCache() {
+      return null;  // TODO: Customise this generated block
    }
 
    @ClientListener(

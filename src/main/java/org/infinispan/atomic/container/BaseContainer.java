@@ -7,7 +7,6 @@ import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.UUIDGenerator;
-import org.infinispan.commons.api.BasicCache;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -28,13 +27,13 @@ public abstract class BaseContainer extends AbstractContainer {
    private AtomicInteger pendingCalls;
    private boolean isOpen;
 
-   public BaseContainer(final BasicCache<Reference,Call> c, Reference reference, final boolean readOptimization,
+   public BaseContainer(Reference reference, final boolean readOptimization,
          final boolean forceNew, final Object... initArgs)
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException, ExecutionException, NoSuchMethodException, InvocationTargetException,
          java.util.concurrent.TimeoutException {
 
-      super(c, reference, readOptimization, forceNew, initArgs);
+      super(reference, readOptimization, forceNew, initArgs);
       this.pendingCalls = new AtomicInteger();
       this.isOpen = false;
 
@@ -130,7 +129,7 @@ public abstract class BaseContainer extends AbstractContainer {
          pendingCalls.decrementAndGet();
 
          return (ret instanceof Reference)
-               ? unreference((Reference)ret,AtomicObjectFactory.forCache(cache)) : ret;
+               ? unreference((Reference)ret,AtomicObjectFactory.forCache(getCache())) : ret;
 
       }
 

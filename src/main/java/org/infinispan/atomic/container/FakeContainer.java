@@ -1,5 +1,6 @@
 package org.infinispan.atomic.container;
 
+import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.object.Utils;
 import org.infinispan.atomic.utils.UUIDGenerator;
@@ -21,11 +22,14 @@ public class FakeContainer extends AbstractContainer {
    
    private static ConcurrentMap<Reference,Object> objects = new ConcurrentHashMap<>();
 
+   private BasicCache cache;
+
    public FakeContainer(BasicCache cache, Reference reference, boolean readOptimization, boolean forceNew,
          List<String> methods, Object... initArgs) {
-      super(cache, reference, readOptimization, forceNew, methods, initArgs);
+      super(reference, readOptimization, forceNew, methods, initArgs);
       
       try {
+         this.cache = cache;
          Object o = Utils.initObject(reference.getClazz(), initArgs);
          objects.putIfAbsent(reference,o);
          proxy = objects.get(reference);
@@ -49,6 +53,16 @@ public class FakeContainer extends AbstractContainer {
    @Override 
    public UUID listenerID() {
       return UUIDGenerator.generate();
+   }
+
+   @Override
+   public void put(Reference reference, Call call) {
+      cache.put(reference,call);
+   }
+
+   @Override
+   public BasicCache getCache() {
+      return cache;
    }
 
 }

@@ -40,7 +40,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    protected static Log log = LogFactory.getLog(AtomicObjectFactoryAbstractTest.class);
 
-   protected static int NMANAGERS = 4;
+   protected static int NMANAGERS = 3;
    protected static final int REPLICATION_FACTOR = 2;
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
    protected static final boolean USE_TRANSACTIONS = false;
@@ -65,14 +65,14 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    }
 
-   @Test(enabled = true)
+   @Test(enabled = false)
    public void basePerformanceTest() throws Exception{
 
       BasicCacheContainer cacheManager = containers().iterator().next();
       BasicCache<Object,Object> cache = cacheManager.getCache();
       AtomicObjectFactory factory = new AtomicObjectFactory(cache);
       
-      int f = 1; // multiplicative factor
+      int f = 100; // multiplicative factor
 
       Map map = factory.getInstanceOf(HashMap.class, "map");
 
@@ -277,7 +277,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       assert object2.flipValue();
    }
 
-   @Test(enabled = false)
+   @Test(enabled = true)
    public void baseScalability() throws Exception {
       assertTrue(containers().size()>=2);
       baseUsageTest();

@@ -4,6 +4,7 @@ import org.infinispan.atomic.filter.FilterConverterFactory;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
@@ -92,6 +93,9 @@ public class Server implements Runnable {
       builder.locking()
             .concurrencyLevel(10000)
             .lockAcquisitionTimeout(2000);
+      builder.eviction().
+            strategy(EvictionStrategy.LRU)
+            .maxEntries(100000);
       builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
 
       if (usePersistency)
