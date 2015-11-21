@@ -5,9 +5,9 @@ import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.CallInvoke;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.utils.AdvancedShardedObject;
-import org.infinispan.atomic.utils.SimpleShardedObject;
 import org.infinispan.atomic.utils.ShardedObject;
 import org.infinispan.atomic.utils.SimpleObject;
+import org.infinispan.atomic.utils.SimpleShardedObject;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
@@ -43,8 +43,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    protected static int NMANAGERS = 3;
    protected static final int REPLICATION_FACTOR = 2;
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-   protected static final boolean USE_TRANSACTIONS = false;
-   protected static int NCALLS = 100;
+   protected static int NCALLS = 1000;
 
    @Test
    public void baseUsageTest() throws  Exception{
@@ -52,13 +51,13 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       BasicCacheContainer cacheManager = containers().iterator().next();
       BasicCache<Object,Object> cache = cacheManager.getCache();
       AtomicObjectFactory factory = new AtomicObjectFactory(cache);
-      
+
       // 1 - basic call
       Set<String> set = factory.getInstanceOf(HashSet.class, "set");
       set.add("smthing");
       assert set.contains("smthing");
       assert set.size()==1;
-      
+
       // 2 - proxy marshalling
       Marshaller marshaller = new JBossMarshaller();
       assert marshaller.objectFromByteBuffer((marshaller.objectToByteBuffer(set))) instanceof Reference;
@@ -104,31 +103,31 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       HashSet set1, set2;
 
       // 0 - Base persistence
-      set1 = factory1.getInstanceOf(HashSet.class, "persist", false, null, true);
+      set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, null, true);
       set1.add("smthing");
-      factory1.disposeInstanceOf(HashSet.class, "persist", true);
-      set1 = factory1.getInstanceOf(HashSet.class, "persist", false, null, false);
+      factory1.disposeInstanceOf(HashSet.class, "persist1", true);
+      set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, null, false);
       assert set1.contains("smthing");
 
-      // 1 - Concurrent retrieval
-      set1 = factory1.getInstanceOf(HashSet.class, "persist1");
-      set1.add("smthing");
-      set2 = factory2.getInstanceOf(HashSet.class, "persist1", false, null, false);
-      assert set2.contains("smthing");
-
-      // 2 - Serial storing then retrieval
-      set1 = factory1.getInstanceOf(HashSet.class, "persist2");
-      set1.add("smthing");
-      factory1.disposeInstanceOf(HashSet.class,"persist2",true);
-      set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, null, false);
-      assert set2.contains("smthing");
-
-      // 3 - Re-creation
-      set1 = factory1.getInstanceOf(HashSet.class, "persist3");
-      set1.add("smthing");
-      factory1.disposeInstanceOf(HashSet.class,"persist3",true);
-      set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, null, true);
-      assert !set2.contains("smthing");
+//      // 1 - Concurrent retrieval
+//      set1 = factory1.getInstanceOf(HashSet.class, "persist2");
+//      set1.add("smthing");
+//      set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, null, false);
+//      assert set2.contains("smthing");
+//
+//      // 2 - Serial storing then retrieval
+//      set1 = factory1.getInstanceOf(HashSet.class, "persist3");
+//      set1.add("smthing");
+//      factory1.disposeInstanceOf(HashSet.class,"persist3",true);
+//      set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, null, false);
+//      assert set2.contains("smthing");
+//
+//      // 3 - Re-creation
+//      set1 = factory1.getInstanceOf(HashSet.class, "persist4");
+//      set1.add("smthing");
+//      factory1.disposeInstanceOf(HashSet.class,"persist4",true);
+//      set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, null, true);
+//      assert !set2.contains("smthing");
 
    }
    
@@ -278,16 +277,56 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test(enabled = true)
-   public void baseScalability() throws Exception {
-      assertTrue(containers().size()>=2);
-      baseUsageTest();
-      deleteContainer();
-      baseUsageTest();
+   public void baseElasticity() throws Exception {
+      assertTrue(containers().size() >= 2);
+      persistenceTest();
+      advancedCompositionTest();
       addContainer();
-      baseCacheTest();
+      persistenceTest();
+      advancedCompositionTest();
+      deleteContainer();
+      persistenceTest();
+      advancedCompositionTest();
    }
 
-   //
+   @Test(enabled = false)
+   public void advancedElasticity() throws Exception {
+
+      ExecutorService service = Executors.newCachedThreadPool();
+      List<Future<Integer>> futures = new ArrayList<>();
+
+      for(BasicCacheContainer manager: containers()){
+         BasicCache<Object,Object> cache = manager.getCache();
+         futures.add(service.submit(
+               new ExerciseAtomicSetTask(
+                     new AtomicObjectFactory(cache), NCALLS)));
+      }
+
+      waitForClusterToForm();
+
+      Set<Future> completed = new HashSet<>();
+      while(completed.size() != futures.size()) {
+         addContainer();
+         System.out.println("Node "+cacheManagers.get(cacheManagers.size()-1).getAddress()+" was added.");
+         for(Future<Integer> future : futures){
+            if(future.isDone())
+               completed.add(future);
+         }
+         Thread.sleep(3000);
+      }
+
+      Integer total = 0;
+      for(Future<Integer> future : futures){
+         total += future.get();
+      }
+
+
+      assert total == (NCALLS) : "obtained = "+total+"; espected = "+ (NCALLS);
+
+   }
+
+
+      //
    // Interface
    //
 
@@ -341,8 +380,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
          int ret = 0;
          
          for(int i=0; i<ncalls;i++){
-            
-            if (set==null) 
+
+            if (set==null)
                set = factory.getInstanceOf(HashSet.class, name);
             
             boolean r = set.add(i);
