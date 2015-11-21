@@ -16,12 +16,10 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * @author Pierre Sutra
@@ -30,11 +28,12 @@ import static org.testng.Assert.assertEquals;
 @Test(testName = "EventOrderingTest")
 public class EventOrderingTest extends MultipleCacheManagersTest {
 
-   protected static int NMANAGERS=8;
+   protected static int NMANAGERS=5;
    protected static int NCALLS=1000;
    protected static int REPLICATION_FACTOR=3;
    protected static CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
    protected static boolean USE_TRANSACTIONS = false;
+   protected static ConcurrentMap<Integer,Integer> added = new ConcurrentHashMap<>();
 
    @Test
    public void testEventOrdering() throws ExecutionException, InterruptedException {
@@ -46,6 +45,7 @@ public class EventOrderingTest extends MultipleCacheManagersTest {
          ClusterListener clusterListener= new ClusterListener();
          cache.addListener(clusterListener);
          listeners.add(clusterListener);
+         if (listeners.size()==2) break;
       }
 
       List<Future> futures = new ArrayList<>();
@@ -57,11 +57,12 @@ public class EventOrderingTest extends MultipleCacheManagersTest {
          future.get();
       }
 
-      List<Object> list = null;
+      ConcurrentMap<Integer,Integer> map= null;
       for (ClusterListener listener : listeners) {
-         if (list==null)
-            list = listener.values;
-         assertEquals(list, listener.values);
+         if (map==null)
+            map= listener.received;
+         assertTrue(listener.received.keySet().containsAll(added.keySet()));
+         assertEquals(map, listener.received);
       }
 
    }
@@ -90,9 +91,11 @@ public class EventOrderingTest extends MultipleCacheManagersTest {
       @Override
       public Integer call() throws Exception {
          for (int i = 0; i < NCALLS; i++) {
-            manager.getCache().put(
-                  1,
-                  ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
+            int value = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
+            while(added.putIfAbsent(value, value)!=null){
+               value = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
+            }
+            manager.getCache().put(1,value);
          }
          return 0;
       }
@@ -102,15 +105,14 @@ public class EventOrderingTest extends MultipleCacheManagersTest {
    @Listener(clustered = true, sync = true, includeCurrentState = true)
    public class ClusterListener{
 
-      public List<Object> values= new ArrayList<>();
+      public ConcurrentMap<Integer,Integer> received = new ConcurrentHashMap<>();
 
       @CacheEntryCreated
       @CacheEntryModified
       @CacheEntryRemoved
       public void onCacheEvent(CacheEntryEvent event) {
          int value = (int) event.getValue();
-         if (!values.contains(value))
-            values.add(event.getValue());
+         received.putIfAbsent(value,value);
       }
 
    }
