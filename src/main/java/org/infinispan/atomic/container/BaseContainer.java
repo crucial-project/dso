@@ -1,5 +1,6 @@
 package org.infinispan.atomic.container;
 
+import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
@@ -38,52 +39,62 @@ public abstract class BaseContainer extends AbstractContainer {
       this.isOpen = false;
 
       // build the proxy
-      MethodHandler handler = new BaseContainerMethodHandler();
+      MethodHandler handler = new BaseContainerMethodHandler(this);
       ProxyFactory fact = new ProxyFactory();
       fact.setSuperclass(reference.getClazz());
       fact.setFilter(methodFilter);
       fact.setInterfaces(new Class[] { WriteReplace.class });
       fact.setUseWriteReplace(false);
-      this.proxy = initObject(fact.createClass(),initArgs);
-      ((ProxyObject)proxy).setHandler(handler);
+      this.proxy = initObject(fact.createClass(), initArgs);
+      ((ProxyObject) proxy).setHandler(handler);
    }
-   
+
    @Override
-   public synchronized void open() 
+   public synchronized void open()
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
-      pendingCalls.incrementAndGet();
-      
+      if (log.isDebugEnabled())
+         log.debug(this + "Opening.");
+
       if (!isOpen) {
 
-         if (log.isTraceEnabled()) log.trace(this + "Opening.");
-         
          execute(new CallOpen(listenerID(), UUIDGenerator.generate(), forceNew, initArgs, readOptimization));
          isOpen = true;
 
-         if (log.isTraceEnabled()) log.trace(this+  "Opened.");
-      }      
-      
+      }
+
+      if (log.isDebugEnabled())
+         log.debug(this + "Opened.");
+
    }
 
    @Override
    public synchronized void close()
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
-      if (log.isTraceEnabled()) log.trace(this + "Closing.");
+      if (log.isDebugEnabled())
+         log.debug(this + "Closing.");
 
-      while(pendingCalls.get()!=0);
+      while (pendingCalls.get() != 0) {
+         this.wait();
+      }
 
       if (isOpen) {
 
-         isOpen = false;
          execute(new CallClose(listenerID(), UUIDGenerator.generate()));
+         isOpen = false;
          forceNew = false;
 
       }
 
-      if (log.isTraceEnabled()) log.trace(this + "Closed.");
+      if (log.isDebugEnabled())
+         log.debug(this + "Closed.");
 
+   }
+
+   @Override
+   public synchronized boolean isClosed(){
+      return !isOpen;
    }
 
    @Override
@@ -92,6 +103,12 @@ public abstract class BaseContainer extends AbstractContainer {
    }
 
    private class BaseContainerMethodHandler implements MethodHandler, Serializable{
+
+      BaseContainer container;
+
+      public BaseContainerMethodHandler(BaseContainer container) {
+         this.container = container;
+      }
 
       public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable {
 
@@ -113,20 +130,25 @@ public abstract class BaseContainer extends AbstractContainer {
                      + "null state="+new Boolean(state==null)+", "
                      + "isAnnotationPresent="+new Boolean(m.isAnnotationPresent(ReadOnly.class)));
          }
-         
+
+         pendingCalls.incrementAndGet();
+
          open();
 
+         RandomBasedGenerator generator = UUIDGenerator.getThreadLocal();
          Object ret = execute(
                new CallInvoke(
                      listenerID(),
-                     UUIDGenerator.getThreadLocal()==null ?
-                           UUIDGenerator.generate() : UUIDGenerator.getThreadLocal().generate(),
+                     generator==null ? UUIDGenerator.generate() : generator.generate(),
                      m.getName(),
                      args)
          );
 
 
          pendingCalls.decrementAndGet();
+         synchronized (container) {
+            container.notifyAll();
+         }
 
          return (ret instanceof Reference)
                ? unreference((Reference)ret,AtomicObjectFactory.forCache(getCache())) : ret;

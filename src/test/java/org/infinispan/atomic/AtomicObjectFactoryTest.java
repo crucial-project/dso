@@ -7,6 +7,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.AbstractCacheTest;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,7 +19,19 @@ import java.util.List;
 public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
 
    private static ConfigurationBuilder defaultConfigurationBuilder;
-   private static List<Cache<Object,Object>> caches;
+   private static List<Cache<Object,Object>> caches = new ArrayList<>();
+
+   static{
+      defaultConfigurationBuilder
+            = AbstractCacheTest.getDefaultClusteredCacheConfig(CACHE_MODE, false);
+      defaultConfigurationBuilder
+            .clustering().hash().numOwners(REPLICATION_FACTOR)
+            .locking().useLockStriping(false);
+      defaultConfigurationBuilder.clustering().stateTransfer()
+            .awaitInitialTransfer(true)
+            .timeout(1000000)
+            .fetchInMemoryState(true);
+   }
 
    @Override 
    public BasicCacheContainer container(int i) {
@@ -31,14 +44,15 @@ public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
    }
 
    @Override
-   public boolean addContainer() {
+   public synchronized boolean addContainer() {
       EmbeddedCacheManager cm = addClusterEnabledCacheManager(defaultConfigurationBuilder);
       caches.add(cm.getCache());
+      waitForClusterToForm();
       return true;
    }
 
    @Override
-   public boolean deleteContainer() {
+   public synchronized boolean deleteContainer() {
       assert caches.size()==containers().size();
       if (caches.size()==0)
          return false;
@@ -46,29 +60,16 @@ public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
       container.stop();
       containers().remove(container);
       caches.remove(caches.size()-1);
+      waitForClusterToForm();
       return true;
    }
 
    @Override
    protected void createCacheManagers() throws Throwable {
-      createConfigurationBuilder();
-      caches = createClusteredCaches(NMANAGERS, defaultConfigurationBuilder);
+      for(int i=0; i<NMANAGERS; i++) {
+         addContainer();
+      }
       AtomicObjectFactory.forCache(cache(0));
    }
-
-   //
-   // HELPERS
-   //
-
-
-   private void createConfigurationBuilder() {
-      defaultConfigurationBuilder
-            = AbstractCacheTest.getDefaultClusteredCacheConfig(CACHE_MODE, USE_TRANSACTIONS);
-      defaultConfigurationBuilder
-            .clustering().hash().numOwners(REPLICATION_FACTOR)
-            .locking().useLockStriping(false);
-
-   }
-
 }
 

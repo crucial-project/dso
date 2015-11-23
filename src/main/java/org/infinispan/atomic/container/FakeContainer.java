@@ -23,6 +23,7 @@ public class FakeContainer extends AbstractContainer {
    private static ConcurrentMap<Reference,Object> objects = new ConcurrentHashMap<>();
 
    private BasicCache cache;
+   private boolean isOpen;
 
    public FakeContainer(BasicCache cache, Reference reference, boolean readOptimization, boolean forceNew,
          List<String> methods, Object... initArgs) {
@@ -33,6 +34,7 @@ public class FakeContainer extends AbstractContainer {
          Object o = Utils.initObject(reference.getClazz(), initArgs);
          objects.putIfAbsent(reference,o);
          proxy = objects.get(reference);
+         isOpen = false;
       } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
          e.printStackTrace(); 
       } 
@@ -40,14 +42,19 @@ public class FakeContainer extends AbstractContainer {
    }
 
    @Override 
-   public void open() throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      // nothing to do
+   public synchronized void open() throws InterruptedException, ExecutionException, TimeoutException, IOException {
+      isOpen = true;
+   }
+
+   @Override
+   public synchronized boolean isClosed(){
+      return isOpen;
    }
 
    @Override 
-   public void close()
+   public synchronized void close()
          throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      // nothing to do
+      isOpen = false;
    }
 
    @Override 

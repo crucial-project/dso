@@ -110,7 +110,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    // Helpers
 
    private void createDefaultBuilder() {
-      defaultBuilder =getDefaultClusteredCacheConfig(CACHE_MODE, USE_TRANSACTIONS);
+      defaultBuilder = getDefaultClusteredCacheConfig(CACHE_MODE,false);
       defaultBuilder
             .clustering().
             cacheMode(CacheMode.DIST_SYNC)

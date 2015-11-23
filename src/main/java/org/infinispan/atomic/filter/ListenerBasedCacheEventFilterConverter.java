@@ -44,7 +44,8 @@ public class ListenerBasedCacheEventFilterConverter<K,V> extends AbstractCacheEv
       if (newValue!=null) {
          Call call = (Call) newValue;
          assert call.getListenerID() != null;
-         if (!call.getListenerID().equals(listenerID)) {
+         if (!call.getListenerID().equals(listenerID)
+               && !call.getListenerID().equals(ObjectFilterConverter.TOPOLOGY_CHANGE_UUID)) {
             if (log.isTraceEnabled()) log.trace(this + "Wrong listener "+call);
             return null;
          }

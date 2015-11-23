@@ -29,7 +29,7 @@ import static org.infinispan.atomic.object.Utils.hasReadOnlyMethods;
 public abstract class AbstractContainer {
 
    // class fields
-   public static final int TTIMEOUT_TIME = 1000;
+   public static final int TTIMEOUT_TIME = 100;
    protected static final Map<UUID, CallFuture> registeredCalls = new ConcurrentHashMap<>();
    protected static final Log log = LogFactory.getLog(BaseContainer.class);
    protected static final MethodFilter methodFilter = new MethodFilter() {
@@ -71,6 +71,8 @@ public abstract class AbstractContainer {
    public abstract void close()
          throws InterruptedException, ExecutionException, TimeoutException, IOException;
 
+   public abstract boolean isClosed();
+
    public abstract UUID listenerID();
 
    public abstract void put(Reference reference, Call call);
@@ -93,9 +95,10 @@ public abstract class AbstractContainer {
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
          }catch (Exception e) {
             if (!future.isDone()) {
-               e.printStackTrace();
+               if (log.isTraceEnabled())
+                  e.printStackTrace();
             }
-            Thread.sleep(1000);
+            Thread.sleep(100);
          }
       }
 

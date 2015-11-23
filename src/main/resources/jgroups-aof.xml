@@ -59,6 +59,8 @@
    <pbcast.GMS print_local_addr="false"
                join_timeout="15000"
    />
+    <pbcast.FLUSH/>
+
    <UFC max_credits="2m" 
         min_threshold="0.40"
    />

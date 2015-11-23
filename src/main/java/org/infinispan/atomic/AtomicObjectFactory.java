@@ -52,7 +52,7 @@ public class AtomicObjectFactory {
       return factories.get(cacheName);
    }
    
-   protected static final int MAX_CONTAINERS=1000;// 0 means no limit
+   protected static final int MAX_CONTAINERS=Integer.MAX_VALUE;
    public static final Map<Class,List<String>> updateMethods;
    static{
       updateMethods = new HashMap<>();
@@ -107,7 +107,8 @@ public class AtomicObjectFactory {
                @Override 
                public void onRemoval(RemovalNotification<Reference, AbstractContainer> objectObjectRemovalNotification) {
                   try {
-                     objectObjectRemovalNotification.getValue().close();
+                     AbstractContainer container = objectObjectRemovalNotification.getValue();
+                     if (!container.isClosed()) container.close();
                   } catch (Exception e) {
                      e.printStackTrace();
                   }
@@ -210,7 +211,7 @@ public class AtomicObjectFactory {
 
          container = registeredContainers.get(reference);
 
-         if( container==null){
+         if (container==null) {
 
             if (log.isDebugEnabled()) log.debug(this + " Creating container");
 
@@ -244,16 +245,14 @@ public class AtomicObjectFactory {
     * @param keepPersistent indicates that a persistent copy is stored in the cache or not.
     */
    @Deprecated
-   public void disposeInstanceOf(Class clazz, Object key, boolean keepPersistent)
+   public synchronized void disposeInstanceOf(Class clazz, Object key, boolean keepPersistent)
          throws InvalidCacheUsageException {
 
       Reference reference = new Reference<>(clazz,key);
-      AbstractContainer container;
-      synchronized (registeredContainers){
-         container = registeredContainers.get(reference);
-         if( container == null ) return;
-         registeredContainers.remove(reference);
-      }
+
+      AbstractContainer container = registeredContainers.get(reference);
+
+      if( container == null ) return;
 
       try{
          container.close();
@@ -261,6 +260,8 @@ public class AtomicObjectFactory {
          e.printStackTrace();
          throw new InvalidCacheUsageException("Error while disposing object "+key);
       }
+
+      // registeredContainers.remove(reference);
 
    }
    
