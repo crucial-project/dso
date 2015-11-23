@@ -53,18 +53,18 @@ public abstract class BaseContainer extends AbstractContainer {
    public synchronized void open()
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
-      if (log.isDebugEnabled())
-         log.debug(this + "Opening.");
-
       if (!isOpen) {
+
+         if (log.isTraceEnabled())
+            log.trace(this + " Opening.");
 
          execute(new CallOpen(listenerID(), UUIDGenerator.generate(), forceNew, initArgs, readOptimization));
          isOpen = true;
 
-      }
+         if (log.isTraceEnabled())
+            log.trace(this + " Opened.");
 
-      if (log.isDebugEnabled())
-         log.debug(this + "Opened.");
+      }
 
    }
 
@@ -72,8 +72,8 @@ public abstract class BaseContainer extends AbstractContainer {
    public synchronized void close()
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
-      if (log.isDebugEnabled())
-         log.debug(this + "Closing.");
+      if (log.isTraceEnabled())
+         log.trace(this + " Closing.");
 
       while (pendingCalls.get() != 0) {
          this.wait();
@@ -87,8 +87,8 @@ public abstract class BaseContainer extends AbstractContainer {
 
       }
 
-      if (log.isDebugEnabled())
-         log.debug(this + "Closed.");
+      if (log.isTraceEnabled())
+         log.trace(this + " Closed.");
 
    }
 
@@ -99,7 +99,7 @@ public abstract class BaseContainer extends AbstractContainer {
 
    @Override
    public String toString(){
-      return "Container["+listenerID()+":"+getReference()+"]";
+      return "Container["+listenerID().toString().substring(0,5)+":"+getReference()+"]";
    }
 
    private class BaseContainerMethodHandler implements MethodHandler, Serializable{
@@ -145,9 +145,10 @@ public abstract class BaseContainer extends AbstractContainer {
          );
 
 
-         pendingCalls.decrementAndGet();
-         synchronized (container) {
-            container.notifyAll();
+         if (pendingCalls.decrementAndGet()==0) {
+            synchronized (container) {
+               container.notifyAll();
+            }
          }
 
          return (ret instanceof Reference)

@@ -62,6 +62,8 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
                   .marshaller((Marshaller) null)
                   .build());
       remoteCacheManagers.add(manager);
+
+      System.out.println("Node " + manager+ " added.");
       return true;
    }
 
@@ -79,9 +81,13 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
       servers.remove(index);
 
       // embedded cache manager
+      BasicCacheContainer manager = cacheManagers.get(index);
       cacheManagers.get(index).stop();
       cacheManagers.remove(index);
+
       waitForClusterToForm();
+      System.out.println("Node " + manager+ " deleted.");
+
       return true;
    }
 

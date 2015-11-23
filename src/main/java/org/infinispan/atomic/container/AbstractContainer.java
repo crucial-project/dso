@@ -83,7 +83,7 @@ public abstract class AbstractContainer {
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
       if (log.isTraceEnabled()) 
-         log.trace(this + "Executing " + call);
+         log.trace(this + " Executing "+call);
 
       CallFuture future = new CallFuture(call.getCallID());
       registeredCalls.put(call.getCallID(), future);
@@ -95,8 +95,8 @@ public abstract class AbstractContainer {
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
          }catch (Exception e) {
             if (!future.isDone()) {
-               if (log.isTraceEnabled())
-                  e.printStackTrace();
+               if (log.isDebugEnabled())
+                  log.debug(" Failed "+ call + " ("+e.getMessage()+")");
             }
             Thread.sleep(100);
          }
@@ -109,7 +109,7 @@ public abstract class AbstractContainer {
       }
 
       if (log.isTraceEnabled()) 
-         log.trace(this + "Returning " + ret);
+         log.trace(this + " Returning " + ret);
       
       return ret;
 

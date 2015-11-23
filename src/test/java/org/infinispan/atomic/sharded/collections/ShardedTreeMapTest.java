@@ -28,7 +28,7 @@ public class ShardedTreeMapTest extends MultipleCacheManagersTest {
    public void basicUsageTest() throws  Exception{
       EmbeddedCacheManager cacheManager = cacheManagers.iterator().next();
       Cache cache = cacheManager.getCache();
-      AtomicObjectFactory factory = new AtomicObjectFactory(cache);
+      AtomicObjectFactory factory = AtomicObjectFactory.forCache(cache);
 
       SortedMap<Integer,Integer> map = factory.getInstanceOf(ShardedTreeMap.class,"test",false,null,false,3);
       for(int i=0; i<NCALLS; i++) {

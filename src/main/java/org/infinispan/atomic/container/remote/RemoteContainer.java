@@ -34,17 +34,9 @@ public class RemoteContainer extends BaseContainer {
          Listener listener = new Listener();
          ((RemoteCacheImpl) cache).addClientListener(listener, new Object[] { listener.getId() }, null);
          listeners.put(cache, listener);
-         if (log.isTraceEnabled()) log.trace("Remote listener "+listener.getId()+" installed");
+         if (log.isTraceEnabled()) log.trace("Installed listener "+listener.getId());
       }
       return listeners.get(cache).getId();
-   }
-
-   private static synchronized void removeListener(BasicCache cache) {
-      if (listeners.containsKey(cache)) {
-         Listener listener = listeners.get(cache);
-         ((RemoteCacheImpl) cache).removeClientListener(listener);
-         listeners.remove(cache);
-      }
    }
 
    private UUID listenerID;
@@ -76,7 +68,6 @@ public class RemoteContainer extends BaseContainer {
    public synchronized void close()
          throws InterruptedException, ExecutionException, TimeoutException {
       super.close();
-      removeListener(cache);
    }
 
    @Override

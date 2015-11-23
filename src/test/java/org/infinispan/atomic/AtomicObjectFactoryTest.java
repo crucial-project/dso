@@ -48,6 +48,7 @@ public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
       EmbeddedCacheManager cm = addClusterEnabledCacheManager(defaultConfigurationBuilder);
       caches.add(cm.getCache());
       waitForClusterToForm();
+      System.out.println("Node " + cm+ " added.");
       return true;
    }
 
@@ -61,6 +62,7 @@ public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
       containers().remove(container);
       caches.remove(caches.size()-1);
       waitForClusterToForm();
+      System.out.println("Node " + container+ " deleted.");
       return true;
    }
 

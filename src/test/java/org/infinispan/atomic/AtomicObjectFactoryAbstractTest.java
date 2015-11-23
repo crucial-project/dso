@@ -43,14 +43,14 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    protected static int NMANAGERS = 2;
    protected static final int REPLICATION_FACTOR = 2;
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-   protected static int NCALLS = 1000;
+   protected static int NCALLS = 3000;
 
    @Test
    public void baseUsageTest() throws  Exception{
 
       BasicCacheContainer cacheManager = containers().iterator().next();
       BasicCache<Object,Object> cache = cacheManager.getCache();
-      AtomicObjectFactory factory = new AtomicObjectFactory(cache);
+      AtomicObjectFactory factory = AtomicObjectFactory.forCache(cache);
 
       // 1 - basic call
       Set<String> set = factory.getInstanceOf(HashSet.class, "set");
@@ -69,7 +69,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
       BasicCacheContainer cacheManager = containers().iterator().next();
       BasicCache<Object,Object> cache = cacheManager.getCache();
-      AtomicObjectFactory factory = new AtomicObjectFactory(cache);
+      AtomicObjectFactory factory = AtomicObjectFactory.forCache(cache);
       
       int f = 100; // multiplicative factor
 
@@ -94,11 +94,11 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       
       BasicCacheContainer container1 = it.next();
       BasicCache<Object,Object> cache1 = container1.getCache();
-      AtomicObjectFactory factory1 = new AtomicObjectFactory(cache1);
+      AtomicObjectFactory factory1 = AtomicObjectFactory.forCache(cache1);
       
       BasicCacheContainer container2 = it.next();
       BasicCache<Object,Object> cache2 = container2.getCache();
-      AtomicObjectFactory factory2 = new AtomicObjectFactory(cache2);
+      AtomicObjectFactory factory2 = AtomicObjectFactory.forCache(cache2);
 
       HashSet set1, set2;
 
@@ -108,12 +108,15 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       factory1.disposeInstanceOf(HashSet.class, "persist1", true);
       set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, null, false);
       assert set1.contains("smthing");
+      factory1.disposeInstanceOf(HashSet.class, "persist1", true);
 
       // 1 - Concurrent retrieval
       set1 = factory1.getInstanceOf(HashSet.class, "persist2");
       set1.add("smthing");
       set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, null, false);
       assert set2.contains("smthing");
+      factory1.disposeInstanceOf(HashSet.class, "persist2", true);
+      factory2.disposeInstanceOf(HashSet.class, "persist2", true);
 
       // 2 - Serial storing then retrieval
       set1 = factory1.getInstanceOf(HashSet.class, "persist3");
@@ -121,6 +124,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       factory1.disposeInstanceOf(HashSet.class,"persist3",true);
       set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, null, false);
       assert set2.contains("smthing");
+      factory1.disposeInstanceOf(HashSet.class, "persist3", true);
+      factory2.disposeInstanceOf(HashSet.class, "persist3", true);
 
       // 3 - Re-creation
       set1 = factory1.getInstanceOf(HashSet.class, "persist4");
@@ -128,6 +133,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       factory1.disposeInstanceOf(HashSet.class,"persist4",true);
       set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, null, true);
       assert !set2.contains("smthing");
+      factory2.disposeInstanceOf(HashSet.class,"persist4",true);
+
 
    }
    
@@ -169,7 +176,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       Iterator<BasicCacheContainer> it = containers().iterator();
       BasicCacheContainer container1 = it.next();
       BasicCache<Object,Object> cache1 = container1.getCache();
-      AtomicObjectFactory factory1 = new AtomicObjectFactory(cache1,1);
+      AtomicObjectFactory factory1 = AtomicObjectFactory.forCache(cache1,1);
 
       HashSet set1, set2;
 
@@ -198,7 +205,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
          BasicCache<Object,Object> cache = manager.getCache();
          futures.add(service.submit(
                new ExerciseAtomicSetTask(
-                     AtomicObjectFactory.forCache(cache), NCALLS)));
+                     AtomicObjectFactory.forCache(cache), "distt", NCALLS)));
       }
 
       long start = System.currentTimeMillis();
@@ -223,11 +230,11 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
       BasicCacheContainer container1 = it.next();
       BasicCache<Object,Object> cache1 = container1.getCache();
-      AtomicObjectFactory factory1 = new AtomicObjectFactory(cache1);
+      AtomicObjectFactory factory1 = AtomicObjectFactory.forCache(cache1);
 
       BasicCacheContainer container2 = it.next();
       BasicCache<Object,Object> cache2 = container2.getCache();
-      AtomicObjectFactory factory2 = new AtomicObjectFactory(cache2);
+      AtomicObjectFactory factory2 = AtomicObjectFactory.forCache(cache2);
 
       for (int i = 0; i < numMaps; i++) {
          for (int j = 0; j <= i; j++) {
@@ -299,24 +306,23 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
          BasicCache<Object,Object> cache = manager.getCache();
          futures.add(service.submit(
                new ExerciseAtomicSetTask(
-                     AtomicObjectFactory.forCache(cache), NCALLS)));
+                     AtomicObjectFactory.forCache(cache), "elastic", NCALLS)));
       }
 
       waitForClusterToForm();
 
+      // elasticity
       Set<Future> completed = new HashSet<>();
-      int additionalNodes = 2;
+      Random random = new Random();
       while(completed.size() != futures.size()) {
          Thread.sleep(2000);
-         addContainer();
-         System.out.println("Node "+cacheManagers.get(cacheManagers.size()-1).getAddress()+" was added.");
+         boolean action = true;
+         if (containers().size()>REPLICATION_FACTOR) action = (random.nextBoolean());
+         if (action) { addContainer(); } else {deleteContainer();}
          for(Future<Integer> future : futures){
             if(future.isDone())
                completed.add(future);
          }
-         additionalNodes--;
-         if (additionalNodes==0)
-            break;
       }
 
       Integer total = 0;
@@ -367,13 +373,13 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    public static class ExerciseAtomicSetTask implements Callable<Integer>{
 
-      private static final String name="aset";
-
+      private String name;
       private int ncalls;
       private Set set;
       private AtomicObjectFactory factory;
 
-      public ExerciseAtomicSetTask(AtomicObjectFactory f, int n){
+      public ExerciseAtomicSetTask(AtomicObjectFactory f, String name, int n){
+         this.name = name;
          factory = f;
          ncalls = n;
       }

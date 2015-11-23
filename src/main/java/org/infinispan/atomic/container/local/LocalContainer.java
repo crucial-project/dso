@@ -26,7 +26,7 @@ import java.util.concurrent.TimeoutException;
 public class LocalContainer extends BaseContainer {
 
    private static Map<BasicCache,Listener> listeners = new HashMap<>();
-   private static Map<BasicCache, FilterConverterFactory> factories = new HashMap<>();
+   private static Map<BasicCache,FilterConverterFactory> factories = new HashMap<>();
 
    private static synchronized UUID installListener(BasicCache cache){
       if (!listeners.containsKey(cache)) {
@@ -93,7 +93,6 @@ public class LocalContainer extends BaseContainer {
       @CacheEntryModified
       @CacheEntryCreated
       public void onCacheModification(CacheEntryEvent event){
-         log.trace(this + "Event " + event.getType()+" received");
          CallFuture ret = (CallFuture) event.getValue();
          handleFuture(ret);
       }

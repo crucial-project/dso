@@ -1,7 +1,5 @@
 package org.infinispan.atomic;
 
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -9,16 +7,12 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.infinispan.atomic.object.Reference;
 
 import java.lang.reflect.Field;
-import java.util.Random;
 
 /**
  * @author Pierre Sutra
 */
 @Aspect
 public class Distribution {
-
-   private RandomBasedGenerator generator
-         = Generators.randomBasedGenerator(new Random(System.currentTimeMillis()));
 
    @Pointcut("call((@Distributed *).new(..)) " +
          "&& ! within(org.infinispan.atomic.container.BaseContainer) " +
@@ -30,7 +24,7 @@ public class Distribution {
    public Object distributionAdvice(ProceedingJoinPoint pjp) throws Throwable{
       Object object = pjp.proceed(pjp.getArgs());
       Reference reference = referenceFor(object);
-      AtomicObjectFactory factory = AtomicObjectFactory.forCache("");
+      AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
       return factory.getInstanceOf(
             reference,
             true,

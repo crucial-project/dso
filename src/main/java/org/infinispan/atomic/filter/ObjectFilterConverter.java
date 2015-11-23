@@ -13,7 +13,6 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
-import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.filter.AbstractCacheEventFilterConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheAware;
 import org.infinispan.notifications.cachelistener.filter.EventType;
@@ -48,11 +47,11 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
    // Per-object fields
    private Cache<Reference, Call> cache;
-   private AtomicBoolean topologyChanging;
    private final ConcurrentMap<Reference, Object> objects;
    private final ConcurrentMap<Reference, AtomicInteger> openCallsCounters;
    private final ConcurrentMap<Reference, Boolean> includeStateTrackers;
    private final ConcurrentMap<Reference, RandomBasedGenerator> generators;
+   private final ConcurrentMap<Reference, AtomicBoolean> topologyChanging;
 
    // Other fields
    private final ConcurrentMap<Call, CallFuture> completedCalls;
@@ -67,6 +66,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       this.completedCalls = (ConcurrentMap) CacheBuilder.newBuilder()
             .maximumSize(MAX_COMPLETED_CALLS)
             .build().asMap();
+      this.topologyChanging = new ConcurrentHashMap<>();
    }
 
    @Override
@@ -81,7 +81,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       this.topologyChangeListener = new TopologyChangeListener();
       this.cache.addListener(topologyChangeListener);
-      this.topologyChanging = new AtomicBoolean(false);
    }
 
    @Override
@@ -96,6 +95,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       if (!openCallsCounters.containsKey(reference)) {
          openCallsCounters.putIfAbsent(reference, new AtomicInteger(0));
          includeStateTrackers.putIfAbsent(reference, Utils.hasReadOnlyMethods(reference.getClazz()));
+         topologyChanging.put(reference, new AtomicBoolean(false));
       }
 
       synchronized (openCallsCounters.get(reference)) {
@@ -104,7 +104,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
          Call call = newValue;
 
-         // when receiving a null value, we clear everything from that reference
          if (call == null) {
             cleanUpReference(reference);
             return null;
@@ -127,14 +126,22 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                assert !objects.containsKey(reference) || generators.containsKey(reference);
 
-               if (!keepCall(call, reference, oldValue, eventType.getType())) {
-                  if (log.isTraceEnabled())  log.trace("Trashing " + call + "; " + oldValue + "; " + eventType.getType());
-                  return  null;
+               if ( topologyChanging.get(reference).get()
+                     && ((call instanceof CallPersist) || (oldValue instanceof CallPersist)) )
+                  topologyChanging.get(reference).set(false);
+
+               if (!keepCall(call, reference, oldValue)) {
+                  if (log.isDebugEnabled())
+                     log.debug("Trashing " + call + "; " + oldValue + "; " + eventType.getType());
+                  return null;
                }
+
 
                if (call instanceof CallPersist) {
 
                   retrieveReference(reference, (CallPersist) call);
+
+                  future.set(null);
 
                } else if (call instanceof CallInvoke) {
 
@@ -169,8 +176,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   CallOpen callOpen = (CallOpen) call;
 
-                  openCallsCounters.get(reference).incrementAndGet();
-
                   assert !objects.containsKey(reference) || objects.get(reference) != null;
 
                   if (!generators.containsKey(reference))
@@ -183,7 +188,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                   if (callOpen.getForceNew()) {
 
                      if (log.isTraceEnabled())
-                        log.trace(" Forcing new object [" + reference + "]");
+                        log.trace(" New (forced) [" + reference + "]");
 
                      objects.put(
                            reference,
@@ -198,7 +203,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      if (oldValue == null) {
 
                         if (log.isTraceEnabled())
-                           log.trace(" Creating new object [" + reference + "]");
+                           log.trace(" New [" + reference + "]");
 
                         objects.put(
                               reference,
@@ -217,7 +222,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                         } else {
 
                            throw new IllegalStateException(
-                                 "Cannot rebuild object [" + reference + "]; having: " + oldValue.getClass());
+                                 "Cannot rebuild [" + reference + "]; having: " + oldValue.getClass());
 
                         }
 
@@ -227,6 +232,11 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   assert generators.containsKey(reference) && objects.containsKey(reference);
 
+                  openCallsCounters.get(reference).incrementAndGet();
+
+                  if (log.isTraceEnabled())
+                        log.trace(" OpenCallsCounters = "+openCallsCounters.get(reference));
+
                   future.set(null);
 
                } else if (call instanceof CallClose) {
@@ -235,6 +245,9 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   if (openCallsCounters.get(reference).get() > 0)
                      openCallsCounters.get(reference).decrementAndGet();
+
+                  if (log.isTraceEnabled())
+                     log.trace(" OpenCallsCounters = "+openCallsCounters.get(reference));
 
                   if (openCallsCounters.get(reference).get() == 0) {
                      persistReference(reference);
@@ -256,7 +269,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
          } // end compute return value
 
          assert !future.isCancelled();
-         assert future.isDone() || (call instanceof CallPersist);
+         assert future.isDone();
 
          if (log.isTraceEnabled())
             log.trace(" Future (" + future.getCallID() + ", " + reference + ") -> "
@@ -272,28 +285,20 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
    }
 
-   private boolean keepCall(Call call, Reference reference, Call oldValue, Event.Type type) {
+   private boolean keepCall(Call call, Reference reference, Call oldValue) {
 
-      if (call instanceof CallPersist) {
-         topologyChanging.set(false);
-         return true;
-      }
-
-      if (topologyChanging.get())
+      if (topologyChanging.get(reference).get())
          return false;
 
-      if (objects.containsKey(reference)) {
-
+      if (call instanceof CallPersist)
          return true;
 
+      if (objects.containsKey(reference)) {
+         return true;
       } else {
-
          if (call instanceof CallOpen) {
-
             return ((CallOpen) call).getForceNew() || (oldValue == null) || (oldValue instanceof CallPersist);
-
          }
-
       }
 
       return false;
@@ -332,8 +337,26 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       return ! (membershipStart.containsAll(membershipEnd) && membershipEnd.containsAll(membershipStart));
    }
 
-   private boolean isPrimaryOwnnerAbsent(Reference reference, ConsistentHash start, ConsistentHash end) {
-      return end.getMembers().contains(start.locatePrimaryOwner(reference));
+   private boolean isForwarding(Reference reference, ConsistentHash start, ConsistentHash end) {
+
+      if (isLocalPrimaryOwner(reference, start))
+         if (end.getMembers().contains(cache.getAdvancedCache().getRpcManager().getAddress()))
+            return true;
+         else
+            return false;
+
+      if (end.getMembers().contains(start.locatePrimaryOwner(reference)))
+         return false;
+
+      Address candidate = null;
+      for(Address member : start.locateOwners(reference)) {
+         if (!member.equals(start.locatePrimaryOwner(reference))) {
+            candidate = member;
+            break;
+         }
+      }
+      assert candidate != null;
+      return candidate.equals(cache.getAdvancedCache().getRpcManager().getAddress());
    }
 
    private boolean isLocalNodeNewComer(ConsistentHash consistentHash){
@@ -363,7 +386,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
    private void cleanUpReference(Reference reference) {
       if (log.isTraceEnabled())
-         log.trace(" Cleaning-up reference [" + reference + "]");
+         log.trace(" Cleaning-up [" + reference + "]");
       objects.remove(reference);
       includeStateTrackers.remove((reference));
       generators.remove(reference);
@@ -375,7 +398,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       assert (objects.get(reference) != null);
 
       if (log.isTraceEnabled())
-         log.trace(" Persisting reference [" + reference + "]");
+         log.trace(" Persisting [" + reference + "]");
 
       byte[] marshalledObject = marshall(objects.get(reference));
 
@@ -400,7 +423,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       assert (objects.get(reference) != null);
 
       if (log.isTraceEnabled())
-         log.trace(" Forwarding reference [" + reference + "]");
+         log.trace(" Forwarding [" + reference + "]");
 
       byte[] marshalledObject = marshall(objects.get(reference));
 
@@ -428,7 +451,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       openCallsCounters.get(reference).set(oldValue.getOpenCallsCounter());
 
       if (log.isTraceEnabled())
-         log.trace(" Retrieving reference [" + reference + "]");
+         log.trace(" Retrieving [" + reference + "]");
 
       assert objects.get(reference) != null;
 
@@ -443,10 +466,22 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
          if (!event.isPre())
             return;
 
-         if (log.isTraceEnabled())
-            log.trace("Topology " + event.getNewTopologyId()+" installing");
+         ConsistentHash startCH = event.getConsistentHashAtStart();
+         ConsistentHash endCH = event.getConsistentHashAtEnd();
 
-         topologyChanging.set(true);
+         if (log.isTraceEnabled())
+            log.trace("Topology " + event.getNewTopologyId()+" is installing");
+
+         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
+
+            Reference reference = entry.getKey();
+
+            if (!isOwnershipChanged(reference, startCH, endCH))
+               continue;
+
+            topologyChanging.get(reference).set(true);
+
+         }
 
       }
 
@@ -477,7 +512,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
             synchronized (openCallCounter) {
                if (objects.containsKey(reference)) {
                   assert generators.containsKey(reference) && objects.containsKey(reference);
-                  if (isLocalPrimaryOwner(reference, startCH) || isPrimaryOwnnerAbsent(reference, startCH, endCH))
+                  if (isForwarding(reference,startCH,endCH))
                      forwardeference(reference);
                }
             }

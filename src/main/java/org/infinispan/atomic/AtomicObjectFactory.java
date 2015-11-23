@@ -33,23 +33,32 @@ public class AtomicObjectFactory {
    // Class fields
    
    private static Log log = LogFactory.getLog(AtomicObjectFactory.class);
-   private static Map<String,AtomicObjectFactory> factories = new HashMap<>();
+   private static AtomicObjectFactory singleton;
+   private static Map<BasicCache,AtomicObjectFactory> factories = new HashMap<>();
 
-   @Deprecated
-   public synchronized static AtomicObjectFactory forCache(String cacheName){
-      assert factories.containsKey(cacheName);
-      return factories.get(cacheName);
+   public static AtomicObjectFactory getSingleton(){
+      assert singleton !=null;
+      return singleton;
    }
 
    public synchronized static AtomicObjectFactory forCache(BasicCache cache){
-      String cacheName = 
+      return AtomicObjectFactory.forCache(cache, MAX_CONTAINERS);
+   }
+
+   public synchronized static AtomicObjectFactory forCache(BasicCache cache, int maxContainers){
+      String cacheName =
             (cache.getName().equals(BasicCacheContainer.DEFAULT_CACHE_NAME))
-                  ? "" : cache.getName(); // unify remote and embedded 
-      if(!factories.containsKey(cacheName))
-         factories.put(
-               cacheName,
-               new AtomicObjectFactory(cache));
-      return factories.get(cacheName);
+                  ? "" : cache.getName(); // unify remote and embedded
+
+      if (!factories.containsKey(cache))
+         factories.put(cache,new AtomicObjectFactory(cache, maxContainers));
+
+      if (singleton ==null && cacheName.equals("")) {
+         singleton = factories.get(cache);
+         log.info("AOF singleton  is "+ singleton);
+      }
+
+      return factories.get(cache);
    }
    
    protected static final int MAX_CONTAINERS=Integer.MAX_VALUE;
@@ -82,11 +91,9 @@ public class AtomicObjectFactory {
     *
     * @param c a cache,  it must be synchronous.and non-transactional
     */
-   public AtomicObjectFactory(BasicCache<Object, Object> c) throws InvalidCacheUsageException{
+   private AtomicObjectFactory(BasicCache<Object, Object> c) throws InvalidCacheUsageException{
       this(c, MAX_CONTAINERS);
    }
-
-
 
    /**
     *
@@ -97,7 +104,7 @@ public class AtomicObjectFactory {
     * @param m max amount of containers kept by this factory.
     * @throws InvalidCacheUsageException
     */
-   public AtomicObjectFactory(BasicCache<Object, Object> c, int m) throws InvalidCacheUsageException{
+   private AtomicObjectFactory(BasicCache<Object, Object> c, int m) throws InvalidCacheUsageException{
       cache = c;
       maxSize = m;
       assertCacheConfiguration();
@@ -252,6 +259,9 @@ public class AtomicObjectFactory {
 
       AbstractContainer container = registeredContainers.get(reference);
 
+      if (log.isDebugEnabled())
+         log.debug(this + " Dispsing " + container);
+
       if( container == null ) return;
 
       try{
@@ -261,24 +271,23 @@ public class AtomicObjectFactory {
          throw new InvalidCacheUsageException("Error while disposing object "+key);
       }
 
-      // registeredContainers.remove(reference);
+      registeredContainers.remove(reference);
 
    }
    
    public void close(){
-      log.info(this+"Closing");
       for (AbstractContainer container : registeredContainers.values())
          try {
             container.close();
          } catch (InterruptedException | ExecutionException | TimeoutException | IOException e) {
             e.printStackTrace();
          }
-
+      log.info(this+"Closed");
    }
    
    @Override
    public String toString(){
-      return "AOF["+cache+"]";
+      return "AOF["+cache.toString()+"]";
    }
 
    // Helpers
