@@ -1,12 +1,12 @@
 package org.infinispan.atomic.utils;
 
-import org.infinispan.atomic.DistClass;
+import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.ReadOnly;
 
 /**
 * @author Pierre Sutra
 */
-@DistClass(key="field")
+@Distributed(key="field")
 public class SimpleObject {
 
    public String field;

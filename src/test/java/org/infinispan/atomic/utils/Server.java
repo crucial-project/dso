@@ -39,7 +39,16 @@ public class Server implements Runnable {
    @Option(name = "-p", usage = "use persistence via a single file data store (emptied at each start)")
    private boolean usePersistency = false;
 
+   private Boolean isLaunched = false;
+
    public Server () {}
+
+   public Server (String server, String proxyServer, int replicationFactor, boolean usePersistency) {
+      this.server = server;
+      this.proxyServer = proxyServer;
+      this.replicationFactor = replicationFactor;
+      this.usePersistency = usePersistency;
+   }
    
    public static void main(String args[]) {
       new Server().doMain(args);
@@ -69,6 +78,16 @@ public class Server implements Runnable {
          // ignore
       }
       
+   }
+
+   public synchronized void waitLaunching(){
+      while (!isLaunched) {
+         try {
+            wait();
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+         }
+      }
    }
 
    @Override 
@@ -129,7 +148,11 @@ public class Server implements Runnable {
       HotRodServer server = new HotRodServer();
       server.start(hbuilder.build(),cm);
       server.addCacheEventFilterConverterFactory(FilterConverterFactory.FACTORY_NAME, new FilterConverterFactory());
-      
+
+      isLaunched = true;
+      synchronized (this) {
+         notifyAll();
+      }
       System.out.println("LAUNCHED");
       
       try {

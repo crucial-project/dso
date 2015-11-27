@@ -1,6 +1,6 @@
 package org.infinispan.atomic.benchmarks.queue;
 
-import org.infinispan.atomic.utils.AOFUtils;
+import org.infinispan.atomic.AtomicObjectFactory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -43,7 +43,7 @@ public class Benchmark {
          return;
       }
 
-      AOFUtils.createAOF(server);
+      AtomicObjectFactory.get(server);
       ExecutorService service = Executors.newFixedThreadPool(C);
 
       // create one shared queue

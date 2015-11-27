@@ -90,10 +90,8 @@ public abstract class AbstractContainer {
             put(getReference(), call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
          }catch (Exception e) {
-            if (!future.isDone()) {
-               if (log.isDebugEnabled())
-                  log.debug(" Failed "+ call + " ("+e.getMessage()+")");
-            }
+            if (!future.isDone())
+               log.warn(" Failed "+ call + " ("+e.getMessage()+")");
             Thread.sleep(100);
          }
       }

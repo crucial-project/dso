@@ -1,6 +1,6 @@
 package org.infinispan.atomic.benchmarks.dining;
 
-import org.infinispan.atomic.utils.AOFUtils;
+import org.infinispan.atomic.AtomicObjectFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ public class Dine{
 
    public static void main(String[] args){
 
-      AOFUtils.createAOF("127.0.01:11222");
+      AtomicObjectFactory.get("127.0.01:11222");
       
       int x=10;
 

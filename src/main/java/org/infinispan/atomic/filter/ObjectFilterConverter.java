@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.infinispan.atomic.object.Utils.marshall;
 import static org.infinispan.atomic.object.Utils.unmarshall;
-import static org.infinispan.atomic.utils.AOFUtils.unreference;
 
 /**
  * @author Pierre Sutra
@@ -149,7 +148,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   assert objects.containsKey(reference);
 
-                  Object[] args = unreference(
+                  Object[] args = Reference.unreference(
                         invocation.arguments,
                         cache);
 
@@ -194,7 +193,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                            reference,
                            Utils.initObject(
                                  reference.getClazz(),
-                                 unreference(
+                                 Reference.unreference(
                                        callOpen.getInitArgs(),
                                        cache)));
 
@@ -209,7 +208,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                               reference,
                               Utils.initObject(
                                     reference.getClazz(),
-                                    unreference(
+                                    Reference.unreference(
                                           callOpen.getInitArgs(),
                                           cache)));
 

@@ -4,7 +4,7 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.infinispan.atomic.DistClass;
+import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.UUIDGenerator;
@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.infinispan.atomic.object.Utils.initObject;
-import static org.infinispan.atomic.utils.AOFUtils.unreference;
 
 /**
  * @author Pierre Sutra
@@ -51,8 +50,9 @@ public abstract class BaseContainer extends AbstractContainer {
 
       // build reference
       if (key==null) {
-         String fieldName = ((DistClass) clazz.getAnnotation(DistClass.class)).key();
+         String fieldName = ((Distributed) clazz.getAnnotation(Distributed.class)).key();
          key = clazz.getDeclaredField(fieldName).get(proxy);
+         assert key!=null : " field " +fieldName+" is null";
       }
       this.reference = new Reference(clazz,key);
 
@@ -171,7 +171,7 @@ public abstract class BaseContainer extends AbstractContainer {
             }
          }
 
-         return unreference(ret,getCache());
+         return Reference.unreference(ret, getCache());
 
       }
 

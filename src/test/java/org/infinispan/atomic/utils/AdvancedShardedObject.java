@@ -1,6 +1,7 @@
 package org.infinispan.atomic.utils;
 
-import org.infinispan.atomic.DistClass;
+import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Distribute;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +10,18 @@ import java.util.UUID;
 /**
  * @author Pierre Sutra
  */
-@DistClass(key="uuid")
+@Distributed(key="uuid")
 public class AdvancedShardedObject implements ShardedObject{
 
-   public UUID uuid;
+   @Distribute(key = "somewhere")
+   public static List<AdvancedShardedObject> list = new ArrayList<>();
+   public static List<AdvancedShardedObject> getAsList() {
+      return list;
+   }
 
+   public UUID uuid;
    private AdvancedShardedObject shard;
    private boolean value;
-
-   // @Distribute
-   private List<AdvancedShardedObject> list;
 
    public AdvancedShardedObject(){
       this.uuid = UUID.randomUUID();
@@ -28,7 +31,6 @@ public class AdvancedShardedObject implements ShardedObject{
       this.uuid = UUID.randomUUID();
       this.shard = shard;
       this.value = false;
-      list = new ArrayList<>();
       list.add(shard);
    }
 
@@ -37,21 +39,11 @@ public class AdvancedShardedObject implements ShardedObject{
       return shard;
    }
 
-   public List<AdvancedShardedObject> getAsList() {
-      return list;
-   }
-
    public boolean flipValue(){
       if (shard!=null)
          return shard.flipValue();
       value = !value;
       return value;
    }
-
-   public boolean setShard(AdvancedShardedObject shard) {
-      this.shard = shard;
-      return shard.flipValue();
-   }
-
 
 }

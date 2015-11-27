@@ -10,5 +10,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface DistField {
+public @interface Distribute {
+   String key() default "";
 }

@@ -39,11 +39,18 @@ import static org.testng.Assert.assertTrue;
 public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManagersTest {
 
    protected static Log log = LogFactory.getLog(AtomicObjectFactoryAbstractTest.class);
-
-   protected static int NMANAGERS = 2;
-   protected static final int REPLICATION_FACTOR = 2;
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
    protected static int NCALLS = 3000;
+
+   private final int REPLICATION_FACTOR = 2;
+   public int getReplicationFactor(){
+      return REPLICATION_FACTOR;
+   }
+
+   private int NMANAGERS = 2;
+   public int getNumberOfManagers() {
+      return NMANAGERS;
+   }
 
    @Test
    public void baseUsageTest() throws  Exception{
@@ -144,7 +151,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       object.setField("something");
       String field = object.getField();
       assert field.equals("something");
-      Call lastCall = (Call) container(0).getCache().get(new Reference<>(SimpleObject.class,"test"));
+      BasicCache cache = container(0).getCache();
+      Call lastCall = (Call) cache.get(new Reference<>(SimpleObject.class,"test"));
       assertTrue(lastCall!=null);
       assertEquals(lastCall.getClass(),CallInvoke.class);
       assert ((CallInvoke)lastCall).method.equals("setField");
@@ -286,8 +294,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       assert object2.flipValue();
 
       List<AdvancedShardedObject> rlist = object2.getAsList();
-      assert rlist.iterator().next() instanceof AdvancedShardedObject: rlist.iterator().next().getClass();
-      assert rlist.iterator().next().equals(object1);
+      assert rlist.get(0) instanceof AdvancedShardedObject;
+      assert rlist.get(0).equals(object1);
    }
 
    @Test(enabled = false)

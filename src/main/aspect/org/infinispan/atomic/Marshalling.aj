@@ -9,8 +9,6 @@ import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import static org.infinispan.atomic.utils.AOFUtils.unreference;
-
 /**
  * @author Pierre Sutra
  */
@@ -38,7 +36,7 @@ public aspect Marshalling {
             if (!Modifier.isTransient(field.getModifiers())) {
                Object value = objectInput.readObject();
                if (value instanceof Reference) {
-                  value = unreference((Reference) value, factory);
+                  value = Reference.unreference((Reference) value, factory);
                }
                field.set(this,value);
             }
@@ -48,6 +46,6 @@ public aspect Marshalling {
       }
    }
 
-   declare parents: @DistClass * implements Marshallable;
+   declare parents: @Distributed * implements Marshallable;
 
 }

@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface DistClass {
+public @interface Distributed {
    String key() default "";
 }

@@ -18,14 +18,14 @@ import java.util.List;
 @Test(testName = "AtomicObjectFactoryTest", groups = "unit")
 public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
 
-   private static ConfigurationBuilder defaultConfigurationBuilder;
+   private ConfigurationBuilder defaultConfigurationBuilder;
    private static List<Cache<Object,Object>> caches = new ArrayList<>();
 
-   static{
+   public AtomicObjectFactoryTest() {
       defaultConfigurationBuilder
             = AbstractCacheTest.getDefaultClusteredCacheConfig(CACHE_MODE, false);
       defaultConfigurationBuilder
-            .clustering().hash().numOwners(REPLICATION_FACTOR)
+            .clustering().hash().numOwners(getReplicationFactor())
             .locking().useLockStriping(false);
       defaultConfigurationBuilder.clustering().stateTransfer()
             .awaitInitialTransfer(true)
@@ -68,7 +68,7 @@ public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
 
    @Override
    protected void createCacheManagers() throws Throwable {
-      for(int i=0; i<NMANAGERS; i++) {
+      for(int i=0; i<getNumberOfManagers(); i++) {
          addContainer();
       }
       AtomicObjectFactory.forCache(cache(0));

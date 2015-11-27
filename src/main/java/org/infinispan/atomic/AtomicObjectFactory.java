@@ -10,6 +10,7 @@ import org.infinispan.atomic.container.local.LocalContainer;
 import org.infinispan.atomic.container.remote.RemoteContainer;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.util.logging.Log;
@@ -120,6 +121,19 @@ public class AtomicObjectFactory {
             })
             .build().asMap();
       log.info(this + " Created");
+   }
+
+   public static AtomicObjectFactory get(String server) {
+      int port = Integer.valueOf(server.split(":")[1]);
+      String host = server.split(":")[0];
+      org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
+            = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
+      cb.tcpNoDelay(true)
+            .addServer()
+            .host(host)
+            .port(port);
+      RemoteCacheManager manager= new RemoteCacheManager(cb.build());
+      return forCache(manager.getCache());
    }
 
    public <T> T getInstanceOf(Class clazz) throws InvalidCacheUsageException{

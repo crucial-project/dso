@@ -96,19 +96,19 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    protected void createCacheManagers() throws Throwable {
       createDefaultBuilder();
 
-      for (int j = 0; j < NMANAGERS; j++) {
+      for (int j = 0; j < getNumberOfManagers(); j++) {
          addContainer();
       }
 
       // Verify that default caches are started.
-      for (int j = 0; j < NMANAGERS; j++) {
+      for (int j = 0; j < getNumberOfManagers(); j++) {
          blockUntilCacheStatusAchieved(
                manager(j).getCache(), ComponentStatus.RUNNING, 10000);
       }
 
       waitForClusterToForm();
 
-      assertEquals(manager(0).getTransport().getMembers().size(),NMANAGERS);
+      assertEquals(manager(0).getTransport().getMembers().size(),getNumberOfManagers());
 
       AtomicObjectFactory.forCache(cache(0));
    }
@@ -118,7 +118,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    private void createDefaultBuilder() {
       defaultBuilder = getDefaultClusteredCacheConfig(CACHE_MODE,false);
       defaultBuilder
-            .clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(REPLICATION_FACTOR)
+            .clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(getReplicationFactor())
             .locking().useLockStriping(false)
             .compatibility().enable();
       defaultBuilder.clustering().stateTransfer()

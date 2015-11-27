@@ -2,7 +2,6 @@ package org.infinispan.atomic.benchmarks.count;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import org.infinispan.atomic.AtomicObjectFactory;
-import org.infinispan.atomic.utils.AOFUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -53,7 +52,7 @@ public class Benchmark {
          return;
       }
 
-      AtomicObjectFactory aof = AOFUtils.createAOF(server);
+      AtomicObjectFactory aof = AtomicObjectFactory.get(server);
       ExecutorService service = Executors.newFixedThreadPool(C+1);
 
       // create N counters

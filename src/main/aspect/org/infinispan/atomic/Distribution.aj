@@ -5,19 +5,22 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 /**
  * @author Pierre Sutra
 */
 @Aspect
 public class Distribution {
 
-   @Pointcut("call((@DistClass *).new(..)) " +
+   @Pointcut("call((@Distributed *).new(..)) " +
          "&& ! within(org.infinispan.atomic.container.BaseContainer) " +
          "&& ! within(org.infinispan.atomic.filter.ObjectFilterConverter)")
    public static void initDistributedClass(ProceedingJoinPoint pjp) {
    }
 
-   @Pointcut("set(@DistField * *) ")
+   @Pointcut("set(@Distribute * *) ")
    public static void setDistributedField(ProceedingJoinPoint pjp) {
    }
 
@@ -32,21 +35,17 @@ public class Distribution {
             pjp.getArgs());
    }
 
-//   @Around("setDistributedField(pjp)"+
-//         "&& ! within(org.infinispan.atomic.container.BaseContainer) " +
-//         "&& ! within(org.infinispan.atomic.filter.ObjectFilterConverter)" +
-//         "&& ! within(org.infinispan.atomic.Distribution)")
-//   public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
-//      AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
-//      pjp.proceed(pjp.getArgs());
-//      Reference reference = referenceFor(pjp.getArgs()[0]);
-//      for(Field field : pjp.getTarget().getClass().getDeclaredFields()){
-//         if (Modifier.isPublic(field.getModifiers()) && field.get(pjp.getTarget()) == pjp.getArgs()[0]) {
-//            field.set(pjp.getTarget(), factory.getInstanceOf(reference,true,null,false));
-//            return;
-//         }
-//      }
-//      throw new IllegalStateException("Field for "+pjp.getArgs()[0].getClass()+"="+pjp.getArgs()[0]+" is not public.");
-//   }
+   @Around("setDistributedField(pjp)")
+   public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
+      AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
+      String fieldName = pjp.getStaticPart().getSignature().getName();
+      Field field = pjp.getStaticPart().getSignature().getDeclaringType().getField(fieldName);
+      if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
+         String key = field.getAnnotation(Distribute.class).key();
+         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), key, true, false));
+         return;
+      }
+      throw new IllegalStateException("Distributed fields for "+pjp.getTarget().getClass()+" must be both public and static.");
+   }
 
 }
