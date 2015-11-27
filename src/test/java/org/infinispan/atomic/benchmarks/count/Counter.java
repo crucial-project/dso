@@ -10,13 +10,11 @@ package org.infinispan.atomic.benchmarks.count;
  *  @author Kevin Wayne
  */
 
-import org.infinispan.atomic.Distributed;
-import org.infinispan.atomic.Key;
+import org.infinispan.atomic.DistClass;
 
-@Distributed
+@DistClass(key = "name")
 public class Counter implements Comparable<Counter> {
 
-   @Key
    public String name;     // counter name
    public int count = 0;         // current value
 

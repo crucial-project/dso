@@ -48,14 +48,15 @@ public class LocalContainer extends BaseContainer {
       
    public LocalContainer(
          BasicCache c,
-         Reference reference,
+         Class clazz,
+         Object key,
          boolean readOptimization,
          boolean forceNew,
          Object... initArgs)
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException,
-         ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException {
-      super(reference, readOptimization, forceNew, initArgs);
+         ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException, NoSuchFieldException {
+      super(clazz, key, readOptimization, forceNew, initArgs);
       this.cache = ((org.infinispan.Cache)c).getAdvancedCache();
       listenerID = installListener(cache);
       if (log.isTraceEnabled()) log.trace(this+"Created successfully");

@@ -1,7 +1,6 @@
 package org.infinispan.atomic.utils;
 
-import org.infinispan.atomic.Distributed;
-import org.infinispan.atomic.Key;
+import org.infinispan.atomic.DistClass;
 import org.infinispan.atomic.ReadOnly;
 
 import java.util.UUID;
@@ -9,13 +8,12 @@ import java.util.UUID;
 /**
  * @author Pierre Sutra
  */
-@Distributed
+@DistClass(key = "id")
 public class SimpleShardedObject implements ShardedObject {
    
-   @Key
    public UUID id;
    
-   public ShardedObject shard;
+   private ShardedObject shard;
 
    public SimpleShardedObject(){
       id = UUID.randomUUID();

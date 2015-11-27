@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface Distributed {
-   public boolean cacheable() default false;
+public @interface DistClass {
+   String key() default "";
 }

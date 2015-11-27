@@ -4,7 +4,7 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.infinispan.atomic.AtomicObjectFactory;
+import org.infinispan.atomic.DistClass;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.UUIDGenerator;
@@ -16,8 +16,8 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.infinispan.atomic.object.Reference.unreference;
 import static org.infinispan.atomic.object.Utils.initObject;
+import static org.infinispan.atomic.utils.AOFUtils.unreference;
 
 /**
  * @author Pierre Sutra
@@ -27,26 +27,35 @@ public abstract class BaseContainer extends AbstractContainer {
    // object's fields
    private AtomicInteger pendingCalls;
    private boolean isOpen;
+   private Reference reference;
 
-   public BaseContainer(Reference reference, final boolean readOptimization,
+   public BaseContainer(Class clazz, Object key, final boolean readOptimization,
          final boolean forceNew, final Object... initArgs)
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException, ExecutionException, NoSuchMethodException, InvocationTargetException,
-         java.util.concurrent.TimeoutException {
+         java.util.concurrent.TimeoutException, NoSuchFieldException {
 
-      super(reference, readOptimization, forceNew, initArgs);
+      super(clazz, readOptimization, forceNew, initArgs);
       this.pendingCalls = new AtomicInteger();
       this.isOpen = false;
 
       // build the proxy
       MethodHandler handler = new BaseContainerMethodHandler(this);
       ProxyFactory fact = new ProxyFactory();
-      fact.setSuperclass(reference.getClazz());
+      fact.setSuperclass(clazz);
       fact.setFilter(methodFilter);
       fact.setInterfaces(new Class[] { WriteReplace.class });
       fact.setUseWriteReplace(false);
       this.proxy = initObject(fact.createClass(), initArgs);
       ((ProxyObject) proxy).setHandler(handler);
+
+      // build reference
+      if (key==null) {
+         String fieldName = ((DistClass) clazz.getAnnotation(DistClass.class)).key();
+         key = clazz.getDeclaredField(fieldName).get(proxy);
+      }
+      this.reference = new Reference(clazz,key);
+
    }
 
    @Override
@@ -98,6 +107,11 @@ public abstract class BaseContainer extends AbstractContainer {
    }
 
    @Override
+   public Reference getReference() {
+      return  this.reference;
+   };
+
+   @Override
    public String toString(){
       return "Container["+listenerID().toString().substring(0,5)+":"+getReference()+"]";
    }
@@ -116,8 +130,14 @@ public abstract class BaseContainer extends AbstractContainer {
             return true;
 
          if (m.getName().equals("writeReplace")) {
+            open(); // mandatory to create the object remotely
             return reference;
          }
+
+         if (! Utils.isMethodSupported(reference.getClazz(), m)) {
+            throw new IllegalArgumentException("Unsupported methd "+m.getName()+" in "+reference.getClazz());
+         }
+
          
          if (readOptimization 
                && state != null
@@ -151,8 +171,7 @@ public abstract class BaseContainer extends AbstractContainer {
             }
          }
 
-         return (ret instanceof Reference)
-               ? unreference((Reference)ret,AtomicObjectFactory.forCache(getCache())) : ret;
+         return unreference(ret,getCache());
 
       }
 

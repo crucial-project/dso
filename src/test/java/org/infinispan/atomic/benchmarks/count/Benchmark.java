@@ -1,5 +1,7 @@
 package org.infinispan.atomic.benchmarks.count;
 
+import com.google.common.util.concurrent.AtomicDouble;
+import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.utils.AOFUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -28,6 +30,9 @@ public class Benchmark {
    @Option(name = "-server", required = false, usage = "connection string to server")
    String server = "127.0.0.1:11222";
 
+   @Option(name = "-verbose", required = false, usage = "real-time report of ops/sec")
+   boolean verbosity = false;
+
    public static void main(String args[]) {
       new Benchmark().doMain(args);
       System.exit(0);
@@ -48,8 +53,8 @@ public class Benchmark {
          return;
       }
 
-      AOFUtils.createAOF(server);
-      ExecutorService service = Executors.newFixedThreadPool(C);
+      AtomicObjectFactory aof = AOFUtils.createAOF(server);
+      ExecutorService service = Executors.newFixedThreadPool(C+1);
 
       // create N counters
       List<Counter> hits = new ArrayList<>();
@@ -65,42 +70,85 @@ public class Benchmark {
 
       // run clients then print results
       try {
-         List<Future<Long>> futures = service.invokeAll(clients);
-         long avgTime = 0;
-         for (Future<Long> future : futures) {
+
+         if (verbosity)
+            service.submit(new VerbosityCallable(clients));
+         List<Future<Double>> futures = service.invokeAll(clients);
+
+         double avgTime = 0;
+         for (Future<Double> future : futures) {
             avgTime += future.get();
          }
-	 avgTime=avgTime/futures.size();
-         for (Counter counter : hits) {
-            System.out.println(counter);
-         }
-         System.out.println("Average time: " + avgTime);
+         avgTime=avgTime/futures.size();
+         System.out.println("Average time: " + avgTime +" [Throughput="+(1/avgTime)*Math.pow(10,3)*clients.size()+"]");
       } catch (InterruptedException | ExecutionException e) {
          e.printStackTrace();
       }
+      aof.close();
    }
 
-   private static class IncrementCallable implements Callable<Long> {
+   private static class IncrementCallable implements Callable<Double> {
 
       private int T;
       private List<Counter> counters;
       private Random random;
 
+      private AtomicDouble throughput;
+      private boolean isOver;
+
       public IncrementCallable(int T, List<Counter> counters){
          this.counters = counters;
          this.T = T;
          random = new Random();
+
+         throughput = new AtomicDouble(0);
+         isOver = false;
+      }
+
+      public double getThroughput(){
+         return throughput.get();
+      }
+
+      public boolean getIsOver(){
+         return isOver;
       }
 
       @Override
-      public Long call() throws Exception {
+      public Double call() throws Exception {
          long start = System.currentTimeMillis();
          // increment T counters at random
          for (int t = 0; t < T; t++) {
             counters.get(random.nextInt(counters.size())).increment();
+            throughput.set(t*Math.pow(10, 3) * ((double) 1) / ((double) (System.currentTimeMillis() - start)));
          }
-         return new Long((System.currentTimeMillis()-start)/T);
+         isOver = true;
+         return ((double)(System.currentTimeMillis()-start)/(double)T);
+      }
+   }
 
+   private static class VerbosityCallable implements Callable<Void> {
+
+      private List<IncrementCallable> callables;
+
+      public VerbosityCallable(List<IncrementCallable> callables) {
+         this.callables = callables;
+      }
+
+      @Override
+      public Void call() throws Exception {
+         boolean isOver = false;
+         int throughput = 0;
+         while(!isOver) {
+            Thread.sleep(10000);
+            throughput = 0;
+            for(IncrementCallable callable : callables) {
+               isOver |= callable.getIsOver();
+               throughput+=callable.getThroughput();
+            }
+            System.out.println("Throughput:"+System.currentTimeMillis()+":"+throughput);
+         }
+         System.out.println("Throughput:"+System.currentTimeMillis()+":"+throughput);
+         return null;
       }
    }
 

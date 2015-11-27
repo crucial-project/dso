@@ -29,7 +29,7 @@ import static org.infinispan.atomic.object.Utils.hasReadOnlyMethods;
 public abstract class AbstractContainer {
 
    // class fields
-   public static final int TTIMEOUT_TIME = 100;
+   public static final int TTIMEOUT_TIME = 1000;
    protected static final Map<UUID, CallFuture> registeredCalls = new ConcurrentHashMap<>();
    protected static final Log log = LogFactory.getLog(BaseContainer.class);
    protected static final MethodFilter methodFilter = new MethodFilter() {
@@ -39,7 +39,6 @@ public abstract class AbstractContainer {
       }
    };
 
-   protected final Reference reference;
    protected boolean readOptimization;
    protected Object proxy;
    protected Object state;
@@ -47,12 +46,11 @@ public abstract class AbstractContainer {
    protected Object[] initArgs;
 
    public AbstractContainer(
-         final Reference reference,
+         Class clazz,
          final boolean readOptimization,
          final boolean forceNew,
          final Object... initArgs){
-      this.reference = reference;
-      this.readOptimization = readOptimization && hasReadOnlyMethods(reference.getClazz());
+      this.readOptimization = readOptimization && hasReadOnlyMethods(clazz);
       this.forceNew = forceNew;
       this.initArgs = initArgs;
    }
@@ -61,9 +59,7 @@ public abstract class AbstractContainer {
       return proxy;
    }
 
-   public final Object getReference(){
-      return reference.getKey();
-   }
+   public abstract Reference getReference();
 
    public abstract void open()
          throws InterruptedException, ExecutionException, TimeoutException, IOException;
@@ -91,7 +87,7 @@ public abstract class AbstractContainer {
       Object ret = null;
       while(!future.isDone()) {
          try {
-            put(reference, call);
+            put(getReference(), call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
          }catch (Exception e) {
             if (!future.isDone()) {

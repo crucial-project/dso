@@ -1,14 +1,9 @@
 package org.infinispan.atomic.object;
 
-import org.infinispan.Cache;
-import org.infinispan.atomic.AtomicObjectFactory;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Pierre Sutra
@@ -63,20 +58,5 @@ public class Reference<T> implements Externalizable{
 
    // Static helpers
 
-   public static Object unreference(Reference reference, AtomicObjectFactory factory) {
-      return factory.getInstanceOf(reference);
-   }
-   
-   public static Object[] unreference(Object[] args, Cache cache) {
-      List<Object> ret = new ArrayList<>();
-      for(Object arg : args) {
-         if (arg instanceof Reference) {
-            ret.add(unreference((Reference)arg, AtomicObjectFactory.forCache(cache)));
-         } else {
-            ret.add(arg);
-         }
-      }
-      return ret.toArray();
-   }
 
 }

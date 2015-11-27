@@ -8,8 +8,7 @@ import java.lang.annotation.Target;
 /**
  * @author Pierre Sutra
  */
-
 @Target(ElementType.FIELD)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface Key {
+public @interface DistField {
 }

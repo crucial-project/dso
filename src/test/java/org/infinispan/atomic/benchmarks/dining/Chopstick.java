@@ -1,15 +1,13 @@
 package org.infinispan.atomic.benchmarks.dining;
 
-import org.infinispan.atomic.Distributed;
-import org.infinispan.atomic.Key;
+import org.infinispan.atomic.DistClass;
 
 import java.io.Serializable;
 
-@Distributed
+@DistClass(key = " _name")
 public class Chopstick implements Serializable{
 
    public boolean used;
-   @Key
    public String _name;
 
    public Chopstick(String _name){

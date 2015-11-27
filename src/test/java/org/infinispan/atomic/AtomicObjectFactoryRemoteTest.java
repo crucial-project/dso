@@ -118,12 +118,14 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    private void createDefaultBuilder() {
       defaultBuilder = getDefaultClusteredCacheConfig(CACHE_MODE,false);
       defaultBuilder
-            .clustering().
-            cacheMode(CacheMode.DIST_SYNC)
-            .hash()
-            .numOwners(REPLICATION_FACTOR)
+            .clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(REPLICATION_FACTOR)
             .locking().useLockStriping(false)
             .compatibility().enable();
+      defaultBuilder.clustering().stateTransfer()
+            .awaitInitialTransfer(true)
+            .timeout(1000000)
+            .fetchInMemoryState(true);
+
    }
 
 }

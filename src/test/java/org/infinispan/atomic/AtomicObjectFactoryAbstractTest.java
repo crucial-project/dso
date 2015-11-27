@@ -64,14 +64,14 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    }
 
-   @Test(enabled = false)
-   public void basePerformanceTest() throws Exception{
+   @Test(enabled = true)
+   public void basePerformance() throws Exception{
 
       BasicCacheContainer cacheManager = containers().iterator().next();
       BasicCache<Object,Object> cache = cacheManager.getCache();
       AtomicObjectFactory factory = AtomicObjectFactory.forCache(cache);
       
-      int f = 100; // multiplicative factor
+      int f = 1; // multiplicative factor
 
       Map map = factory.getInstanceOf(HashMap.class, "map");
 
@@ -103,37 +103,37 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       HashSet set1, set2;
 
       // 0 - Base persistence
-      set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, null, true);
+      set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, true);
       set1.add("smthing");
-      factory1.disposeInstanceOf(HashSet.class, "persist1", true);
-      set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, null, false);
+      factory1.disposeInstanceOf(HashSet.class, "persist1");
+      set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, false);
       assert set1.contains("smthing");
-      factory1.disposeInstanceOf(HashSet.class, "persist1", true);
+      factory1.disposeInstanceOf(HashSet.class, "persist1");
 
       // 1 - Concurrent retrieval
       set1 = factory1.getInstanceOf(HashSet.class, "persist2");
       set1.add("smthing");
-      set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, null, false);
+      set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, false);
       assert set2.contains("smthing");
-      factory1.disposeInstanceOf(HashSet.class, "persist2", true);
-      factory2.disposeInstanceOf(HashSet.class, "persist2", true);
+      factory1.disposeInstanceOf(HashSet.class, "persist2");
+      factory2.disposeInstanceOf(HashSet.class, "persist2");
 
       // 2 - Serial storing then retrieval
       set1 = factory1.getInstanceOf(HashSet.class, "persist3");
       set1.add("smthing");
-      factory1.disposeInstanceOf(HashSet.class,"persist3",true);
-      set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, null, false);
+      factory1.disposeInstanceOf(HashSet.class,"persist3");
+      set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, false);
       assert set2.contains("smthing");
-      factory1.disposeInstanceOf(HashSet.class, "persist3", true);
-      factory2.disposeInstanceOf(HashSet.class, "persist3", true);
+      factory1.disposeInstanceOf(HashSet.class, "persist3");
+      factory2.disposeInstanceOf(HashSet.class, "persist3");
 
       // 3 - Re-creation
       set1 = factory1.getInstanceOf(HashSet.class, "persist4");
       set1.add("smthing");
-      factory1.disposeInstanceOf(HashSet.class,"persist4",true);
-      set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, null, true);
+      factory1.disposeInstanceOf(HashSet.class,"persist4");
+      set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, true);
       assert !set2.contains("smthing");
-      factory2.disposeInstanceOf(HashSet.class,"persist4",true);
+      factory2.disposeInstanceOf(HashSet.class,"persist4");
 
 
    }
@@ -181,15 +181,15 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       HashSet set1, set2;
 
       // 0 - Base caching
-      set1 = factory1.getInstanceOf(HashSet.class, "aset", false, null, true);
+      set1 = factory1.getInstanceOf(HashSet.class, "aset", false, true);
       set1.add("smthing");
-      set2 = factory1.getInstanceOf(HashSet.class, "aset2", false, null, true);
+      set2 = factory1.getInstanceOf(HashSet.class, "aset2", false, true);
       assert set1.contains("smthing");
       
       // 1 - Caching multiple instances of the same object
-      set1 = factory1.getInstanceOf(HashSet.class, "aset3", false, null, true);
+      set1 = factory1.getInstanceOf(HashSet.class, "aset3", false, true);
       set1.add("smthing");
-      set2 = factory1.getInstanceOf(HashSet.class, "aset3", false, null, false);
+      set2 = factory1.getInstanceOf(HashSet.class, "aset3", false, false);
       assert set1.contains("smthing");
       assert set2.contains("smthing");
 
@@ -278,12 +278,19 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    public void advancedCompositionTest() throws Exception {
       AdvancedShardedObject object1 = new AdvancedShardedObject();
       AdvancedShardedObject object2 = new AdvancedShardedObject(object1);
+
+      assert object2.getShard().equals(object1);
+
       assert object1.flipValue();
       assert !((AdvancedShardedObject)object2.getShard()).flipValue();
       assert object2.flipValue();
+
+      List<AdvancedShardedObject> rlist = object2.getAsList();
+      assert rlist.iterator().next() instanceof AdvancedShardedObject: rlist.iterator().next().getClass();
+      assert rlist.iterator().next().equals(object1);
    }
 
-   @Test(enabled = true)
+   @Test(enabled = false)
    public void baseElasticity() throws Exception {
       assertTrue(containers().size() >= 2);
       persistenceTest();
@@ -296,7 +303,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       advancedCompositionTest();
    }
 
-   @Test(enabled = true)
+   @Test(enabled = false)
    public void advancedElasticity() throws Exception {
 
       ExecutorService service = Executors.newCachedThreadPool();
@@ -400,7 +407,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
             // if successful, persist the object
             if(r != null && (boolean) r){
                ret ++;
-               factory.disposeInstanceOf(HashSet.class, name, true);
+               factory.disposeInstanceOf(HashSet.class, name);
                set = null;
             }
          }

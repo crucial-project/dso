@@ -27,7 +27,7 @@ public class Server implements Runnable {
    private static final String defaultServer ="localhost:11222";
       private CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
       
-   @Option(name = "-server", required = true, usage = "ip:port or ip of the server")
+   @Option(name = "-server", usage = "ip:port or ip of the server")
    private String server = defaultServer;
    
    @Option(name = "-proxy", usage = "proxy server as seen by clients")
@@ -53,8 +53,6 @@ public class Server implements Runnable {
       parser.setUsageWidth(80);
 
       try {
-         if(args.length<2)
-            throw new CmdLineException(parser, "Not enough arguments are given.");
          parser.parseArgument(args);
       } catch( CmdLineException e ) {
          System.err.println(e.getMessage());
@@ -90,6 +88,10 @@ public class Server implements Runnable {
       builder
             .clustering().hash().numOwners(replicationFactor)
             .compatibility().enable();
+//      builder.clustering().stateTransfer()
+//            .awaitInitialTransfer(true)
+//            .timeout(1000000)
+//            .fetchInMemoryState(true);
       builder.locking()
             .concurrencyLevel(10000)
             .lockAcquisitionTimeout(2000);

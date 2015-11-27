@@ -1,18 +1,18 @@
 package org.infinispan.atomic.benchmarks.queue;
 
-import org.infinispan.atomic.Distributed;
-import org.infinispan.atomic.Key;
+import org.infinispan.atomic.DistClass;
 import org.infinispan.atomic.ReadOnly;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * @author Pierre Sutra
  */
-@Distributed
+@DistClass(key = "name")
 public class Queue<E> implements java.util.Queue<E>{
 
-   @Key
    public String name;
 
    public LinkedList<E> delegate;

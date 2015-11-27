@@ -30,9 +30,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.infinispan.atomic.object.Reference.unreference;
 import static org.infinispan.atomic.object.Utils.marshall;
 import static org.infinispan.atomic.object.Utils.unmarshall;
+import static org.infinispan.atomic.utils.AOFUtils.unreference;
 
 /**
  * @author Pierre Sutra
@@ -155,7 +155,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   UUIDGenerator.setThreadLocal(generators.get(reference));
 
-                  Object responseValue =
+                  Object response =
                         Utils.callObject(
                               objects.get(reference),
                               invocation.method,
@@ -163,14 +163,14 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   UUIDGenerator.unsetThreadLocal();
 
-                  future.set(responseValue);
+                  future.set(response);
                   if (includeStateTrackers.get(reference))
                      future.setState(objects.get(reference));
 
                   if (log.isTraceEnabled())
-                     log.trace(" Called " + invocation + " (=" + (responseValue == null ?
+                     log.trace(" Called " + invocation + " (=" + (response == null ?
                            "null" :
-                           responseValue.toString()) + ")");
+                           response.toString()) + ")");
 
                } else if (call instanceof CallOpen) {
 
@@ -418,25 +418,25 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                            openCallsCounter));
    }
 
-   private void forwardeference(Reference reference) {
-
-      assert (objects.get(reference) != null);
-
-      if (log.isTraceEnabled())
-         log.trace(" Forwarding [" + reference + "]");
-
-      byte[] marshalledObject = marshall(objects.get(reference));
-
-      int openCallsCounter = openCallsCounters.get(reference).get();
-
-      cache.getAdvancedCache()
-            .putAsync(reference,
-                  new CallPersist(
-                        TOPOLOGY_CHANGE_UUID,
-                        generators.get(reference).generate(),
-                        marshalledObject,
-                        openCallsCounter));
-   }
+//   private void forwardeference(Reference reference) {
+//
+//      assert (objects.get(reference) != null);
+//
+//      if (log.isTraceEnabled())
+//         log.trace(" Forwarding [" + reference + "]");
+//
+//      byte[] marshalledObject = marshall(objects.get(reference));
+//
+//      int openCallsCounter = openCallsCounters.get(reference).get();
+//
+//      cache.getAdvancedCache()
+//            .putAsync(reference,
+//                  new CallPersist(
+//                        TOPOLOGY_CHANGE_UUID,
+//                        generators.get(reference).generate(),
+//                        marshalledObject,
+//                        openCallsCounter));
+//   }
 
    private void retrieveReference(Reference reference, CallPersist oldValue) {
 
@@ -460,30 +460,30 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
    @Listener
    private class TopologyChangeListener {
 
-      @DataRehashed
-      public void topologyChangeIN(DataRehashedEvent event) {
-
-         if (!event.isPre())
-            return;
-
-         ConsistentHash startCH = event.getConsistentHashAtStart();
-         ConsistentHash endCH = event.getConsistentHashAtEnd();
-
-         if (log.isTraceEnabled())
-            log.trace("Topology " + event.getNewTopologyId()+" is installing");
-
-         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
-
-            Reference reference = entry.getKey();
-
-            if (!isOwnershipChanged(reference, startCH, endCH))
-               continue;
-
-            topologyChanging.get(reference).set(true);
-
-         }
-
-      }
+//      @DataRehashed
+//      public void topologyChangeIN(DataRehashedEvent event) {
+//
+//         if (!event.isPre())
+//            return;
+//
+//         ConsistentHash startCH = event.getConsistentHashAtStart();
+//         ConsistentHash endCH = event.getConsistentHashAtEnd();
+//
+//         if (log.isTraceEnabled())
+//            log.trace("Topology " + event.getNewTopologyId()+" is installing");
+//
+//         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
+//
+//            Reference reference = entry.getKey();
+//
+//            if (!isOwnershipChanged(reference, startCH, endCH))
+//               continue;
+//
+//            topologyChanging.get(reference).set(true);
+//
+//         }
+//
+//      }
 
       @DataRehashed
       public void topologyChangeOUT(DataRehashedEvent event) {
@@ -512,8 +512,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
             synchronized (openCallCounter) {
                if (objects.containsKey(reference)) {
                   assert generators.containsKey(reference) && objects.containsKey(reference);
-                  if (isForwarding(reference,startCH,endCH))
-                     forwardeference(reference);
+                  persistReference(reference);
                }
             }
 

@@ -4,9 +4,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.infinispan.atomic.object.Reference;
-
-import java.lang.reflect.Field;
 
 /**
  * @author Pierre Sutra
@@ -14,45 +11,42 @@ import java.lang.reflect.Field;
 @Aspect
 public class Distribution {
 
-   @Pointcut("call((@Distributed *).new(..)) " +
+   @Pointcut("call((@DistClass *).new(..)) " +
          "&& ! within(org.infinispan.atomic.container.BaseContainer) " +
          "&& ! within(org.infinispan.atomic.filter.ObjectFilterConverter)")
-   public static void initDistributedObject(ProceedingJoinPoint pjp) {
+   public static void initDistributedClass(ProceedingJoinPoint pjp) {
    }
 
-   @Around("initDistributedObject(pjp)")
-   public Object distributionAdvice(ProceedingJoinPoint pjp) throws Throwable{
-      Object object = pjp.proceed(pjp.getArgs());
-      Reference reference = referenceFor(object);
+   @Pointcut("set(@DistField * *) ")
+   public static void setDistributedField(ProceedingJoinPoint pjp) {
+   }
+
+   @Around("initDistributedClass(pjp)")
+   public Object distributionAdviceClass(ProceedingJoinPoint pjp) throws Throwable{
       AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
       return factory.getInstanceOf(
-            reference,
-            true,
+            pjp.getStaticPart().getSignature().getDeclaringType(),
             null,
+            true,
             false,
             pjp.getArgs());
-
    }
 
-   public static Reference referenceFor(Object object) throws IllegalAccessException {
-      for (Field field : object.getClass().getDeclaredFields()) {
-         if (field.isAnnotationPresent(Key.class)) {
-            return new Reference(
-                  object.getClass(),
-                  field.get(object));
-         }
-      }
-      throw new IllegalStateException("Key field is missing.");
-   }
-
-
-   public static boolean isDistributed(Object object) {
-      for (Field field : object.getClass().getDeclaredFields()) {
-         if (field.isAnnotationPresent(Key.class)) {
-            return true;
-         }
-      }
-      return false;
-   }
+//   @Around("setDistributedField(pjp)"+
+//         "&& ! within(org.infinispan.atomic.container.BaseContainer) " +
+//         "&& ! within(org.infinispan.atomic.filter.ObjectFilterConverter)" +
+//         "&& ! within(org.infinispan.atomic.Distribution)")
+//   public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
+//      AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
+//      pjp.proceed(pjp.getArgs());
+//      Reference reference = referenceFor(pjp.getArgs()[0]);
+//      for(Field field : pjp.getTarget().getClass().getDeclaredFields()){
+//         if (Modifier.isPublic(field.getModifiers()) && field.get(pjp.getTarget()) == pjp.getArgs()[0]) {
+//            field.set(pjp.getTarget(), factory.getInstanceOf(reference,true,null,false));
+//            return;
+//         }
+//      }
+//      throw new IllegalStateException("Field for "+pjp.getArgs()[0].getClass()+"="+pjp.getArgs()[0]+" is not public.");
+//   }
 
 }

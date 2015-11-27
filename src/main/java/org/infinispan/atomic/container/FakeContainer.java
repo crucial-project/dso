@@ -24,13 +24,15 @@ public class FakeContainer extends AbstractContainer {
 
    private BasicCache cache;
    private boolean isOpen;
+   private Reference reference;
 
-   public FakeContainer(BasicCache cache, Reference reference, boolean readOptimization, boolean forceNew,
+   public FakeContainer(BasicCache cache, Class clazz, Object key, boolean readOptimization, boolean forceNew,
          List<String> methods, Object... initArgs) {
-      super(reference, readOptimization, forceNew, methods, initArgs);
+      super(clazz, readOptimization, forceNew, methods, initArgs);
       
       try {
          this.cache = cache;
+         this.reference = new Reference(clazz,key);
          Object o = Utils.initObject(reference.getClazz(), initArgs);
          objects.putIfAbsent(reference,o);
          proxy = objects.get(reference);
@@ -41,7 +43,12 @@ public class FakeContainer extends AbstractContainer {
       
    }
 
-   @Override 
+   @Override
+   public Reference getReference() {
+      return reference;
+   }
+
+   @Override
    public synchronized void open() throws InterruptedException, ExecutionException, TimeoutException, IOException {
       isOpen = true;
    }

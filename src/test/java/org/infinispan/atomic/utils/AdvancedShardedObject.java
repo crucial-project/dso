@@ -1,34 +1,44 @@
 package org.infinispan.atomic.utils;
 
-import org.infinispan.atomic.Distributed;
-import org.infinispan.atomic.Key;
+import org.infinispan.atomic.DistClass;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * @author Pierre Sutra
  */
-@Distributed
+@DistClass(key="uuid")
 public class AdvancedShardedObject implements ShardedObject{
 
-   @Key
    public UUID uuid;
+
    private AdvancedShardedObject shard;
-   boolean value;
+   private boolean value;
+
+   // @Distribute
+   private List<AdvancedShardedObject> list;
 
    public AdvancedShardedObject(){
-      this(null);
+      this.uuid = UUID.randomUUID();
    }
 
    public AdvancedShardedObject(AdvancedShardedObject shard){
       this.uuid = UUID.randomUUID();
       this.shard = shard;
       this.value = false;
+      list = new ArrayList<>();
+      list.add(shard);
    }
 
    @Override
    public ShardedObject getShard() {
       return shard;
+   }
+
+   public List<AdvancedShardedObject> getAsList() {
+      return list;
    }
 
    public boolean flipValue(){
@@ -37,5 +47,11 @@ public class AdvancedShardedObject implements ShardedObject{
       value = !value;
       return value;
    }
+
+   public boolean setShard(AdvancedShardedObject shard) {
+      this.shard = shard;
+      return shard.flipValue();
+   }
+
 
 }

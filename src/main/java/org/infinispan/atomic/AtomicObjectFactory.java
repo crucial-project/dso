@@ -9,7 +9,6 @@ import org.infinispan.atomic.container.AbstractContainer;
 import org.infinispan.atomic.container.local.LocalContainer;
 import org.infinispan.atomic.container.remote.RemoteContainer;
 import org.infinispan.atomic.object.Reference;
-import org.infinispan.atomic.object.Utils;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
@@ -18,8 +17,6 @@ import org.infinispan.util.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 public class AtomicObjectFactory {
 
    // Class fields
-   
+
    private static Log log = LogFactory.getLog(AtomicObjectFactory.class);
    private static AtomicObjectFactory singleton;
    private static Map<BasicCache,AtomicObjectFactory> factories = new HashMap<>();
@@ -60,7 +57,7 @@ public class AtomicObjectFactory {
 
       return factories.get(cache);
    }
-   
+
    protected static final int MAX_CONTAINERS=Integer.MAX_VALUE;
    public static final Map<Class,List<String>> updateMethods;
    static{
@@ -80,7 +77,7 @@ public class AtomicObjectFactory {
    }
 
    // Object fields
-   
+
    private BasicCache cache;
    private final ConcurrentMap<Reference,AbstractContainer> registeredContainers;
    private int maxSize;
@@ -111,7 +108,7 @@ public class AtomicObjectFactory {
       registeredContainers= CacheBuilder.newBuilder()
             .maximumSize(MAX_CONTAINERS)
             .removalListener(new RemovalListener<Reference, AbstractContainer>() {
-               @Override 
+               @Override
                public void onRemoval(RemovalNotification<Reference, AbstractContainer> objectObjectRemovalNotification) {
                   try {
                      AbstractContainer container = objectObjectRemovalNotification.getValue();
@@ -122,38 +119,19 @@ public class AtomicObjectFactory {
                }
             })
             .build().asMap();
-      log.info(this+" Created");
+      log.info(this + " Created");
    }
 
-   public <T> T getInstanceOf(Reference reference)
-         throws InvalidCacheUsageException{
-      Constructor constructor = reference.getClazz().getConstructors()[0];
-      List<Object> args = new ArrayList<>();
-      for(Class clazz : constructor.getParameterTypes()) {
-         if (!clazz.isPrimitive())
-            args.add(null);
-         else
-            args.add(Utils.getDefaultValue(clazz));
-      }
-      return (T) getInstanceOf(reference, false, null, false, args.toArray(new Object[]{}));
-   } 
-   
-   /**
-    *
-    * Returns an atomic object of class <i>clazz</i>.
-    * The class of this object must be initially serializable, as well as all the parameters of its methods.
-    * Furthermore, the class must be deterministic.
-    * 
-    * This method is an alias for getInstanceOf(clazz, key, false, null, false).  
-    *
-    * @param clazz a class object
-    * @param key to use in order to store the object.
-    * @return an object of the class <i>clazz</i>
-    * @throws InvalidCacheUsageException
-    */
-   public <T> T getInstanceOf(Class<T> clazz, Object key)
-         throws InvalidCacheUsageException{
-      return getInstanceOf(clazz, key, false, null, false);
+   public <T> T getInstanceOf(Class clazz) throws InvalidCacheUsageException{
+      return (T) getInstanceOf(clazz, null, false, false);
+   }
+
+   public <T> T getInstanceOf(Reference reference) throws InvalidCacheUsageException{
+      return (T) getInstanceOf(reference.getClazz(), reference.getKey(), false, false);
+   }
+
+   public <T> T getInstanceOf(Class clazz, Object key) throws InvalidCacheUsageException{
+      return (T) getInstanceOf(clazz, key, false, false);
    }
 
    /**
@@ -167,14 +145,13 @@ public class AtomicObjectFactory {
     * the call does not modify the state of the object, the value returned is the result of this tentative execution.
     *
     * @param clazz a class object
-    * @param key the key to use in order to store the object.
     * @param withReadOptimization set the read optimization on/off.
     * @return an object of the class <i>clazz</i>
     * @throws InvalidCacheUsageException
     */
-   public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization)
+   public <T> T getInstanceOf(Class<T> clazz, boolean withReadOptimization)
          throws InvalidCacheUsageException{
-      return getInstanceOf(clazz, key, withReadOptimization, null, false);
+      return getInstanceOf(clazz, null, withReadOptimization, false);
    }
 
    /**
@@ -190,49 +167,58 @@ public class AtomicObjectFactory {
     * its copy are identical.
     *
     * @param clazz a class object
-    * @param key the key to use in order to store the object.
     * @param withReadOptimization set the read optimization on/off.
-    * @param equalsMethod overriding the default <i>clazz.equals()</i>.
     * @param forceNew force the creation of the object, even if it exists already in the cache
     * @return an object of the class <i>clazz</i>
     * @throws InvalidCacheUsageException
     */
-   public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization,
-         Method equalsMethod, boolean forceNew, Object ... initArgs)
-         throws InvalidCacheUsageException {
-      Reference<T> reference = new Reference(clazz,key);
-      return getInstanceOf(reference,withReadOptimization,equalsMethod,forceNew,initArgs);
-   }
-
-   public synchronized  <T> T getInstanceOf(Reference<T> reference, boolean withReadOptimization,
-         Method equalsMethod, boolean forceNew, Object ... initArgs)
+   public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
          throws InvalidCacheUsageException {
 
-      if( !(Serializable.class.isAssignableFrom(reference.getClazz()))){
-         throw new InvalidCacheUsageException("Should be serializable.");
+//      if (Map.class.isAssignableFrom(reference.getClazz()))
+//         return (T) cache;
+
+      if( !(Serializable.class.isAssignableFrom(clazz))){
+         throw new InvalidCacheUsageException(clazz+" should be serializable.");
       }
-      
-      AbstractContainer container;
+
+      try{
+         clazz.getConstructor();
+      } catch (NoSuchMethodException e) {
+         throw new InvalidCacheUsageException(clazz+" does not have an empty constructor.");
+      }
+
+//      for (Field field : reference.getClazz().getDeclaredFields()) {
+//         if ( Modifier.isPublic(field.getModifiers())
+//               && !Modifier.isFinal(field.getModifiers())
+//               && !field.isAnnotationPresent(Key.class)
+//               && !field.isAnnotationPresent(Distribute.class) ) {
+//            throw new InvalidCacheUsageException(reference.getClazz()
+//                  +" field \"" + field.getName() +"\" should not be accessible from the outside.");
+//         }
+//      }
+
+      Reference reference = null;
+      AbstractContainer container=null;
 
       try{
 
-         container = registeredContainers.get(reference);
+         if (key!=null) {
+            reference = new Reference(clazz,key);
+            container = registeredContainers.get(reference);
+         }
 
-         if (container==null) {
-
+         if(container==null) {
             if (log.isDebugEnabled()) log.debug(this + " Creating container");
-
             container =
                   (cache instanceof RemoteCache) ?
-                        new RemoteContainer(cache, reference, withReadOptimization, forceNew, initArgs)
+                        new RemoteContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs)
                         :
-                        new LocalContainer(cache, reference, withReadOptimization, forceNew, initArgs);
-            
-            registeredContainers.putIfAbsent(reference, container);
-
-         } else {
-            if (log.isDebugEnabled()) log.debug(this + " Existing container");
+                        new LocalContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
+            reference = container.getReference();
          }
+
+         registeredContainers.putIfAbsent(reference, container);
 
       } catch (Exception e){
          e.printStackTrace();
@@ -249,10 +235,9 @@ public class AtomicObjectFactory {
     *
     * @param clazz a class object
     * @param key the key to use in order to store the object.
-    * @param keepPersistent indicates that a persistent copy is stored in the cache or not.
     */
    @Deprecated
-   public synchronized void disposeInstanceOf(Class clazz, Object key, boolean keepPersistent)
+   public synchronized void disposeInstanceOf(Class clazz, Object key)
          throws InvalidCacheUsageException {
 
       Reference reference = new Reference<>(clazz,key);

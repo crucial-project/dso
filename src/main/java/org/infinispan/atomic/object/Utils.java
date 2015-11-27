@@ -1,6 +1,6 @@
 package org.infinispan.atomic.object;
 
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.DistClass;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.marshall.core.JBossMarshaller;
@@ -10,7 +10,7 @@ import org.infinispan.util.logging.LogFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * @author Pierre Sutra
@@ -18,6 +18,16 @@ import java.util.Arrays;
 public class Utils {
 
    private static Log log = LogFactory.getLog(Utils.class);
+
+   private static Map<Class,Set<Method>> unsupportedMethods = new HashMap<>();
+   static {
+      try {
+         unsupportedMethods.put(AbstractCollection.class, new HashSet<Method>());
+         unsupportedMethods.get(AbstractCollection.class).add(Collection.class.getDeclaredMethod("iterator"));
+      } catch (NoSuchMethodException e) {
+         e.printStackTrace();
+      }
+   }
 
    public static Object getMethod(Object obj, String method, Object[] args)
          throws IllegalAccessException {
@@ -41,6 +51,15 @@ public class Utils {
       return false;
    }
 
+   public static boolean isMethodSupported(Class clazz, Method method) {
+      if (clazz.equals(Object.class))
+         return true;
+      if (unsupportedMethods.containsKey(clazz))
+         if (unsupportedMethods.get(clazz).contains(method))
+            return false;
+      return isMethodSupported(clazz.getSuperclass(), method);
+   }
+
 
    public static boolean hasDefaultConstructor(Class clazz){
       for (Constructor constructor : clazz.getConstructors()) {
@@ -51,7 +70,7 @@ public class Utils {
    }
 
    public static boolean isDistributed(Class clazz){
-      return clazz.isAnnotationPresent(Distributed.class);
+      return clazz.isAnnotationPresent(DistClass.class);
    }
    
    public static Object callObject(Object obj, String method, Object[] args)

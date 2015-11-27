@@ -44,14 +44,15 @@ public class RemoteContainer extends BaseContainer {
    
    public RemoteContainer(
          BasicCache c,
-         Reference reference,
+         Class clazz,
+         Object key,
          boolean readOptimization,
          boolean forceNew,
          Object... initArgs)
          throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
          InterruptedException,
-         ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException {
-      super(reference, readOptimization, forceNew, initArgs);
+         ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException, NoSuchFieldException {
+      super(clazz, key, readOptimization, forceNew, initArgs);
       cache = (RemoteCache<Reference, Call>) c;
       listenerID = installListener(cache);
    }
@@ -77,11 +78,12 @@ public class RemoteContainer extends BaseContainer {
 
    @Override
    public void put(Reference reference, Call call) {
-      cache.put(reference,call);
+      cache.put(reference, call);
    }
 
-   @Override public BasicCache getCache() {
-      return null;  // TODO: Customise this generated block
+   @Override
+   public BasicCache getCache() {
+      return cache;
    }
 
    @ClientListener(
