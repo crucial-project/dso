@@ -1,7 +1,5 @@
 package org.infinispan.atomic.filter;
 
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicObjectFactory;
@@ -41,7 +39,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
    // Class fields & methods
    private static final Log log = LogFactory.getLog(ObjectFilterConverter.class);
-   private static final long MAX_COMPLETED_CALLS = 10000; // around 10s at max throughput
+   private static final long MAX_COMPLETED_CALLS = 1000; // around 10s at max throughput
    public static final UUID TOPOLOGY_CHANGE_UUID = new UUID(0, 0);
 
    // Per-object fields
@@ -49,11 +47,11 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
    private final ConcurrentMap<Reference, Object> objects;
    private final ConcurrentMap<Reference, AtomicInteger> openCallsCounters;
    private final ConcurrentMap<Reference, Boolean> includeStateTrackers;
-   private final ConcurrentMap<Reference, RandomBasedGenerator> generators;
+   private final ConcurrentMap<Reference, UUIDGenerator> generators;
    private final ConcurrentMap<Reference, AtomicBoolean> topologyChanging;
 
    // Other fields
-   private final ConcurrentMap<Call, CallFuture> completedCalls;
+   private final ConcurrentMap<Reference,Map<Call, CallFuture>> completedCalls;
    private TopologyChangeListener topologyChangeListener;
 
    public ObjectFilterConverter() {
@@ -62,10 +60,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       this.generators = new ConcurrentHashMap<>();
 
       this.openCallsCounters = new ConcurrentHashMap<>();
-      this.completedCalls = (ConcurrentMap) CacheBuilder.newBuilder()
-            .maximumSize(MAX_COMPLETED_CALLS)
-            .build().asMap();
       this.topologyChanging = new ConcurrentHashMap<>();
+      this.completedCalls = new ConcurrentHashMap<>();
    }
 
    @Override
@@ -95,11 +91,13 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
          openCallsCounters.putIfAbsent(reference, new AtomicInteger(0));
          includeStateTrackers.putIfAbsent(reference, Utils.hasReadOnlyMethods(reference.getClazz()));
          topologyChanging.put(reference, new AtomicBoolean(false));
+         completedCalls.put(reference,
+               (ConcurrentMap) CacheBuilder.newBuilder()
+                     .maximumSize(MAX_COMPLETED_CALLS)
+                     .build().asMap());
       }
 
       synchronized (openCallsCounters.get(reference)) {
-
-         assert ! generators.containsKey(reference) || objects.containsKey(reference);
 
          Call call = newValue;
 
@@ -108,16 +106,16 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
             return null;
          }
 
-         if (log.isTraceEnabled())
-            log.trace(" Received [" + call + "] (completed="
+//          if (log.isTraceEnabled())
+             System.out.println(" Received [" + call + "] (completed="
                   + completedCalls.containsKey(call) + ", " + reference + " ," + eventType.getType() + ")");
 
          CallFuture future = new CallFuture(call.getCallID());
 
-         if (completedCalls.containsKey(call)) {
+         if (completedCalls.get(reference).containsKey(call)) {
 
             // call already completed
-            future = completedCalls.get(call);
+            future = completedCalls.get(reference).get(call);
 
          } else {
 
@@ -134,7 +132,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      log.debug("Trashing " + call + "; " + oldValue + "; " + eventType.getType());
                   return null;
                }
-
 
                if (call instanceof CallPersist) {
 
@@ -166,10 +163,9 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                   if (includeStateTrackers.get(reference))
                      future.setState(objects.get(reference));
 
-                  if (log.isTraceEnabled())
-                     log.trace(" Called " + invocation + " (=" + (response == null ?
-                           "null" :
-                           response.toString()) + ")");
+                   if (log.isTraceEnabled())
+                     log.trace(" Called " + invocation + " on "+reference+" (=" +
+                           (response == null ? "null" : response.toString()) + ")");
 
                } else if (call instanceof CallOpen) {
 
@@ -180,9 +176,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                   if (!generators.containsKey(reference))
                      generators.putIfAbsent(
                            reference,
-                           Generators.randomBasedGenerator(
-                                 new Random(
-                                       callOpen.getCallID().getLeastSignificantBits()))); // type 4 UUID
+                           new UUIDGenerator(
+                                 call.getCallID().getLeastSignificantBits()));
 
                   if (callOpen.getForceNew()) {
 
@@ -246,7 +241,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      openCallsCounters.get(reference).decrementAndGet();
 
                   if (log.isTraceEnabled())
-                     log.trace(" OpenCallsCounters = "+openCallsCounters.get(reference));
+                     log.trace(" OpenCallsCounters = " + openCallsCounters.get(reference));
 
                   if (openCallsCounters.get(reference).get() == 0) {
                      persistReference(reference);
@@ -259,7 +254,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                // save return value if any
                if (future.isDone())
-                  completedCalls.put(call, future);
+                  completedCalls.get(reference).put(call, future);
 
             } catch (Exception e) {
                e.printStackTrace();
@@ -390,6 +385,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       includeStateTrackers.remove((reference));
       generators.remove(reference);
       openCallsCounters.remove(reference);
+      // completedCalls.remove(reference); FIXME
    }
 
    private void persistReference(Reference reference) {
@@ -443,9 +439,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       generators.put(
             reference,
-            Generators.randomBasedGenerator(
-                  new Random(
-                        oldValue.getCallID().getLeastSignificantBits()))); // type 4 UUID
+            new UUIDGenerator(oldValue.getCallID().getLeastSignificantBits())); // type 4 UUID
 
       openCallsCounters.get(reference).set(oldValue.getOpenCallsCounter());
 
