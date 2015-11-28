@@ -78,13 +78,12 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       BasicCache<Object,Object> cache = cacheManager.getCache();
       AtomicObjectFactory factory = AtomicObjectFactory.forCache(cache);
       
-      int f = 1; // multiplicative factor
+      int f = 10; // multiplicative factor
 
       Map map = factory.getInstanceOf(HashMap.class, "map");
 
       long start = System.currentTimeMillis();
       for(int i=0; i<NCALLS*f;i++){
-         // cache.put("1","1");
          map.containsKey("1");
       }
 
@@ -288,12 +287,11 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       AdvancedShardedObject object2 = new AdvancedShardedObject(object1);
 
       assert object2.getShard().equals(object1);
-
       assert object1.flipValue();
       assert !((AdvancedShardedObject)object2.getShard()).flipValue();
       assert object2.flipValue();
 
-      List<AdvancedShardedObject> rlist = object2.getAsList();
+      List<AdvancedShardedObject> rlist = object2.getList();
       assert rlist.get(0) instanceof AdvancedShardedObject;
       assert rlist.get(0).equals(object1);
    }

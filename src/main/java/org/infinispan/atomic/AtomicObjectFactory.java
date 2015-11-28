@@ -3,9 +3,11 @@ package org.infinispan.atomic;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.InvalidCacheUsageException;
 import org.infinispan.atomic.container.AbstractContainer;
+import org.infinispan.atomic.container.FakeContainer;
 import org.infinispan.atomic.container.local.LocalContainer;
 import org.infinispan.atomic.container.remote.RemoteContainer;
 import org.infinispan.atomic.object.Reference;
@@ -224,11 +226,16 @@ public class AtomicObjectFactory {
 
          if(container==null) {
             if (log.isDebugEnabled()) log.debug(this + " Creating container");
-            container =
-                  (cache instanceof RemoteCache) ?
-                        new RemoteContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs)
-                        :
-                        new LocalContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
+
+            if (cache instanceof RemoteCache) {
+               container = new RemoteContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
+            } else if (cache instanceof AdvancedCache) {
+               container = new LocalContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
+            } else {
+               log.error("Using fake container.");
+               container = new FakeContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
+            }
+
             reference = container.getReference();
          }
 

@@ -31,7 +31,7 @@ public class CallInvoke extends Call implements Externalizable{
       for(Object a : arguments){
          args+=(a==null?"null":a.toString())+" ";
       }
-      return super.toString()+"-INV-"+method+ "("+args+")";
+      return super.toString()+"-INV-"+method+ "()";
    }
 
 

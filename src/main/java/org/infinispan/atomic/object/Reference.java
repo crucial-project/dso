@@ -40,23 +40,41 @@ public class Reference<T> implements Externalizable {
          if (arg instanceof Reference) {
             ret.add(unreference((Reference)arg, AtomicObjectFactory.forCache(cache)));
          } else {
+            if (arg instanceof List) {
+               List list = new ArrayList(((List) arg).size());
+               for(int i = 0; i<((List) arg).size(); i++) {
+                  Object item = ((List)arg).get(i);
+                  list.add(unreference(item, cache));
+               }
+               ret.add(list);
+            } else {
             ret.add(arg);
+            }
          }
       }
       return ret.toArray();
    }
 
    @Override
-   public int hashCode(){
-      return key.hashCode();
+   public boolean equals(Object o) {
+      if (this == o)
+         return true;
+      if (o == null || getClass() != o.getClass())
+         return false;
+
+      Reference<?> reference = (Reference<?>) o;
+
+      if (clazz != null ? !clazz.equals(reference.clazz) : reference.clazz != null)
+         return false;
+      return !(key != null ? !key.equals(reference.key) : reference.key != null);
+
    }
 
    @Override
-   public boolean equals(Object o){
-      if (!(o instanceof Reference))
-         return false;
-      return ((Reference)o).clazz.equals(this.clazz)
-            && ((Reference)o).key.equals(this.key);
+   public int hashCode() {
+      int result = clazz != null ? clazz.hashCode() : 0;
+      result = 31 * result + (key != null ? key.hashCode() : 0);
+      return result;
    }
 
    @Override

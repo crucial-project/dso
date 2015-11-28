@@ -8,7 +8,6 @@ import org.infinispan.commons.api.BasicCache;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,9 +25,9 @@ public class FakeContainer extends AbstractContainer {
    private boolean isOpen;
    private Reference reference;
 
-   public FakeContainer(BasicCache cache, Class clazz, Object key, boolean readOptimization, boolean forceNew,
-         List<String> methods, Object... initArgs) {
-      super(clazz, readOptimization, forceNew, methods, initArgs);
+   public FakeContainer(BasicCache cache, Class clazz, Object key,
+         boolean readOptimization, boolean forceNew, Object... initArgs) {
+      super(clazz, readOptimization, forceNew, initArgs);
       
       try {
          this.cache = cache;

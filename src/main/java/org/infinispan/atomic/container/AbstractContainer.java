@@ -92,7 +92,7 @@ public abstract class AbstractContainer {
          }catch (Exception e) {
             if (!future.isDone())
                log.warn(" Failed "+ call + " ("+e.getMessage()+")");
-            Thread.sleep(100);
+            Thread.sleep(TTIMEOUT_TIME);
          }
       }
 
@@ -102,7 +102,7 @@ public abstract class AbstractContainer {
          this.state = future.getState();
       }
 
-      if (log.isTraceEnabled()) 
+      if (log.isTraceEnabled())
          log.trace(this + " Returning " + ret);
       
       return ret;

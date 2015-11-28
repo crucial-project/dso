@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -156,10 +157,11 @@ public abstract class BaseContainer extends AbstractContainer {
          open();
 
          RandomBasedGenerator generator = UUIDGenerator.getThreadLocal();
+         UUID uuid = generator==null ? UUIDGenerator.generate() : generator.generate();
          Object ret = execute(
                new CallInvoke(
                      listenerID(),
-                     generator==null ? UUIDGenerator.generate() : generator.generate(),
+                     uuid,
                      m.getName(),
                      args)
          );
