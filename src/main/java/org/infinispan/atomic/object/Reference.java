@@ -19,13 +19,6 @@ public class Reference<T> implements Externalizable {
    private Class<T> clazz;
    private Object key;
 
-   public Reference(){}
-   
-   public Reference(Class<T> c, Object key){
-      clazz = c;
-      this.key = key;
-   }
-
    public static Object unreference(Reference reference, AtomicObjectFactory factory) {
       return factory.getInstanceOf(reference);
    }
@@ -48,11 +41,20 @@ public class Reference<T> implements Externalizable {
                }
                ret.add(list);
             } else {
-            ret.add(arg);
+               ret.add(arg);
             }
          }
       }
       return ret.toArray();
+   }
+
+   // Object fields
+
+   public Reference(){}
+   
+   public Reference(Class<T> c, Object key){
+      clazz = c;
+      this.key = key;
    }
 
    @Override
@@ -70,10 +72,10 @@ public class Reference<T> implements Externalizable {
 
    }
 
+   // Care about Class.hashCode() not being portable ...
    @Override
    public int hashCode() {
-      int result = clazz != null ? clazz.hashCode() : 0;
-      result = 31 * result + (key != null ? key.hashCode() : 0);
+      int result = (key != null ? key.hashCode() : 0);
       return result;
    }
 
