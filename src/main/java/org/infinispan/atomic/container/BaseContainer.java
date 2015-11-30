@@ -130,13 +130,8 @@ public abstract class BaseContainer extends AbstractContainer {
          if (m.getName().equals("equals")) {
             if (args[0] == proxy) {
                return true;
-            } else if (args[0] == null) {
-               return false;
-            } else if (!proxy.getClass().isAssignableFrom(args[0].getClass())) {
-               return false;
-            } else {
-               return proxy.hashCode() == args[0].hashCode(); // FIXME
             }
+            return false;
          }
 
 
