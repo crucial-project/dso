@@ -115,17 +115,18 @@ public class Server implements Runnable {
       builder.locking()
             .concurrencyLevel(10000)
             .lockAcquisitionTimeout(2000);
-      builder.eviction().
-            strategy(EvictionStrategy.LRU)
-            .maxEntries(100000);
       builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
 
-      if (usePersistency)
+      if (usePersistency) {
          builder.persistence()
                .addSingleFileStore()
-               .location(System.getProperty("."))
+               .location(System.getProperty("store-aof-server" + host))
                .purgeOnStartup(true)
                .create();
+         builder.eviction().
+               strategy(EvictionStrategy.LRU)
+               .maxEntries(100000);
+      }
 
       EmbeddedCacheManager cm = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
       

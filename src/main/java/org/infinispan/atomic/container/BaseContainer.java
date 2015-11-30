@@ -127,8 +127,18 @@ public abstract class BaseContainer extends AbstractContainer {
 
       public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable {
 
-         if (m.getName().equals("equals") && args[0] == proxy)
-            return true;
+         if (m.getName().equals("equals")) {
+            if (args[0] == proxy) {
+               return true;
+            } else if (args[0] == null) {
+               return false;
+            } else if (!proxy.getClass().isAssignableFrom(args[0].getClass())) {
+               return false;
+            } else {
+               return proxy.hashCode() == args[0].hashCode(); // FIXME
+            }
+         }
+
 
          if (m.getName().equals("writeReplace")) {
             open(); // mandatory to create the object remotely

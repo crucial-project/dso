@@ -31,4 +31,20 @@ public class SimpleObject {
       return "SimpleObject["+field+"]";
    }
 
+   @Override
+   public boolean equals(Object o) {
+      if (this == o)
+         return true;
+      if (o == null || getClass() != o.getClass())
+         return false;
+
+      SimpleObject that = (SimpleObject) o;
+
+      return field.equals(that.field);
+   }
+
+   @Override
+   public int hashCode() {
+      return field.hashCode();
+   }
 }

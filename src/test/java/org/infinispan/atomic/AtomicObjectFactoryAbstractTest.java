@@ -8,7 +8,6 @@ import org.infinispan.atomic.utils.AdvancedShardedObject;
 import org.infinispan.atomic.utils.ShardedObject;
 import org.infinispan.atomic.utils.SimpleObject;
 import org.infinispan.atomic.utils.SimpleShardedObject;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
@@ -59,7 +58,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       // 0 - validate cache atomicity
       for(int i=0; i<100; i++) {
          UUID uuid = UUID.randomUUID();
-         ((RemoteCache)container(0).getCache()).put(uuid, uuid);
+         container(0).getCache().put(uuid, uuid);
          assert container(0).getCache().get(uuid).equals(uuid);
       }
    }
@@ -290,6 +289,19 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       SimpleShardedObject object2 = new SimpleShardedObject(object);
       ShardedObject object3 = object2.getShard();
       assert object3.equals(object);
+
+      List<SimpleObject> list = new ArrayList<>();
+      Random random = new Random(System.currentTimeMillis());
+      for(int i=0; i<10; i++) {
+         list.add(new SimpleObject(Integer.toString(random.nextInt(10))));
+      }
+      for(SimpleObject simpleObject1 : list){
+         for(SimpleObject simpleObject2 : list){
+            if (simpleObject1.equals(simpleObject2))
+               assert simpleObject1.getField().equals(simpleObject2.getField());
+         }
+      }
+
    }
 
    @Test(enabled = true)
