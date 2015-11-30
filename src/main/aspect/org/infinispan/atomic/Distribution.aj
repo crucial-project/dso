@@ -15,7 +15,7 @@ import java.lang.reflect.Modifier;
 public class Distribution {
 
    @Pointcut("call((@Distributed *).new(..)) " +
-         "&& ! within(org.infinispan.atomic.container.BaseContainer) " +
+         "&& ! within(org.infinispan.atomic.container.BaseContainer)" +
          "&& ! within(org.infinispan.atomic.filter.ObjectFilterConverter)")
    public static void initDistributedClass(ProceedingJoinPoint pjp) {
    }

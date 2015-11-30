@@ -110,7 +110,7 @@ public class Server implements Runnable {
             .compatibility().enable();
       builder.clustering().stateTransfer()
             .awaitInitialTransfer(true)
-            .timeout(10000)
+            .timeout(60000)
             .fetchInMemoryState(true);
       builder.locking()
             .concurrencyLevel(10000)

@@ -11,6 +11,7 @@ import org.infinispan.atomic.utils.UUIDGenerator;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
@@ -49,12 +50,19 @@ public abstract class BaseContainer extends AbstractContainer {
       this.proxy = initObject(fact.createClass(), initArgs);
       ((ProxyObject) proxy).setHandler(handler);
 
-      // build reference
-      if (key==null) {
+      // build reference and set key
+      if (clazz.getAnnotation(Distributed.class)!=null) {
          String fieldName = ((Distributed) clazz.getAnnotation(Distributed.class)).key();
-         key = clazz.getDeclaredField(fieldName).get(proxy);
-         assert key!=null : " field " +fieldName+" is null";
+         Field field = clazz.getDeclaredField(fieldName);
+         if (key == null) {
+            key = field.get(proxy);
+            assert key != null : " field " + fieldName + " is null for "+clazz;
+         } else  {
+            field.set(proxy,key);
+         }
+
       }
+
       this.reference = new Reference(clazz,key);
 
    }
@@ -130,24 +138,22 @@ public abstract class BaseContainer extends AbstractContainer {
          if (m.getName().equals("equals")) {
             if (args[0] == proxy) {
                return true;
+            } else if (args[0] instanceof Reference) {
+               return reference.equals(args[0]);
+            } if (ProxyFactory.isProxyClass(args[0].getClass())) {
+               return args[0].equals(reference); // FIXME might not be the most satisfying
             }
-            return false;
+            return args[0].equals(proxy);
          }
-
 
          if (m.getName().equals("writeReplace")) {
             open(); // mandatory to create the object remotely
             return reference;
          }
 
-         if (m.getName().equals("toString")) {
-            return "";
-         }
-
          if (! Utils.isMethodSupported(reference.getClazz(), m)) {
             throw new IllegalArgumentException("Unsupported methd "+m.getName()+" in "+reference.getClazz());
          }
-
          
          if (readOptimization 
                && state != null

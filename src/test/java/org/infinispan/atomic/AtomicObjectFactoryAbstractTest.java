@@ -47,7 +47,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       return REPLICATION_FACTOR;
    }
 
-   private int NMANAGERS = 2;
+   private int NMANAGERS = 3;
    public int getNumberOfManagers() {
       return NMANAGERS;
    }
@@ -281,6 +281,10 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       SimpleObject object1 = new SimpleObject("test2");
       assert object1.getField().equals("test2");
 
+      // 3 - equals()
+      AdvancedShardedObject advancedShardedObject = new AdvancedShardedObject();
+      assert advancedShardedObject.equals(advancedShardedObject.getSelf());
+
    }
 
    @Test(enabled = true)
@@ -314,19 +318,25 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       assert !((AdvancedShardedObject) object2.getShard()).flipValue();
       assert object2.flipValue();
 
+      // TODO improve tests on static fields
       List<AdvancedShardedObject> rlist = object2.getList();
+      rlist.clear();
+      object1.addSelf();
       assert rlist.get(0) instanceof AdvancedShardedObject;
-      assert rlist.get(0).equals(object1);
+      assert rlist.get(0).equals(object1) :  rlist.get(0);
    }
 
-   @Test(enabled = false)
+   @Test(enabled = true)
    public void baseElasticity() throws Exception {
       assertTrue(containers().size() >= 2);
+
       persistenceTest();
       advancedCompositionTest();
+
       addContainer();
       persistenceTest();
       advancedCompositionTest();
+
       deleteContainer();
       persistenceTest();
       advancedCompositionTest();

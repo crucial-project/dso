@@ -31,12 +31,19 @@ public class AdvancedShardedObject implements ShardedObject{
       this.uuid = UUID.randomUUID();
       this.shard = shard;
       this.value = false;
-      list.add(shard);
    }
 
    @Override
    public ShardedObject getShard() {
       return shard;
+   }
+
+   public boolean addSelf(){
+      return list.add(this);
+   }
+
+   public AdvancedShardedObject getSelf(){
+      return this;
    }
 
    public boolean flipValue(){
@@ -46,4 +53,25 @@ public class AdvancedShardedObject implements ShardedObject{
       return value;
    }
 
+   public String toString() {
+      return "AdvancedShardedObject#"+uuid.toString();
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if (this == o)
+         return true;
+      if (o == null || !(o instanceof AdvancedShardedObject))
+         return false;
+
+      AdvancedShardedObject object = (AdvancedShardedObject) o;
+
+      return uuid.equals(object.uuid);
+
+   }
+
+   @Override
+   public int hashCode() {
+      return uuid.hashCode();
+   }
 }

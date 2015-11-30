@@ -4,6 +4,7 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicObjectFactory;
+import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.UUIDGenerator;
 import org.infinispan.context.Flag;
@@ -23,6 +24,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -184,13 +187,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      if (log.isTraceEnabled())
                         log.trace(" New (forced) [" + reference + "]");
 
-                     objects.put(
-                           reference,
-                           Utils.initObject(
-                                 reference.getClazz(),
-                                 Reference.unreference(
-                                       callOpen.getInitArgs(),
-                                       cache)));
+                     createObejct(reference, callOpen);
 
                   } else if (!objects.containsKey(reference)) {
 
@@ -199,13 +196,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                         if (log.isTraceEnabled())
                            log.trace(" New [" + reference + "]");
 
-                        objects.put(
-                              reference,
-                              Utils.initObject(
-                                    reference.getClazz(),
-                                    Reference.unreference(
-                                          callOpen.getInitArgs(),
-                                          cache)));
+                        createObejct(reference, callOpen);
 
                      } else {
 
@@ -448,6 +439,25 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
          log.trace(" Retrieving [" + reference + "]");
 
       assert objects.get(reference) != null;
+
+   }
+
+   private void createObejct(Reference reference, CallOpen callOpen)
+         throws IllegalAccessException, InstantiationException,
+         NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
+
+      Object ret = Utils.initObject(reference.getClazz(), Reference.unreference(callOpen.getInitArgs(), cache));
+
+      // force the key field, in case it is created per default
+      if (reference.getClazz().getAnnotation(Distributed.class)!=null) {
+         String fieldName = ((Distributed) reference.getClazz().getAnnotation(Distributed.class)).key();
+         Field field = reference.getClazz().getDeclaredField(fieldName);
+         field.set(ret, reference.getKey());
+      }
+
+      objects.put(
+            reference,
+            ret);
 
    }
 
