@@ -30,6 +30,7 @@ public abstract class AbstractContainer {
 
    // class fields
    public static final int TTIMEOUT_TIME = 1000;
+   public static final int MAX_ATTEMPTS = 3;
    protected static final Map<UUID, CallFuture> registeredCalls = new ConcurrentHashMap<>();
    protected static final Log log = LogFactory.getLog(BaseContainer.class);
    protected static final MethodFilter methodFilter = new MethodFilter() {
@@ -82,16 +83,23 @@ public abstract class AbstractContainer {
          log.trace(this + " Executing "+call);
 
       CallFuture future = new CallFuture(call.getCallID());
+
       registeredCalls.put(call.getCallID(), future);
 
       Object ret = null;
+      int attemps = 0;
       while(!future.isDone()) {
          try {
+            attemps++;
             put(getReference(), call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
          }catch (Exception e) {
             if (!future.isDone())
                log.warn(" Failed "+ call + " ("+e.getMessage()+")");
+            if (attemps==MAX_ATTEMPTS) {
+               registeredCalls.remove(call.getCallID());
+               throw new TimeoutException(call + " failed");
+            }
             Thread.sleep(TTIMEOUT_TIME);
          }
       }

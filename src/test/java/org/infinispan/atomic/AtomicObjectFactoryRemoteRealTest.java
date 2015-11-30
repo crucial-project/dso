@@ -44,15 +44,13 @@ public class AtomicObjectFactoryRemoteRealTest extends AtomicObjectFactoryAbstra
          int port = Integer.valueOf(server.split(":")[1]);
          org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
                = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
-         cb
-               .tcpNoDelay(true)
+         cb.pingOnStartup(true)
                .addServer()
                .host(host)
                .port(port);
          RemoteCacheManager manager= new RemoteCacheManager(cb.build());
          manager.start();
          manager.getCache().clear();
-         manager.getCache().isEmpty();
          basicCacheContainers.add(manager);
       }
 
@@ -60,9 +58,15 @@ public class AtomicObjectFactoryRemoteRealTest extends AtomicObjectFactoryAbstra
       AtomicObjectFactory.forCache(basicCacheContainers.get(0).getCache());
    }
 
+   @Override
+   protected void clearContent() throws Throwable {
+      for(BasicCacheContainer container : basicCacheContainers) {
+         container.getCache().clear();
+      }
+   }
+
    protected String[] servers () {
-      // return new String[]{"127.0.0.1:11222"};
-      return new String[]{"127.0.0.2:11223","127.0.0.1:11222"};
+      return new String[]{"127.0.0.1:11222","127.0.0.1:11223"};
    }
 
 }

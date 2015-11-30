@@ -70,8 +70,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       assert this.cache == null;
       assert this.topologyChangeListener == null;
 
-      if (log.isTraceEnabled())
-         log.trace(" setCache(" + cache + ")");
+      if (log.isTraceEnabled())log.trace(" setCache(" + cache + ")");
       this.cache = cache;
       AtomicObjectFactory.forCache(cache);
 
@@ -483,7 +482,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       @DataRehashed
       public void topologyChangeOUT(DataRehashedEvent event) {
 
-         if (event.isPre())
+         if (!event.isPre())
             return;
 
          ConsistentHash startCH = event.getConsistentHashAtStart();

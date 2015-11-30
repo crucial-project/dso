@@ -25,7 +25,8 @@ import static org.infinispan.test.AbstractCacheTest.getDefaultClusteredCacheConf
 public class Server implements Runnable {
 
    private static final String defaultServer ="localhost:11222";
-      private CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
+
+   private CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
       
    @Option(name = "-server", usage = "ip:port or ip of the server")
    private String server = defaultServer;
@@ -107,10 +108,10 @@ public class Server implements Runnable {
       builder
             .clustering().hash().numOwners(replicationFactor)
             .compatibility().enable();
-//      builder.clustering().stateTransfer()
-//            .awaitInitialTransfer(true)
-//            .timeout(1000000)
-//            .fetchInMemoryState(true);
+      builder.clustering().stateTransfer()
+            .awaitInitialTransfer(true)
+            .timeout(10000)
+            .fetchInMemoryState(true);
       builder.locking()
             .concurrencyLevel(10000)
             .lockAcquisitionTimeout(2000);

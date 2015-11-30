@@ -34,7 +34,7 @@ public class RemoteContainer extends BaseContainer {
          Listener listener = new Listener();
          ((RemoteCacheImpl) cache).addClientListener(listener, new Object[] { listener.getId() }, null);
          listeners.put(cache, listener);
-         if (log.isTraceEnabled()) log.trace("Installed listener "+listener.getId());
+         if (log.isTraceEnabled()) log.trace("Installed listener "+listener.getId()+" on "+cache);
       }
       return listeners.get(cache).getId();
    }

@@ -48,6 +48,7 @@ public class AtomicObjectFactoryFakeTest extends AtomicObjectFactoryAbstractTest
       }
    }
 
+   @Override
    protected void clearContent() throws Throwable {}
 
 }

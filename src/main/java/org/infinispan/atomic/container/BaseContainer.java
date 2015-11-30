@@ -135,6 +135,10 @@ public abstract class BaseContainer extends AbstractContainer {
             return reference;
          }
 
+         if (m.getName().equals("toString")) {
+            return "";
+         }
+
          if (! Utils.isMethodSupported(reference.getClazz(), m)) {
             throw new IllegalArgumentException("Unsupported methd "+m.getName()+" in "+reference.getClazz());
          }

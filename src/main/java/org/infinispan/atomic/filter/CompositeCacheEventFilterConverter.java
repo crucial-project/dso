@@ -1,6 +1,8 @@
 package org.infinispan.atomic.filter;
 
 import org.infinispan.Cache;
+import org.infinispan.atomic.object.Call;
+import org.infinispan.atomic.object.Reference;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.filter.AbstractCacheEventFilterConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheAware;
@@ -36,6 +38,7 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
          // FIXME there should be no marshalling of FC but instead a factory call
          if (converter instanceof ObjectFilterConverter) {
             if (!registry.containsKey(cache)) {
+               log.info("Installing filter-converter on "+cache);
                ((CacheAware) converter).setCache(cache);
                registry.putIfAbsent(cache, (ObjectFilterConverter) converter);
             }
@@ -47,7 +50,17 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
    @Override
    public C filterAndConvert(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata,
          EventType eventType) {
+
       if (log.isTraceEnabled()) log.trace(this+" filterAndConvert() "+newValue+" ("+eventType.getType()+")");
+
+      if ( !(key instanceof Reference)
+            || ((newValue != null) && !(newValue instanceof Call))
+            || ((oldValue != null) && !(oldValue instanceof Call)) ) {
+         log.warn(this + " trashing (" + key + "," + newValue);
+         return null;
+
+      }
+
       C ret = null;
       assert converters.length==2;
       for (CacheEventConverter<? super K, ? super V, ? super C> converter : converters) {
@@ -55,6 +68,7 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
          if (ret == null)
             break;
       }
+
       return ret;
    }
 
