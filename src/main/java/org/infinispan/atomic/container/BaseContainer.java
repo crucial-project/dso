@@ -146,6 +146,10 @@ public abstract class BaseContainer extends AbstractContainer {
             return args[0].equals(proxy);
          }
 
+         if (m.getName().equals("hashCode")) {
+            return reference.hashCode();
+         }
+
          if (m.getName().equals("writeReplace")) {
             open(); // mandatory to create the object remotely
             return reference;
