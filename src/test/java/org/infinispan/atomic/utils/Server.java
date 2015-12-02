@@ -37,8 +37,13 @@ public class Server implements Runnable {
    @Option(name = "-rf", usage = "replication factor")
    private int replicationFactor = 1;
 
+   @Option(name = "-me", usage = "max #entries in the object cache; if set -p is forced")
+   private long maxEntries = Long.MAX_VALUE;
+
    @Option(name = "-p", usage = "use persistence via a single file data store (emptied at each start)")
    private boolean usePersistency = false;
+
+
 
    private Boolean isLaunched = false;
 
@@ -116,6 +121,11 @@ public class Server implements Runnable {
             .concurrencyLevel(10000)
             .lockAcquisitionTimeout(2000);
       builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
+
+      if (maxEntries!=Long.MAX_VALUE) {
+         usePersistency = true;
+         builder.eviction().maxEntries(maxEntries);
+      }
 
       if (usePersistency) {
          builder.persistence()

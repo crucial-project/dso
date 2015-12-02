@@ -41,6 +41,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    protected static Log log = LogFactory.getLog(AtomicObjectFactoryAbstractTest.class);
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
    protected static int NCALLS = 1000;
+   protected static long MAX_ENTRIES = Long.MAX_VALUE;
 
    private final int REPLICATION_FACTOR = 2;
    public int getReplicationFactor(){
@@ -326,7 +327,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       assert rlist.get(0).equals(object1) :  rlist.get(0);
    }
 
-   @Test(enabled = true)
+   @Test(enabled = false)
    public void baseElasticity() throws Exception {
       assertTrue(containers().size() >= 2);
 

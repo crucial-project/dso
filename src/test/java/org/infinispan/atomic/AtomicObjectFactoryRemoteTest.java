@@ -43,6 +43,11 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
       int index = servers.size();
 
       // embedded cache manager
+      if (MAX_ENTRIES!=Long.MAX_VALUE) {
+         defaultBuilder.eviction().maxEntries(MAX_ENTRIES);
+         defaultBuilder.persistence().clearStores();
+         defaultBuilder.persistence().addSingleFileStore().location("/tmp/aof-storage/" + index);
+      }
       addClusterEnabledCacheManager(defaultBuilder).getCache();
       waitForClusterToForm();
 
@@ -110,7 +115,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
 
       assertEquals(manager(0).getTransport().getMembers().size(),getNumberOfManagers());
 
-      AtomicObjectFactory.forCache(cache(0));
+      AtomicObjectFactory.forCache(container(0).getCache());
    }
 
    // Helpers
@@ -125,7 +130,6 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
             .awaitInitialTransfer(true)
             .timeout(1000000)
             .fetchInMemoryState(true);
-
    }
 
 }

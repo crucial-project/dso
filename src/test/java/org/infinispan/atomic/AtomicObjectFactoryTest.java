@@ -31,6 +31,7 @@ public class AtomicObjectFactoryTest extends AtomicObjectFactoryAbstractTest {
             .awaitInitialTransfer(true)
             .timeout(1000000)
             .fetchInMemoryState(true);
+      defaultConfigurationBuilder.eviction().maxEntries(MAX_ENTRIES);
    }
 
    @Override 

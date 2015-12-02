@@ -56,7 +56,8 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
       if ( !(key instanceof Reference)
             || ((newValue != null) && !(newValue instanceof Call))
             || ((oldValue != null) && !(oldValue instanceof Call)) ) {
-         log.warn(this + " trashing (" + key + "," + newValue);
+         if (log.isTraceEnabled())
+            log.trace(this + " trashing (" + key + "," + newValue);
          return null;
 
       }

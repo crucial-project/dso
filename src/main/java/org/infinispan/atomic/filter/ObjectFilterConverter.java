@@ -11,7 +11,9 @@ import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
+import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.notifications.cachelistener.filter.AbstractCacheEventFilterConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheAware;
@@ -395,7 +397,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      Flag.CACHE_MODE_LOCAL,
                      Flag.SKIP_LOCKING,
                      Flag.SKIP_LISTENER_NOTIFICATION,
-                     Flag.IGNORE_RETURN_VALUES)
+                     Flag.IGNORE_RETURN_VALUES,
+                     Flag.SKIP_CACHE_LOAD)
                .put(reference,
                      new CallPersist(
                            TOPOLOGY_CHANGE_UUID,
@@ -501,8 +504,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
          if (isLocalNodeNewComer(startCH))
             return;
 
-         if (log.isTraceEnabled())
-            log.trace("Topology " + event.getNewTopologyId()+" installed");
+         log.info("Topology changed");
 
          for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
 
@@ -522,6 +524,18 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
          }
 
+         log.info("Topology " + event.getNewTopologyId()+" installed");
+
+      }
+
+      @CacheEntriesEvicted
+      public void handleEviction(CacheEntriesEvictedEvent event) {
+         for (Object key : event.getEntries().keySet()) {
+            Reference reference = (Reference) key;
+            persistReference(reference);
+            cleanUpReference(reference);
+            log.info("entry "+reference+" is evicted");
+         }
       }
 
    }

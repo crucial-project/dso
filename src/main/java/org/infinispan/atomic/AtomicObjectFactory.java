@@ -191,8 +191,8 @@ public class AtomicObjectFactory {
    public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
          throws InvalidCacheUsageException {
 
-//      if (Map.class.isAssignableFrom(reference.getClazz()))
-//         return (T) cache;
+      if (Map.class.isAssignableFrom(clazz))
+         return (T) cache;
 
       if( !(Serializable.class.isAssignableFrom(clazz))){
          throw new InvalidCacheUsageException(clazz+" should be serializable.");
@@ -214,7 +214,7 @@ public class AtomicObjectFactory {
 //         }
 //      }
 
-      Reference reference = null;
+      Reference reference;
       AbstractContainer container=null;
 
       try{
@@ -225,7 +225,6 @@ public class AtomicObjectFactory {
          }
 
          if(container==null) {
-            if (log.isDebugEnabled()) log.debug(this + " Creating container");
 
             if (cache instanceof RemoteCache) {
                container = new RemoteContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
@@ -237,28 +236,32 @@ public class AtomicObjectFactory {
             }
 
             reference = container.getReference();
+            if (!registeredContainers.containsKey(reference)) {
+               if (registeredContainers.putIfAbsent(reference, container)==null) {
+                  if (log.isTraceEnabled())
+                     log.trace(this + " adding " + container + " with " + container.getReference());
+               }
+            }
+            container = registeredContainers.get(reference);
+            System.out.println(registeredContainers.size());
          }
-
-         registeredContainers.putIfAbsent(reference, container);
 
       } catch (Exception e){
          e.printStackTrace();
          throw new InvalidCacheUsageException(e.getCause());
       }
 
+      assert container!=null;
+
       return (T) container.getProxy();
 
    }
 
    /**
-    * Remove the object stored at <i>key</i>from the local state.
-    * If flag <i>keepPersistent</i> is set, a persistent copy of the current state of the object is also stored in the cache.
-    *
-    * @param clazz a class object
-    * @param key the key to use in order to store the object.
+    * TO BE REMOVED (might lead to inconsistencies)
     */
    @Deprecated
-   public synchronized void disposeInstanceOf(Class clazz, Object key)
+   public void disposeInstanceOf(Class clazz, Object key)
          throws InvalidCacheUsageException {
 
       Reference reference = new Reference<>(clazz,key);
