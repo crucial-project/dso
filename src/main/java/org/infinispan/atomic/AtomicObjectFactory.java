@@ -236,14 +236,11 @@ public class AtomicObjectFactory {
             }
 
             reference = container.getReference();
-            if (!registeredContainers.containsKey(reference)) {
-               if (registeredContainers.putIfAbsent(reference, container)==null) {
-                  if (log.isTraceEnabled())
-                     log.trace(this + " adding " + container + " with " + container.getReference());
-               }
+            if (registeredContainers.putIfAbsent(reference, container)==null) {
+               if (log.isTraceEnabled())
+                  log.trace(this + " adding " + container + " with " + container.getReference());
             }
             container = registeredContainers.get(reference);
-            System.out.println(registeredContainers.size());
          }
 
       } catch (Exception e){

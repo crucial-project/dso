@@ -106,11 +106,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
          Call call = newValue;
 
-         if (call == null) {
-            cleanUpReference(reference);
-            return null;
-         }
-
           if (log.isTraceEnabled())
              log.trace(" Received [" + call + "] (completed="
                    + completedCalls.containsKey(call) + ", " + reference + " ," + eventType.getType() + ")");

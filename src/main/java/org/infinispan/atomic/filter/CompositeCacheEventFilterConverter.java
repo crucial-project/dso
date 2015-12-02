@@ -54,6 +54,7 @@ public class CompositeCacheEventFilterConverter<K, V, C> extends AbstractCacheEv
       if (log.isTraceEnabled()) log.trace(this+" filterAndConvert() "+newValue+" ("+eventType.getType()+")");
 
       if ( !(key instanceof Reference)
+            || newValue == null
             || ((newValue != null) && !(newValue instanceof Call))
             || ((oldValue != null) && !(oldValue instanceof Call)) ) {
          if (log.isTraceEnabled())
