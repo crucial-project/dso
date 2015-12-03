@@ -28,7 +28,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    private static List<BasicCacheContainer> remoteCacheManagers = new ArrayList<>();
    private static ConfigurationBuilder defaultBuilder;
 
-   @Override 
+   @Override
    public BasicCacheContainer container(int i) {
       return remoteCacheManagers.get(i);
    }
@@ -43,7 +43,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
       int index = servers.size();
 
       // embedded cache manager
-      if (MAX_ENTRIES!=Long.MAX_VALUE) {
+      if (MAX_ENTRIES!=Integer.MAX_VALUE) {
          defaultBuilder.eviction().maxEntries(MAX_ENTRIES);
          defaultBuilder.persistence().clearStores();
          defaultBuilder.persistence().addSingleFileStore().location("/tmp/aof-storage/" + index);

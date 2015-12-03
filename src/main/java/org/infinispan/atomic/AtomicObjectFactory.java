@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static org.infinispan.atomic.object.Reference.unreference;
+
 /**
  * @author Pierre Sutra
  */
@@ -191,28 +193,21 @@ public class AtomicObjectFactory {
    public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
          throws InvalidCacheUsageException {
 
-      if (Map.class.isAssignableFrom(clazz))
-         return (T) cache;
+      if (Map.class.isAssignableFrom(clazz)) {
+         assert key!= null; // can only occur for static distributed field
+         return (T) new DistributedObjectsMap(this,clazz,cache);
+      }
 
       if( !(Serializable.class.isAssignableFrom(clazz))){
          throw new InvalidCacheUsageException(clazz+" should be serializable.");
       }
 
+      // FIXME full check that the class is a Java Bean
       try{
          clazz.getConstructor();
       } catch (NoSuchMethodException e) {
          throw new InvalidCacheUsageException(clazz+" does not have an empty constructor.");
       }
-
-//      for (Field field : reference.getClazz().getDeclaredFields()) {
-//         if ( Modifier.isPublic(field.getModifiers())
-//               && !Modifier.isFinal(field.getModifiers())
-//               && !field.isAnnotationPresent(Key.class)
-//               && !field.isAnnotationPresent(Distribute.class) ) {
-//            throw new InvalidCacheUsageException(reference.getClazz()
-//                  +" field \"" + field.getName() +"\" should not be accessible from the outside.");
-//         }
-//      }
 
       Reference reference;
       AbstractContainer container=null;
@@ -280,7 +275,7 @@ public class AtomicObjectFactory {
       registeredContainers.remove(reference);
 
    }
-   
+
    public void close(){
       for (AbstractContainer container : registeredContainers.values())
          try {
@@ -290,7 +285,7 @@ public class AtomicObjectFactory {
          }
       log.info(this+"Closed");
    }
-   
+
    @Override
    public String toString(){
       return "AOF["+cache.toString()+"]";
@@ -299,14 +294,105 @@ public class AtomicObjectFactory {
    // Helpers
 
    public void assertCacheConfiguration() throws InvalidCacheUsageException {
-      if (cache instanceof Cache 
-            && 
+      if (cache instanceof Cache
+            &&
             (
                   ((Cache)cache).getCacheConfiguration().transaction().transactionMode().isTransactional()
                         ||
                         ((Cache)cache).getCacheConfiguration().locking().useLockStriping()
             ))
          throw new InvalidCacheUsageException("Cache should not be transactional, nor use lock stripping."); // as of 7.2.x
+   }
+
+
+   public static class DistributedObjectsMap implements Map{
+
+      private AtomicObjectFactory factory;
+      private Class clazz;
+      private BasicCache cache;
+
+      public DistributedObjectsMap(AtomicObjectFactory factory, Class clazz, BasicCache cache) {
+         this.factory = factory;
+         this.clazz = clazz;
+         this.cache = cache;
+      }
+
+      private Object transformKey(Object key) {
+         return key;
+      }
+
+      @Override
+      public Object get(Object key) {
+         Object object = cache.get(transformKey(key));
+         if (object instanceof Reference)
+            return unreference((Reference)object,factory);
+         return object;
+      }
+
+
+      @Override
+      public int size() {
+         return cache.size();
+      }
+
+      @Override
+      public boolean isEmpty() {
+         return cache.isEmpty();
+      }
+
+      @Override
+      public boolean containsKey(Object key) {
+         return cache.containsKey(transformKey(key));
+      }
+
+      @Override
+      public boolean containsValue(Object value) {
+         return cache.containsValue(value);
+      }
+
+      @Override
+      public Object put(Object key, Object value) {
+         return cache.put(transformKey(key), value);
+      }
+
+      @Override
+      public Object remove(Object key) {
+         return cache.remove(transformKey(key));
+      }
+
+      @Override
+      public void putAll(Map m) {
+         Set<Map.Entry> entries = m.entrySet();
+         for(Map.Entry entry : entries) {
+            put(transformKey(entry.getKey()),entry.getValue());
+         }
+      }
+
+      @Override
+      public void clear() {
+         cache.clear();
+      }
+
+      @Override
+      public Set keySet() {
+         throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Collection values() {
+         return cache.values();
+      }
+
+      @Override
+      public Set<Entry> entrySet() {
+         throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public String toString(){
+         return cache.toString();
+      }
+
    }
 
 }

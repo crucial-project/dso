@@ -19,8 +19,10 @@ public aspect Marshalling {
    public void Marshallable.writeExternal(ObjectOutput objectOutput) throws IOException {
       try {
          for (Field field : this.getClass().getFields()) {
-            if (!Modifier.isTransient(field.getModifiers())) {
-               objectOutput.writeObject(field.get(this));
+            if (!Modifier.isTransient(field.getModifiers()) &&
+                  !Modifier.isStatic(field.getModifiers())) {
+               Object object = field.get(this);
+               objectOutput.writeObject(object);
             }
          }
       } catch (IllegalAccessException e) {
@@ -32,8 +34,9 @@ public aspect Marshalling {
       AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
       assert factory!=null;
       try {
-         for (Field field : this.getClass().getFields()) {
-            if (!Modifier.isTransient(field.getModifiers())) {
+         for (Field field : this.getClass().getFields()) { // same order assumed across nodes
+            if (!Modifier.isTransient(field.getModifiers()) &&
+                  !Modifier.isStatic(field.getModifiers())){
                Object value = objectInput.readObject();
                if (value instanceof Reference) {
                   value = Reference.unreference((Reference) value, factory);

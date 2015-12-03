@@ -93,7 +93,9 @@ public abstract class AbstractContainer {
             attemps++;
             put(getReference(), call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
-         }catch (Exception e) {
+            if (ret instanceof Throwable)
+               throw new ExecutionException((Throwable) ret);
+         }catch (TimeoutException e) {
             if (!future.isDone())
                log.warn(" Failed "+ call + " ("+e.getMessage()+")");
             if (attemps==MAX_ATTEMPTS) {

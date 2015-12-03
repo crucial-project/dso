@@ -39,11 +39,12 @@ import static org.testng.Assert.assertTrue;
 public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManagersTest {
 
    protected static Log log = LogFactory.getLog(AtomicObjectFactoryAbstractTest.class);
-   protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-   protected static int NCALLS = 1000;
-   protected static long MAX_ENTRIES = Long.MAX_VALUE;
 
-   private final int REPLICATION_FACTOR = 2;
+   protected final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
+   protected final int NCALLS = 1000;
+   protected final int MAX_ENTRIES = Integer.MAX_VALUE;
+   protected final int REPLICATION_FACTOR = 2;
+
    public int getReplicationFactor(){
       return REPLICATION_FACTOR;
    }
@@ -242,8 +243,6 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
       assertTrue(containers().size() >= 2);
 
-      int numMaps = 2;
-
       Iterator<BasicCacheContainer> it = containers().iterator();
 
       BasicCacheContainer container1 = it.next();
@@ -254,18 +253,16 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       BasicCache<Object, Object> cache2 = container2.getCache();
       AtomicObjectFactory factory2 = AtomicObjectFactory.forCache(cache2);
 
-      for (int i = 0; i < numMaps; i++) {
+      for (int i = 0; i < 100; i++) {
          for (int j = 0; j <= i; j++) {
             Map map2 = factory2.getInstanceOf(HashMap.class, "map" + i);
             map2.put(j, i);
          }
       }
 
-      for (int i = 0; i < numMaps; i++) {
-         for (int j = 0; j <= i; j++) {
-            Map map2 = factory1.getInstanceOf(HashMap.class, "map" + i);
-            assertTrue(map2.get(j).equals(i));
-         }
+      for (int i = 0; i < 100; i++) {
+         Map map2 = factory1.getInstanceOf(HashMap.class, "map" + i);
+         assert (map2.get(i).equals(99));
       }
 
    }
@@ -283,8 +280,11 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       assert object1.getField().equals("test2");
 
       // 3 - equals()
-      AdvancedShardedObject advancedShardedObject = new AdvancedShardedObject();
-      assert advancedShardedObject.equals(advancedShardedObject.getSelf());
+      for(int i=0; i<100; i++) {
+         AdvancedShardedObject advancedShardedObject = new AdvancedShardedObject(UUID.randomUUID());
+         AdvancedShardedObject advancedShardedObject1 = advancedShardedObject.getSelf();
+         assert advancedShardedObject.equals(advancedShardedObject1);
+      }
 
    }
 
@@ -311,8 +311,8 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    @Test(enabled = true)
    public void advancedCompositionTest() throws Exception {
-      AdvancedShardedObject object1 = new AdvancedShardedObject();
-      AdvancedShardedObject object2 = new AdvancedShardedObject(object1);
+      AdvancedShardedObject object1 = new AdvancedShardedObject(UUID.randomUUID());
+      AdvancedShardedObject object2 = new AdvancedShardedObject(UUID.randomUUID(), object1);
 
       assert object2.getShard().equals(object1);
       assert object1.flipValue();

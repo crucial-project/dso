@@ -23,12 +23,15 @@ public class AdvancedShardedObject implements ShardedObject{
    private AdvancedShardedObject shard;
    private boolean value;
 
-   public AdvancedShardedObject(){
-      this.uuid = UUID.randomUUID();
+   @Deprecated
+   public AdvancedShardedObject(){}
+
+   public AdvancedShardedObject(UUID uuid){
+      this.uuid = uuid;
    }
 
-   public AdvancedShardedObject(AdvancedShardedObject shard){
-      this.uuid = UUID.randomUUID();
+   public AdvancedShardedObject(UUID uuid, AdvancedShardedObject shard){
+      this.uuid = uuid;
       this.shard = shard;
       this.value = false;
    }
@@ -59,19 +62,20 @@ public class AdvancedShardedObject implements ShardedObject{
 
    @Override
    public boolean equals(Object o) {
+
       if (this == o)
          return true;
+
       if (o == null || !(o instanceof AdvancedShardedObject))
          return false;
 
       AdvancedShardedObject object = (AdvancedShardedObject) o;
 
-      return uuid.equals(object.uuid);
+      return uuid.equals(object.getId());
 
    }
 
-   @Override
-   public int hashCode() {
-      return uuid.hashCode();
+   public UUID getId() {
+      return uuid;
    }
 }

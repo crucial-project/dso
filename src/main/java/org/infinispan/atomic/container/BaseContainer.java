@@ -136,11 +136,13 @@ public abstract class BaseContainer extends AbstractContainer {
       public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable {
 
          if (m.getName().equals("equals")) {
-            if (args[0] == proxy) {
+            if (args[0] == null) {
+               return false;
+            } else if (args[0] == proxy) {
                return true;
             } else if (args[0] instanceof Reference) {
                return reference.equals(args[0]);
-            } if (ProxyFactory.isProxyClass(args[0].getClass())) {
+            } else if (ProxyFactory.isProxyClass(args[0].getClass())) {
                return args[0].equals(reference); // FIXME might not be the most satisfying
             }
             return args[0].equals(proxy);

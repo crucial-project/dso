@@ -151,21 +151,27 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                   UUIDGenerator.setThreadLocal(generators.get(reference));
 
-                  Object response =
-                        Utils.callObject(
-                              objects.get(reference),
-                              invocation.method,
-                              args);
+                  try {
+                     Object response =
+                           Utils.callObject(
+                                 objects.get(reference),
+                                 invocation.method,
+                                 args);
+
+                     future.set(response);
+
+                     if (includeStateTrackers.get(reference))
+                        future.setState(objects.get(reference));
+
+                     if (log.isTraceEnabled())
+                        log.trace(" Called " + invocation + " on "+reference+" (=" +
+                              (response == null ? "null" : response.toString()) + ")");
+
+                  }catch (Throwable e){
+                     future.set(e);
+                  }
 
                   UUIDGenerator.unsetThreadLocal();
-
-                  future.set(response);
-                  if (includeStateTrackers.get(reference))
-                     future.setState(objects.get(reference));
-
-                   if (log.isTraceEnabled())
-                     log.trace(" Called " + invocation + " on "+reference+" (=" +
-                           (response == null ? "null" : response.toString()) + ")");
 
                } else if (call instanceof CallOpen) {
 
@@ -373,7 +379,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       includeStateTrackers.remove((reference));
       generators.remove(reference);
       openCallsCounters.remove(reference);
-      // completedCalls.remove(reference); FIXME
    }
 
    private void persistReference(Reference reference) {
@@ -387,19 +392,17 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       int openCallsCounter = openCallsCounters.get(reference).get();
 
-         cache.getAdvancedCache()
-               .withFlags(
-                     Flag.CACHE_MODE_LOCAL,
-                     Flag.SKIP_LOCKING,
-                     Flag.SKIP_LISTENER_NOTIFICATION,
-                     Flag.IGNORE_RETURN_VALUES,
-                     Flag.SKIP_CACHE_LOAD)
-               .put(reference,
-                     new CallPersist(
-                           TOPOLOGY_CHANGE_UUID,
-                           generators.get(reference).generate(),
-                           marshalledObject,
-                           openCallsCounter));
+      cache.getAdvancedCache()
+            .withFlags(
+                  Flag.CACHE_MODE_LOCAL,
+                  Flag.SKIP_LISTENER_NOTIFICATION,
+                  Flag.IGNORE_RETURN_VALUES)
+            .putAsync(reference,
+                  new CallPersist(
+                        TOPOLOGY_CHANGE_UUID,
+                        generators.get(reference).generate(),
+                        marshalledObject,
+                        openCallsCounter));
    }
 
 //   private void forwardeference(Reference reference) {
@@ -527,9 +530,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       public void handleEviction(CacheEntriesEvictedEvent event) {
          for (Object key : event.getEntries().keySet()) {
             Reference reference = (Reference) key;
-            persistReference(reference);
-            cleanUpReference(reference);
-            log.info("entry "+reference+" is evicted");
+            if (objects.containsKey(reference) && event.getEntries().get(key) instanceof CallPersist)
+               cleanUpReference(reference);
          }
       }
 

@@ -128,6 +128,7 @@ public class Server implements Runnable {
       }
 
       if (usePersistency) {
+         System.out.println("Eviction is ON (maxEntries="+maxEntries+")");
          builder.persistence()
                .addSingleFileStore()
                .location(System.getProperty("store-aof-server" + host))
@@ -135,7 +136,7 @@ public class Server implements Runnable {
                .create();
          builder.eviction().
                strategy(EvictionStrategy.LRU)
-               .maxEntries(100000);
+               .maxEntries(maxEntries);
       }
 
       EmbeddedCacheManager cm = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
