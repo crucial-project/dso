@@ -530,8 +530,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       public void handleEviction(CacheEntriesEvictedEvent event) {
          for (Object key : event.getEntries().keySet()) {
             Reference reference = (Reference) key;
-            if (objects.containsKey(reference) && event.getEntries().get(key) instanceof CallPersist)
-               cleanUpReference(reference);
+            if(log.isTraceEnabled())
+               log.trace(reference+" purged");
          }
       }
 
