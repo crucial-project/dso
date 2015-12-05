@@ -24,6 +24,7 @@ public class Reference<T> implements Externalizable {
    }
 
    public static Object unreference(Object arg, BasicCache cache) {
+      if (arg==null) return null;
       return unreference(Collections.singleton(arg).toArray(),cache)[0];
    }
 

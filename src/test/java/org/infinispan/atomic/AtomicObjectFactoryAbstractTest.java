@@ -224,7 +224,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
          BasicCache<Object, Object> cache = manager.getCache();
          futures.add(service.submit(
                new ExerciseAtomicSetTask(
-                     AtomicObjectFactory.forCache(cache), "distt", NCALLS)));
+                     AtomicObjectFactory.forCache(cache), "hashSet", NCALLS)));
       }
 
       long start = System.currentTimeMillis();
@@ -290,6 +290,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    @Test(enabled = true)
    public void baseCompositionTest() throws Exception {
+      assert org.infinispan.atomic.utils.ShardedObject.class.isAssignableFrom(SimpleShardedObject.class);
       SimpleShardedObject object = new SimpleShardedObject();
       SimpleShardedObject object2 = new SimpleShardedObject(object);
       ShardedObject object3 = object2.getShard();

@@ -153,7 +153,7 @@ public class Utils {
     * @return
     * @throws IllegalAccessException
     */
-   private static boolean isCompatible(final Object object, final Class<?> paramType)
+   public static boolean isCompatible(final Object object, final Class<?> paramType)
          throws IllegalAccessException {
       if(object == null){
          // primitive parameters are the only parameters
@@ -161,7 +161,7 @@ public class Utils {
          return !paramType.isPrimitive();
       }
       // handles same type, super types and implemented interfaces
-      if(paramType.isInstance(object)){
+      if(paramType.isAssignableFrom(object.getClass())){
          return true;
       }
       // special case: the arg may be the Object wrapper for the

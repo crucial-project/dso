@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.infinispan.atomic.object.Utils.initObject;
+import static org.infinispan.atomic.object.Utils.isCompatible;
 
 /**
  * @author Pierre Sutra
@@ -148,6 +149,10 @@ public abstract class BaseContainer extends AbstractContainer {
             return args[0].equals(proxy);
          }
 
+         if (m.getName().equals("toString")) {
+            return reference.toString();
+         }
+
          if (m.getName().equals("hashCode")) {
             return reference.hashCode();
          }
@@ -187,14 +192,17 @@ public abstract class BaseContainer extends AbstractContainer {
                      args)
          );
 
-
          if (pendingCalls.decrementAndGet()==0) {
             synchronized (container) {
                container.notifyAll();
             }
          }
 
-         return Reference.unreference(ret, getCache());
+         ret = Reference.unreference(ret, getCache());
+
+         assert (m.getReturnType().equals(Void.TYPE) && ret==null) || isCompatible(ret,m.getReturnType());
+
+         return ret;
 
       }
 
