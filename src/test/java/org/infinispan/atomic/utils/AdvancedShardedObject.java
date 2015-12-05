@@ -27,7 +27,7 @@ public class AdvancedShardedObject implements ShardedObject{
    public AdvancedShardedObject(){}
 
    public AdvancedShardedObject(UUID uuid){
-      this.uuid = uuid;
+      this(uuid,null);
    }
 
    public AdvancedShardedObject(UUID uuid, AdvancedShardedObject shard){
