@@ -318,7 +318,7 @@ public class AtomicObjectFactory {
       }
 
       private Object transformKey(Object key) {
-         return key;
+         return clazz.toString()+"#"+ key.toString(); // FIXME
       }
 
       @Override
