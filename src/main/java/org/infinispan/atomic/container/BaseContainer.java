@@ -200,7 +200,8 @@ public abstract class BaseContainer extends AbstractContainer {
 
          ret = Reference.unreference(ret, getCache());
 
-         assert (m.getReturnType().equals(Void.TYPE) && ret==null) || isCompatible(ret,m.getReturnType());
+         assert (m.getReturnType().equals(Void.TYPE) && ret==null) || isCompatible(ret,m.getReturnType())
+               : m.getReturnType()+" => "+ret.getClass() + " ["+reference.getClazz()+"."+m.getName()+"()]";
 
          return ret;
 

@@ -28,6 +28,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,7 +46,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
    // Class fields & methods
    private static final Log log = LogFactory.getLog(ObjectFilterConverter.class);
-   private static final long MAX_COMPLETED_CALLS = 1000; // around 1s at max throughput, not much...
+   private static final long MAX_COMPLETED_CALLS = 1000; // around 1s at max throughput, not much... and already too much
    public static final UUID TOPOLOGY_CHANGE_UUID = new UUID(0, 0);
 
    // Per-object fields
@@ -183,7 +184,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      generators.putIfAbsent(
                            reference,
                            new RandomBasedGenerator(
-                                 new Random(call.getCallID().getLeastSignificantBits())));
+                                 new SecureRandom(call.getCallID().toString().getBytes())));
 
                   if (callOpen.getForceNew()) {
 
