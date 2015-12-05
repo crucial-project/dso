@@ -195,7 +195,7 @@ public class AtomicObjectFactory {
 
       if (Map.class.isAssignableFrom(clazz)) {
          assert key!= null; // can only occur for static distributed field
-         return (T) new DistributedObjectsMap(this,clazz,cache);
+         return (T) new DistributedObjectsMap(this,key,cache);
       }
 
       if( !(Serializable.class.isAssignableFrom(clazz))){
@@ -308,17 +308,17 @@ public class AtomicObjectFactory {
    public static class DistributedObjectsMap implements Map{
 
       private AtomicObjectFactory factory;
-      private Class clazz;
+      private Object key;
       private BasicCache cache;
 
-      public DistributedObjectsMap(AtomicObjectFactory factory, Class clazz, BasicCache cache) {
+      public DistributedObjectsMap(AtomicObjectFactory factory, Object key, BasicCache cache) {
          this.factory = factory;
-         this.clazz = clazz;
+         this.key= key;
          this.cache = cache;
       }
 
       private Object transformKey(Object key) {
-         return clazz.toString()+"#"+ key.toString(); // FIXME
+         return key.toString()+"#"+ key.toString(); // FIXME
       }
 
       @Override
