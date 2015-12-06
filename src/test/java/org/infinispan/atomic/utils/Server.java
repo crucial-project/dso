@@ -99,9 +99,7 @@ public class Server {
                .strategy(EvictionStrategy.LRU);
          SingleFileStoreConfigurationBuilder storeConfigurationBuilder
                = builder.persistence().addSingleFileStore();
-         storeConfigurationBuilder
-               .location(System.getProperty("store-aof-server" + host))
-               .purgeOnStartup(true);
+         storeConfigurationBuilder.location(System.getProperty("store-aof-server" + host));
          storeConfigurationBuilder.purgeOnStartup(false);
          storeConfigurationBuilder.fetchPersistentState(true);
          storeConfigurationBuilder.persistence().passivation(true);
