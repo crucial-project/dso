@@ -5,7 +5,6 @@ import org.infinispan.atomic.filter.FilterConverterFactory;
 import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.CallFuture;
 import org.infinispan.atomic.object.Reference;
-import org.infinispan.atomic.utils.UUIDGenerator;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryCreated;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryModified;
@@ -77,8 +76,8 @@ public class RemoteContainer extends BaseContainer {
    }
 
    @Override
-   public void put(Reference reference, Call call) {
-      cache.put(reference, call);
+   public void putAsync(Reference reference, Call call) {
+      cache.putAsync(reference, call);
    }
 
    @Override
@@ -94,7 +93,7 @@ public class RemoteContainer extends BaseContainer {
       private UUID id;
 
       public Listener(){
-         id = UUIDGenerator.generate();
+         id = UUID.randomUUID();
       }
 
       public UUID getId(){

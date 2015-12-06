@@ -3,7 +3,6 @@ package org.infinispan.atomic.container;
 import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.Reference;
 import org.infinispan.atomic.object.Utils;
-import org.infinispan.atomic.utils.UUIDGenerator;
 import org.infinispan.commons.api.BasicCache;
 
 import java.io.IOException;
@@ -65,11 +64,11 @@ public class FakeContainer extends AbstractContainer {
 
    @Override 
    public UUID listenerID() {
-      return UUIDGenerator.generate();
+      return UUID.randomUUID();
    }
 
    @Override
-   public void put(Reference reference, Call call) {
+   public void putAsync(Reference reference, Call call) {
       cache.put(reference,call);
    }
 

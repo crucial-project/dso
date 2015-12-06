@@ -6,7 +6,6 @@ import org.infinispan.atomic.filter.FilterConverterFactory;
 import org.infinispan.atomic.object.Call;
 import org.infinispan.atomic.object.CallFuture;
 import org.infinispan.atomic.object.Reference;
-import org.infinispan.atomic.utils.UUIDGenerator;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -68,8 +67,8 @@ public class LocalContainer extends BaseContainer {
    }
 
    @Override
-   public void put(Reference reference, Call call) {
-      cache.put(reference, call);
+   public void putAsync(Reference reference, Call call) {
+      cache.putAsync(reference, call);
    }
 
    @Override
@@ -83,7 +82,7 @@ public class LocalContainer extends BaseContainer {
       private UUID id;
       
       public Listener(){
-         id = UUIDGenerator.generate();
+         id = UUID.randomUUID();
       }
       
       public UUID getId(){

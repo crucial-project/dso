@@ -72,7 +72,7 @@ public abstract class AbstractContainer {
 
    public abstract UUID listenerID();
 
-   public abstract void put(Reference reference, Call call);
+   public abstract void putAsync(Reference reference, Call call);
 
    public abstract BasicCache getCache();
 
@@ -91,7 +91,7 @@ public abstract class AbstractContainer {
       while(!future.isDone()) {
          try {
             attemps++;
-            put(getReference(), call);
+            putAsync(getReference(), call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
             if (ret instanceof Throwable)
                throw new ExecutionException((Throwable) ret);

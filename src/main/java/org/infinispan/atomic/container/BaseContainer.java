@@ -7,13 +7,14 @@ import javassist.util.proxy.ProxyObject;
 import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.atomic.object.*;
-import org.infinispan.atomic.utils.UUIDGenerator;
+import org.infinispan.atomic.utils.ThreadLocalUUIDGenerator;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,13 +76,13 @@ public abstract class BaseContainer extends AbstractContainer {
       if (!isOpen) {
 
          if (log.isTraceEnabled())
-            log.trace(this + " Opening.");
+            log.trace(" Opening.");
 
-         execute(new CallOpen(listenerID(), UUIDGenerator.generate(), forceNew, initArgs, readOptimization));
+         execute(new CallOpen(listenerID(), UUID.randomUUID(), forceNew, initArgs, readOptimization));
          isOpen = true;
 
          if (log.isTraceEnabled())
-            log.trace(this + " Opened.");
+            log.trace(" Opened.");
 
       }
 
@@ -92,7 +93,7 @@ public abstract class BaseContainer extends AbstractContainer {
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
       if (log.isTraceEnabled())
-         log.trace(this + " Closing.");
+         log.trace(" Closing.");
 
       while (pendingCalls.get() != 0) {
          this.wait();
@@ -100,14 +101,14 @@ public abstract class BaseContainer extends AbstractContainer {
 
       if (isOpen) {
 
-         execute(new CallClose(listenerID(), UUIDGenerator.generate()));
+         execute(new CallClose(listenerID(), UUID.randomUUID()));
          isOpen = false;
          forceNew = false;
 
       }
 
       if (log.isTraceEnabled())
-         log.trace(this + " Closed.");
+         log.trace(" Closed.");
 
    }
 
@@ -135,6 +136,9 @@ public abstract class BaseContainer extends AbstractContainer {
       }
 
       public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable {
+
+         if(log.isTraceEnabled())
+            log.trace("Calling "+reference.getClazz()+"."+m.getName()+"("+ Arrays.toString(args)+")");
 
          if (m.getName().equals("equals")) {
             if (args[0] == null) {
@@ -169,11 +173,11 @@ public abstract class BaseContainer extends AbstractContainer {
          if (readOptimization 
                && state != null
                && (m.isAnnotationPresent(ReadOnly.class))) {
-            if (log.isTraceEnabled()) log.trace(this + "local call: "+m.getName());
+            if (log.isTraceEnabled()) log.trace("local call: "+m.getName());
             return Utils.callObject(state,m.getName(),args);
          }else{
             if (log.isTraceEnabled())
-               log.trace(this + "remote call: "+m.getName()+";reason: +"
+               log.trace("remote call: "+m.getName()+";reason: +"
                      + "null state="+new Boolean(state==null)+", "
                      + "isAnnotationPresent="+new Boolean(m.isAnnotationPresent(ReadOnly.class)));
          }
@@ -182,8 +186,14 @@ public abstract class BaseContainer extends AbstractContainer {
 
          open();
 
-         RandomBasedGenerator generator = UUIDGenerator.getThreadLocal();
-         UUID uuid = generator==null ? UUIDGenerator.generate() : generator.generate();
+         // handle UUID generator
+         RandomBasedGenerator generator = ThreadLocalUUIDGenerator.getThreadLocal();
+         UUID uuid = generator==null ? UUID.randomUUID() : generator.generate();
+         if (log.isTraceEnabled()) {
+               log.trace("generated " + uuid + " m=" + m.getName()
+                     + ", reference=" + reference + "[" + ((generator == null) ? "null" : generator.toString())+ "]");
+         }
+
          Object ret = execute(
                new CallInvoke(
                      listenerID(),

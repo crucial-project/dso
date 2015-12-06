@@ -55,7 +55,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test(enabled = true)
-   public void basePropertiesTest() throws Exception {
+   public void baseProperties() throws Exception {
 
       // 0 - validate cache atomicity
       for(int i=0; i<100; i++) {
@@ -66,7 +66,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test
-   public void baseUsageTest() throws Exception {
+   public void baseUsage() throws Exception {
 
       BasicCacheContainer cacheManager = containers().iterator().next();
       BasicCache<Object, Object> cache = cacheManager.getCache();
@@ -105,7 +105,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test
-   public void persistenceTest() throws Exception {
+   public void persistence() throws Exception {
 
       assertTrue(containers().size() >= 2);
 
@@ -157,7 +157,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test
-   public void baseReadOptimizationTest() throws Exception {
+   public void baseReadOptimization() throws Exception {
       SimpleObject object = new SimpleObject();
       object.setField("something");
       String field = object.getField();
@@ -170,7 +170,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test
-   public void performanceReadOptimizationTest() throws Exception {
+   public void advancedReadOptimization() throws Exception {
 
       int f = 10; // multiplicative factor
       SimpleObject object = new SimpleObject("performance");
@@ -215,7 +215,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test
-   public void distributedUsageTest() throws Exception {
+   public void concurrentUpdate() throws Exception {
 
       ExecutorService service = Executors.newCachedThreadPool();
       List<Future<Integer>> futures = new ArrayList<>();
@@ -239,7 +239,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test
-   public void distributedCacheTest() throws Exception {
+   public void multipleCreation() throws Exception {
 
       assertTrue(containers().size() >= 2);
 
@@ -253,22 +253,21 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
       BasicCache<Object, Object> cache2 = container2.getCache();
       AtomicObjectFactory factory2 = AtomicObjectFactory.forCache(cache2);
 
-      for (int i = 0; i < 100; i++) {
-         for (int j = 0; j <= i; j++) {
-            Map map2 = factory2.getInstanceOf(HashMap.class, "map" + i);
-            map2.put(j, i);
-         }
+      int n = 100;
+      for (int i = 0; i < n; i++) {
+         ArrayList list = factory2.getInstanceOf(ArrayList.class, "list"+i);
+         list.add(i);
       }
 
-      for (int i = 0; i < 100; i++) {
-         Map map2 = factory1.getInstanceOf(HashMap.class, "map" + i);
-         assert (map2.get(i).equals(99));
+      for (int i = 0; i < n; i++) {
+         ArrayList list = factory1.getInstanceOf(ArrayList.class, "list"+i);
+         assert (list.get(0).equals(i)) : list.get(0);
       }
 
    }
 
    @Test
-   public void baseAspectJTest() throws Exception {
+   public void baseAspectJ() throws Exception {
 
       // 1 - constructor
       SimpleObject object = new SimpleObject();
@@ -289,7 +288,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test(enabled = true)
-   public void baseCompositionTest() throws Exception {
+   public void baseComposition() throws Exception {
       assert org.infinispan.atomic.utils.ShardedObject.class.isAssignableFrom(SimpleShardedObject.class);
       SimpleShardedObject object = new SimpleShardedObject();
       SimpleShardedObject object2 = new SimpleShardedObject(object);
@@ -311,7 +310,7 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    }
 
    @Test(enabled = true)
-   public void advancedCompositionTest() throws Exception {
+   public void advancedComposition() throws Exception {
       AdvancedShardedObject object1 = new AdvancedShardedObject(UUID.randomUUID());
       AdvancedShardedObject object2 = new AdvancedShardedObject(UUID.randomUUID(), object1);
 
@@ -332,16 +331,16 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    public void baseElasticity() throws Exception {
       assertTrue(containers().size() >= 2);
 
-      persistenceTest();
-      advancedCompositionTest();
+      persistence();
+      advancedComposition();
 
       addContainer();
-      persistenceTest();
-      advancedCompositionTest();
+      persistence();
+      advancedComposition();
 
       deleteContainer();
-      persistenceTest();
-      advancedCompositionTest();
+      persistence();
+      advancedComposition();
    }
 
    @Test(enabled = false)

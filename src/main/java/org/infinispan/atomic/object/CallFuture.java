@@ -57,10 +57,6 @@ public class CallFuture implements Future<Object>, Externalizable {
       return callID;
    }
 
-   public UUID setCallID(UUID id){
-      return callID = id;
-   }
-   
    @Override
    public boolean equals(Object o){
       return o instanceof CallFuture&& ((CallFuture) o).callID.equals(this.callID);
@@ -118,7 +114,7 @@ public class CallFuture implements Future<Object>, Externalizable {
 
    @Override
    public String toString() {
-      return "Future["+callID+"]";
+      return "Future["+callID+","+ret+"]";
    }
 
    @Override

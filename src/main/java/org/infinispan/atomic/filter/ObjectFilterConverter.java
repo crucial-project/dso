@@ -6,7 +6,7 @@ import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.object.*;
-import org.infinispan.atomic.utils.UUIDGenerator;
+import org.infinispan.atomic.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.metadata.Metadata;
@@ -28,7 +28,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -150,7 +149,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                         invocation.arguments,
                         cache);
 
-                  UUIDGenerator.setThreadLocal(generators.get(reference));
+                  ThreadLocalUUIDGenerator.setThreadLocal(generators.get(reference));
 
                   try {
                      Object response =
@@ -172,7 +171,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      future.set(e);
                   }
 
-                  UUIDGenerator.unsetThreadLocal();
+                  ThreadLocalUUIDGenerator.unsetThreadLocal();
 
                } else if (call instanceof CallOpen) {
 
@@ -184,7 +183,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                      generators.putIfAbsent(
                            reference,
                            new RandomBasedGenerator(
-                                 new SecureRandom(call.getCallID().toString().getBytes())));
+                                 new Random(call.getCallID().getLeastSignificantBits()
+                                       +call.getCallID().getMostSignificantBits())));
 
                   if (callOpen.getForceNew()) {
 
@@ -530,9 +530,11 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       @CacheEntriesEvicted
       public void handleEviction(CacheEntriesEvictedEvent event) {
          for (Object key : event.getEntries().keySet()) {
-            Reference reference = (Reference) key;
-            if(log.isTraceEnabled())
-               log.trace(reference+" purged");
+            if (key instanceof Reference) {
+               Reference reference = (Reference) key;
+               if (log.isTraceEnabled())
+                  log.trace(reference + " purged");
+            }
          }
       }
 

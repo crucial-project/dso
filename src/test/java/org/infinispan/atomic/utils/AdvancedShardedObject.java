@@ -50,8 +50,10 @@ public class AdvancedShardedObject implements ShardedObject{
    }
 
    public boolean flipValue(){
-      if (shard!=null)
+      if (shard!=null) {
+         shard.getId();  // for the sake of adding another call
          return shard.flipValue();
+      }
       value = !value;
       return value;
    }
