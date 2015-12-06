@@ -18,12 +18,12 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static org.infinispan.atomic.object.Reference.unreference;
 
@@ -63,23 +63,7 @@ public class AtomicObjectFactory {
       return factories.get(cache);
    }
 
-   protected static final int MAX_CONTAINERS=Integer.MAX_VALUE;
-   public static final Map<Class,List<String>> updateMethods;
-   static{
-      updateMethods = new HashMap<>();
-
-      updateMethods.put(List.class, new ArrayList<String>());
-      updateMethods.get(List.class).add("retrieve");
-      updateMethods.get(List.class).add("addAll");
-
-      updateMethods.put(Set.class, new ArrayList<String>());
-      updateMethods.get(Set.class).add("retrieve");
-      updateMethods.get(Set.class).add("addAll");
-
-      updateMethods.put(Map.class, new ArrayList<String>());
-      updateMethods.get(Map.class).add("put");
-      updateMethods.get(Map.class).add("putAll");
-   }
+   protected static final int MAX_CONTAINERS=100;
 
    // Object fields
 
@@ -116,8 +100,7 @@ public class AtomicObjectFactory {
                @Override
                public void onRemoval(RemovalNotification<Reference, AbstractContainer> objectObjectRemovalNotification) {
                   try {
-                     AbstractContainer container = objectObjectRemovalNotification.getValue();
-                     if (!container.isClosed()) container.close();
+                     disposeInstanceOf(objectObjectRemovalNotification.getValue().getReference());
                   } catch (Exception e) {
                      e.printStackTrace();
                   }
@@ -249,11 +232,13 @@ public class AtomicObjectFactory {
 
    }
 
-   /**
-    * TO BE REMOVED (might lead to inconsistencies)
-    */
-   @Deprecated
-   public void disposeInstanceOf(Class clazz, Object key)
+
+   void disposeInstanceOf(Reference reference)
+         throws InvalidCacheUsageException {
+      disposeInstanceOf(reference.getClazz(), reference.getKey());
+   }
+
+   void disposeInstanceOf(Class clazz, Object key)
          throws InvalidCacheUsageException {
 
       Reference reference = new Reference<>(clazz,key);
@@ -261,29 +246,25 @@ public class AtomicObjectFactory {
       AbstractContainer container = registeredContainers.get(reference);
 
       if (log.isDebugEnabled())
-         log.debug(this + " Dispsing " + container);
+         log.debug(" disposing " + container);
 
       if( container == null ) return;
+
+      registeredContainers.remove(reference);
 
       try{
          container.close();
       }catch (Exception e){
          e.printStackTrace();
-         throw new InvalidCacheUsageException("Error while disposing object "+key);
+         throw new InvalidCacheUsageException("Error while closing  "+container);
       }
-
-      registeredContainers.remove(reference);
 
    }
 
    public void close(){
       for (AbstractContainer container : registeredContainers.values())
-         try {
-            container.close();
-         } catch (InterruptedException | ExecutionException | TimeoutException | IOException e) {
-            e.printStackTrace();
-         }
-      log.info(this+"Closed");
+         disposeInstanceOf(container.getReference());
+      log.info("closed");
    }
 
    @Override

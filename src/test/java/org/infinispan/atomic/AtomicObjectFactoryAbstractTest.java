@@ -15,7 +15,6 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
-import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.AfterClass;
@@ -34,7 +33,6 @@ import static org.testng.Assert.assertTrue;
  * @author Pierre Sutra
  */
 
-@CleanupAfterMethod
 @Test(testName = "AtomicObjectFactoryAbstractTest", groups = "unit", enabled = false)
 public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManagersTest {
 

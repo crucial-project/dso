@@ -3,7 +3,6 @@ package org.infinispan.atomic.filter;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
-import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.ThreadLocalUUIDGenerator;
@@ -11,9 +10,9 @@ import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
-import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.notifications.cachelistener.filter.AbstractCacheEventFilterConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheAware;
@@ -77,7 +76,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       if (log.isTraceEnabled())log.trace(" setCache(" + cache + ")");
       this.cache = cache;
-      AtomicObjectFactory.forCache(cache);
 
       this.topologyChangeListener = new TopologyChangeListener();
       this.cache.addListener(topologyChangeListener);
@@ -386,7 +384,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       assert (objects.get(reference) != null);
 
-      if (log.isTraceEnabled())
+      if (log.isInfoEnabled())
          log.trace(" Persisting [" + reference + "]");
 
       byte[] marshalledObject = marshall(objects.get(reference));
@@ -397,7 +395,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
             .withFlags(
                   Flag.CACHE_MODE_LOCAL,
                   Flag.SKIP_LISTENER_NOTIFICATION,
-                  Flag.IGNORE_RETURN_VALUES)
+                  Flag.IGNORE_RETURN_VALUES,
+                  Flag.SKIP_CACHE_LOAD)
             .putAsync(reference,
                   new CallPersist(
                         TOPOLOGY_CHANGE_UUID,
@@ -494,47 +493,45 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       @DataRehashed
       public void topologyChangeOUT(DataRehashedEvent event) {
 
-         if (!event.isPre())
-            return;
-
-         ConsistentHash startCH = event.getConsistentHashAtStart();
-         ConsistentHash endCH = event.getConsistentHashAtEnd();
-
-         if (isLocalNodeNewComer(startCH))
-            return;
-
-         log.info("Topology changed");
-
-         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
-
-            Reference reference = entry.getKey();
-
-            AtomicInteger openCallCounter = entry.getValue();
-
-            if (!isOwnershipChanged(reference, startCH, endCH))
-               continue;
-
-            synchronized (openCallCounter) {
-               if (objects.containsKey(reference)) {
-                  assert generators.containsKey(reference) && objects.containsKey(reference);
-                  persistReference(reference);
-               }
-            }
-
-         }
+//         if (!event.isPre())
+//            return;
+//
+//         ConsistentHash startCH = event.getConsistentHashAtStart();
+//         ConsistentHash endCH = event.getConsistentHashAtEnd();
+//
+//         if (isLocalNodeNewComer(startCH))
+//            return;
+//
+//         log.info("Topology changed");
+//
+//         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
+//
+//            Reference reference = entry.getKey();
+//
+//            AtomicInteger openCallCounter = entry.getValue();
+//
+//            if (!isOwnershipChanged(reference, startCH, endCH))
+//               continue;
+//
+//            synchronized (openCallCounter) {
+//               if (objects.containsKey(reference) && openCallCounter.get()!=0) {
+//                  assert generators.containsKey(reference) && objects.containsKey(reference);
+//                  persistReference(reference);
+//               }
+//            }
+//
+//         }
 
          log.info("Topology " + event.getNewTopologyId()+" installed");
 
       }
 
-      @CacheEntriesEvicted
-      public void handleEviction(CacheEntriesEvictedEvent event) {
-         for (Object key : event.getEntries().keySet()) {
-            if (key instanceof Reference) {
-               Reference reference = (Reference) key;
-               if (log.isTraceEnabled())
-                  log.trace(reference + " purged [" + (event.getEntries().get(key) instanceof CallPersist)+"]");
-            }
+      @CacheEntryPassivated
+      public void passivationTrigger(CacheEntryPassivatedEvent event) {
+         if (event.getKey() instanceof Reference) {
+            Reference reference = (Reference) event.getKey();
+            if (log.isInfoEnabled())
+               log.info(reference + " passivated [" + (event.getKey() instanceof CallPersist) + "]");
          }
       }
 

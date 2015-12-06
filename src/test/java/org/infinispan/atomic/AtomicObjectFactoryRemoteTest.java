@@ -7,6 +7,7 @@ import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
@@ -44,9 +45,10 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    public boolean addContainer() {
       int index = servers.size();
 
-      // embedded cache manager
+      // set-up data persistence
       if (MAX_ENTRIES!=Integer.MAX_VALUE) {
          defaultBuilder.eviction().maxEntries(MAX_ENTRIES);
+         defaultBuilder.eviction().strategy(EvictionStrategy.LRU);
 
          File file = new File(PERSISTENT_STORAGE_DIR + "/" + index);
          if (file.exists()) {
@@ -62,9 +64,10 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
          storeConfigurationBuilder.location(file.getPath());
          storeConfigurationBuilder.purgeOnStartup(true);
          storeConfigurationBuilder.fetchPersistentState(false);
-
+         storeConfigurationBuilder.persistence().passivation(true);
       }
 
+      // embedded cache manager
       addClusterEnabledCacheManager(defaultBuilder).getCache();
       waitForClusterToForm();
 
