@@ -6,11 +6,13 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,9 +47,24 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
       // embedded cache manager
       if (MAX_ENTRIES!=Integer.MAX_VALUE) {
          defaultBuilder.eviction().maxEntries(MAX_ENTRIES);
-         defaultBuilder.persistence().clearStores();
-         defaultBuilder.persistence().addSingleFileStore().location("/tmp/aof-storage/" + index);
+
+         File file = new File(PERSISTENT_STORAGE_DIR + "/" + index);
+         if (file.exists()) {
+            // clear previous stuff
+            for (File children : file.listFiles()) {
+               children.delete();
+            }
+            file.delete();
+         }
+
+         SingleFileStoreConfigurationBuilder storeConfigurationBuilder
+               = defaultBuilder.persistence().addSingleFileStore();
+         storeConfigurationBuilder.location(file.getPath());
+         storeConfigurationBuilder.purgeOnStartup(true);
+         storeConfigurationBuilder.fetchPersistentState(false);
+
       }
+
       addClusterEnabledCacheManager(defaultBuilder).getCache();
       waitForClusterToForm();
 

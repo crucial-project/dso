@@ -40,10 +40,11 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
 
    protected static Log log = LogFactory.getLog(AtomicObjectFactoryAbstractTest.class);
 
-   protected final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-   protected final int NCALLS = 1000;
-   protected final int MAX_ENTRIES = Integer.MAX_VALUE;
-   protected final int REPLICATION_FACTOR = 2;
+   protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
+   protected static final int NCALLS = 1000;
+   protected static final int MAX_ENTRIES = 100;
+   protected static final int REPLICATION_FACTOR = 2;
+   protected static final String PERSISTENT_STORAGE_DIR = "/tmp/aof-storage";
 
    public int getReplicationFactor(){
       return REPLICATION_FACTOR;

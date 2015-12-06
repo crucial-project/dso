@@ -533,7 +533,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
             if (key instanceof Reference) {
                Reference reference = (Reference) key;
                if (log.isTraceEnabled())
-                  log.trace(reference + " purged");
+                  log.trace(reference + " purged [" + (event.getEntries().get(key) instanceof CallPersist)+"]");
             }
          }
       }
