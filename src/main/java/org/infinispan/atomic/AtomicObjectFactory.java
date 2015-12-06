@@ -48,13 +48,11 @@ public class AtomicObjectFactory {
    }
 
    public synchronized static AtomicObjectFactory forCache(BasicCache cache, int maxContainers){
-      String cacheName =
-            (cache.getName().equals(BasicCacheContainer.DEFAULT_CACHE_NAME))
-                  ? "" : cache.getName(); // unify remote and embedded
-
       if (!factories.containsKey(cache))
          factories.put(cache,new AtomicObjectFactory(cache, maxContainers));
 
+      String cacheName = (cache.getName().equals(BasicCacheContainer.DEFAULT_CACHE_NAME))
+            ? "" : cache.getName(); // unify remote and embedded
       if (singleton ==null && cacheName.equals("")) {
          singleton = factories.get(cache);
          log.info("AOF singleton  is "+ singleton);
@@ -63,7 +61,7 @@ public class AtomicObjectFactory {
       return factories.get(cache);
    }
 
-   protected static final int MAX_CONTAINERS=100;
+   protected static final int MAX_CONTAINERS=Integer.MAX_VALUE;
 
    // Object fields
 
@@ -98,9 +96,9 @@ public class AtomicObjectFactory {
             .maximumSize(MAX_CONTAINERS)
             .removalListener(new RemovalListener<Reference, AbstractContainer>() {
                @Override
-               public void onRemoval(RemovalNotification<Reference, AbstractContainer> objectObjectRemovalNotification) {
+               public void onRemoval(RemovalNotification<Reference, AbstractContainer> notifiication) {
                   try {
-                     disposeInstanceOf(objectObjectRemovalNotification.getValue().getReference());
+                     disposeInstanceOf(notifiication.getValue().getReference());
                   } catch (Exception e) {
                      e.printStackTrace();
                   }
@@ -245,10 +243,10 @@ public class AtomicObjectFactory {
 
       AbstractContainer container = registeredContainers.get(reference);
 
+      if( container == null ) return;
+
       if (log.isDebugEnabled())
          log.debug(" disposing " + container);
-
-      if( container == null ) return;
 
       registeredContainers.remove(reference);
 
@@ -298,7 +296,7 @@ public class AtomicObjectFactory {
          this.cache = cache;
       }
 
-      // FIXME use instead (reference, key)
+      // FIXME use instead an object pairing (reference, key)
       private Object transformKey(Object key) {
          return reference.toString()+"#"+ key.toString(); // portable
       }

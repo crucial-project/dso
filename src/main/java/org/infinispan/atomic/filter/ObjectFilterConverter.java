@@ -3,6 +3,7 @@ package org.infinispan.atomic.filter;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
+import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.Distributed;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.ThreadLocalUUIDGenerator;
@@ -76,6 +77,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       if (log.isTraceEnabled())log.trace(" setCache(" + cache + ")");
       this.cache = cache;
+      AtomicObjectFactory.forCache(cache,
+            (int) cache.getAdvancedCache().getCacheConfiguration().eviction().maxEntries()/2);
 
       this.topologyChangeListener = new TopologyChangeListener();
       this.cache.addListener(topologyChangeListener);
@@ -228,10 +231,9 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
                } else if (call instanceof CallClose) {
 
-                  assert openCallsCounters.get(reference).get() >= 0;
+                  assert openCallsCounters.get(reference).get() > 0;
 
-                  if (openCallsCounters.get(reference).get() > 0)
-                     openCallsCounters.get(reference).decrementAndGet();
+                  openCallsCounters.get(reference).decrementAndGet();
 
                   if (log.isTraceEnabled())
                      log.trace(" OpenCallsCounters = " + openCallsCounters.get(reference));
@@ -384,7 +386,7 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       assert (objects.get(reference) != null);
 
-      if (log.isInfoEnabled())
+      if (log.isTraceEnabled())
          log.trace(" Persisting [" + reference + "]");
 
       byte[] marshalledObject = marshall(objects.get(reference));
@@ -493,34 +495,34 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       @DataRehashed
       public void topologyChangeOUT(DataRehashedEvent event) {
 
-//         if (!event.isPre())
-//            return;
-//
-//         ConsistentHash startCH = event.getConsistentHashAtStart();
-//         ConsistentHash endCH = event.getConsistentHashAtEnd();
-//
-//         if (isLocalNodeNewComer(startCH))
-//            return;
-//
-//         log.info("Topology changed");
-//
-//         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
-//
-//            Reference reference = entry.getKey();
-//
-//            AtomicInteger openCallCounter = entry.getValue();
-//
-//            if (!isOwnershipChanged(reference, startCH, endCH))
-//               continue;
-//
-//            synchronized (openCallCounter) {
-//               if (objects.containsKey(reference) && openCallCounter.get()!=0) {
-//                  assert generators.containsKey(reference) && objects.containsKey(reference);
-//                  persistReference(reference);
-//               }
-//            }
-//
-//         }
+         if (!event.isPre())
+            return;
+
+         ConsistentHash startCH = event.getConsistentHashAtStart();
+         ConsistentHash endCH = event.getConsistentHashAtEnd();
+
+         if (isLocalNodeNewComer(startCH))
+            return;
+
+         log.info("Topology changed");
+
+         for (Map.Entry<Reference, AtomicInteger> entry : openCallsCounters.entrySet()) {
+
+            Reference reference = entry.getKey();
+
+            AtomicInteger openCallCounter = entry.getValue();
+
+            if (!isOwnershipChanged(reference, startCH, endCH))
+               continue;
+
+            synchronized (openCallCounter) {
+               if (objects.containsKey(reference) && openCallCounter.get()!=0) {
+                  assert generators.containsKey(reference) && objects.containsKey(reference);
+                  persistReference(reference);
+               }
+            }
+
+         }
 
          log.info("Topology " + event.getNewTopologyId()+" installed");
 
@@ -530,8 +532,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       public void passivationTrigger(CacheEntryPassivatedEvent event) {
          if (event.getKey() instanceof Reference) {
             Reference reference = (Reference) event.getKey();
-            if (log.isInfoEnabled())
-               log.info(reference + " passivated [" + (event.getKey() instanceof CallPersist) + "]");
+            if (log.isTraceEnabled())
+               log.trace(reference + " passivated [" + (event.getKey() instanceof CallPersist) + "]");
          }
       }
 

@@ -45,7 +45,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
    public boolean addContainer() {
       int index = servers.size();
 
-      // set-up data persistence
+      // set-up data eviction and persistence
       if (MAX_ENTRIES!=Integer.MAX_VALUE) {
          defaultBuilder.eviction().maxEntries(MAX_ENTRIES);
          defaultBuilder.eviction().strategy(EvictionStrategy.LRU);
@@ -111,7 +111,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
       cacheManagers.remove(index);
 
       waitForClusterToForm();
-      System.out.println("Node " + manager+ " deleted.");
+      System.out.println("Node " + manager + " deleted.");
 
       return true;
    }
@@ -133,7 +133,7 @@ public class AtomicObjectFactoryRemoteTest extends AtomicObjectFactoryAbstractTe
 
       waitForClusterToForm();
 
-      assertEquals(manager(0).getTransport().getMembers().size(),getNumberOfManagers());
+      assertEquals(manager(0).getTransport().getMembers().size(), getNumberOfManagers());
 
       AtomicObjectFactory.forCache(container(0).getCache());
    }

@@ -29,7 +29,7 @@ public abstract class BaseContainer extends AbstractContainer {
 
    // object's fields
    private AtomicInteger pendingCalls;
-   private boolean isOpen;
+   private boolean isOpen, isClosed;
    private Reference reference;
 
    public BaseContainer(Class clazz, Object key, final boolean readOptimization,
@@ -41,6 +41,7 @@ public abstract class BaseContainer extends AbstractContainer {
       super(clazz, readOptimization, forceNew, initArgs);
       this.pendingCalls = new AtomicInteger();
       this.isOpen = false;
+      this.isClosed = false;
 
       // build the proxy
       MethodHandler handler = new BaseContainerMethodHandler(this);
@@ -104,6 +105,7 @@ public abstract class BaseContainer extends AbstractContainer {
          execute(new CallClose(listenerID(), UUID.randomUUID()));
          isOpen = false;
          forceNew = false;
+         isClosed = true;
 
       }
 
@@ -162,7 +164,7 @@ public abstract class BaseContainer extends AbstractContainer {
          }
 
          if (m.getName().equals("writeReplace")) {
-            open(); // mandatory to create the object remotely
+            if (!isClosed) open(); // mandatory to create the object remotely
             return reference;
          }
 

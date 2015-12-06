@@ -12,6 +12,7 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
@@ -404,8 +405,14 @@ public abstract class AtomicObjectFactoryAbstractTest extends MultipleCacheManag
    @Override
    @AfterClass(alwaysRun = true)
    protected void destroy() {
+      AtomicObjectFactory factory;
+      for (EmbeddedCacheManager manager : cacheManagers) {
+         factory = AtomicObjectFactory.forCache(manager.getCache());
+         if (factory!=null) factory.close();
+      }
       for (BasicCacheContainer container : containers()) {
-         AtomicObjectFactory.forCache(container.getCache()).close();
+         factory = AtomicObjectFactory.forCache(container.getCache());
+         factory.close();
       }
       super.destroy();
    }

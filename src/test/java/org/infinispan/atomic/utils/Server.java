@@ -1,8 +1,10 @@
 package org.infinispan.atomic.utils;
 
+import org.infinispan.atomic.AtomicObjectFactory;
 import org.infinispan.atomic.filter.FilterConverterFactory;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.DefaultCacheManager;
@@ -13,16 +15,15 @@ import org.infinispan.transaction.TransactionMode;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import static org.infinispan.test.AbstractCacheTest.getDefaultClusteredCacheConfig;
 
 /**
  * @author Pierre Sutra
  */
-public class Server implements Runnable {
+public class Server {
 
    private static final String defaultServer ="localhost:11222";
 
@@ -37,23 +38,15 @@ public class Server implements Runnable {
    @Option(name = "-rf", usage = "replication factor")
    private int replicationFactor = 1;
 
-   @Option(name = "-me", usage = "max #entries in the object cache; if set -p is forced")
+   @Option(name = "-me", usage = "max #entries in the object cache (implies -p)")
    private long maxEntries = Long.MAX_VALUE;
-
-   @Option(name = "-p", usage = "use persistence via a single file data store (emptied at each start)")
-   private boolean usePersistency = false;
-
-
-
-   private Boolean isLaunched = false;
 
    public Server () {}
 
-   public Server (String server, String proxyServer, int replicationFactor, boolean usePersistency) {
+   public Server (String server, String proxyServer, int replicationFactor, boolean usePersistence) {
       this.server = server;
       this.proxyServer = proxyServer;
       this.replicationFactor = replicationFactor;
-      this.usePersistency = usePersistency;
    }
    
    public static void main(String args[]) {
@@ -75,29 +68,6 @@ public class Server implements Runnable {
          System.err.println();
          return;
       }
-
-      ExecutorService executor = Executors.newSingleThreadExecutor();
-      executor.execute(this);
-      try {
-         executor.shutdown();
-      }catch (Exception e){
-         // ignore
-      }
-      
-   }
-
-   public synchronized void waitLaunching(){
-      while (!isLaunched) {
-         try {
-            wait();
-         } catch (InterruptedException e) {
-            e.printStackTrace();
-         }
-      }
-   }
-
-   @Override 
-   public void run() {
 
       String host = server.split(":")[0];
       int port = Integer.valueOf(
@@ -123,24 +93,22 @@ public class Server implements Runnable {
       builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
 
       if (maxEntries!=Long.MAX_VALUE) {
-         usePersistency = true;
-         builder.eviction().maxEntries(maxEntries);
-      }
-
-      if (usePersistency) {
-         System.out.println("Eviction is ON (maxEntries="+maxEntries+")");
-         builder.persistence()
-               .addSingleFileStore()
+         System.out.println("Eviction is ON (maxEntries=" + maxEntries + ")");
+         builder.eviction()
+               .maxEntries(maxEntries)
+               .strategy(EvictionStrategy.LRU);
+         SingleFileStoreConfigurationBuilder storeConfigurationBuilder
+               = builder.persistence().addSingleFileStore();
+         storeConfigurationBuilder
                .location(System.getProperty("store-aof-server" + host))
-               .purgeOnStartup(true)
-               .create();
-         builder.eviction().
-               strategy(EvictionStrategy.LRU)
-               .maxEntries(maxEntries);
+               .purgeOnStartup(true);
+         storeConfigurationBuilder.purgeOnStartup(false);
+         storeConfigurationBuilder.fetchPersistentState(true);
+         storeConfigurationBuilder.persistence().passivation(true);
       }
 
-      EmbeddedCacheManager cm = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
-      
+      final EmbeddedCacheManager cm = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
+
       HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();
       hbuilder.topologyStateTransfer(true);
       hbuilder.host(host);
@@ -158,23 +126,33 @@ public class Server implements Runnable {
       hbuilder.workerThreads(100);
       hbuilder.tcpNoDelay(true);
 
-      HotRodServer server = new HotRodServer();
-      server.start(hbuilder.build(),cm);
+      final HotRodServer server = new HotRodServer();
+      server.start(hbuilder.build(), cm);
       server.addCacheEventFilterConverterFactory(FilterConverterFactory.FACTORY_NAME, new FilterConverterFactory());
 
-      isLaunched = true;
-      synchronized (this) {
-         notifyAll();
-      }
       System.out.println("LAUNCHED");
-      
-      try {
-         synchronized (this) {
-            this.wait();
+
+      SignalHandler sh = new SignalHandler() {
+         @Override
+         public void handle(Signal s) {
+            System.out.println("CLOSING");
+            try {
+               AtomicObjectFactory factory = AtomicObjectFactory.forCache(cm.getCache());
+               if (factory != null)
+                  factory.close();
+               server.stop();
+               cm.stop();
+               System.exit(0);
+            }catch(Throwable t) {
+               System.exit(-1);
+            }
          }
-      } catch (InterruptedException e) {
-         // ignore. 
-      }
-      
+      };
+      Signal.handle(new Signal("INT"), sh);
+      Signal.handle(new Signal("TERM"), sh);
+
+      Thread.currentThread().interrupt();
+
    }
+
 }
