@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "AtomicObjectFactoryRemoteRealTest", groups = "unit")
+@Test(testName = "AtomicObjectFactoryRemoteRealTest", groups = "unit", enabled = false)
 public class AtomicObjectFactoryRemoteRealTest extends AtomicObjectFactoryAbstractTest {
 
    private static List<BasicCacheContainer> basicCacheContainers = new ArrayList<>();
