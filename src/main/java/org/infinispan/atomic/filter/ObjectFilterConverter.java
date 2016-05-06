@@ -107,6 +107,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
          Call call = newValue;
 
+          assert !(call instanceof CallPersist);
+
           if (log.isTraceEnabled())
              log.trace(" Received [" + call + "] (completed="
                    + completedCalls.containsKey(call) + ", " + reference + " ," + eventType.getType() + ")");
@@ -132,13 +134,6 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
                   if (log.isDebugEnabled())
                      log.debug("Trashing " + call + "; " + oldValue + "; " + eventType.getType());
                   return null;
-               }
-
-               if (call instanceof CallPersist) {
-
-                  retrieveReference(reference, (CallPersist) call);
-
-                  future.set(null);
 
                } else if (call instanceof CallInvoke) {
 
