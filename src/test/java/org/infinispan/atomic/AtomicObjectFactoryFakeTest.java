@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "AtomicObjectFactoryFakeTest", groups = "unit")
+@Test(testName = "AtomicObjectFactoryFakeTest", groups = "unit", enabled=false)
 public class AtomicObjectFactoryFakeTest extends AtomicObjectFactoryAbstractTest {
 
    private final List<BasicCacheContainer> containerList = new ArrayList<>();

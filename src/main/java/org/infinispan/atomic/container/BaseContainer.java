@@ -169,7 +169,7 @@ public abstract class BaseContainer extends AbstractContainer {
          }
 
          if (! Utils.isMethodSupported(reference.getClazz(), m)) {
-            throw new IllegalArgumentException("Unsupported methd "+m.getName()+" in "+reference.getClazz());
+            throw new IllegalArgumentException("Unsupported method "+m.getName()+" in "+reference.getClazz());
          }
          
          if (readOptimization 
