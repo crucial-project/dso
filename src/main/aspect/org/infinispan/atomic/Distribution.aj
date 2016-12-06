@@ -14,17 +14,17 @@ import java.lang.reflect.Modifier;
 @Aspect
 public class Distribution {
 
-   @Pointcut("call((@Distributed *).new(..)) " +
+   @Pointcut("call((@org.infinispan.atomic.Entity *).new(..)) " +
          "&& ! within(org.infinispan.atomic.container.BaseContainer)" +
          "&& ! within(org.infinispan.atomic.filter.ObjectFilterConverter)")
-   public static void initDistributedClass(ProceedingJoinPoint pjp) {
+   public static void initEntityClass(ProceedingJoinPoint pjp) {
    }
 
-   @Pointcut("set(@Distribute * *) ")
-   public static void setDistributedField(ProceedingJoinPoint pjp) {
+   @Pointcut("set(@Entity * *) ")
+   public static void setEntityField(ProceedingJoinPoint pjp) {
    }
 
-   @Around("initDistributedClass(pjp)")
+   @Around("initEntityClass(pjp)")
    public Object distributionAdviceClass(ProceedingJoinPoint pjp) throws Throwable{
       AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
       return factory.getInstanceOf(
@@ -35,17 +35,17 @@ public class Distribution {
             pjp.getArgs());
    }
 
-   @Around("setDistributedField(pjp)")
+   @Around("setEntityField(pjp)")
    public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
       AtomicObjectFactory factory = AtomicObjectFactory.getSingleton();
       String fieldName = pjp.getStaticPart().getSignature().getName();
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getField(fieldName);
       if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
-         String key = field.getAnnotation(Distribute.class).key();
+         String key = field.getAnnotation(Entity.class).key();
          field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), key, true, false));
          return;
       }
-      throw new IllegalStateException("Distributed fields for "+pjp.getTarget().getClass()+" must be both public and static.");
+      throw new IllegalStateException("Entity fields for "+pjp.getTarget().getClass()+" must be both public and static.");
    }
 
 }

@@ -4,7 +4,7 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.ThreadLocalUUIDGenerator;
@@ -54,8 +54,8 @@ public abstract class BaseContainer extends AbstractContainer {
       ((ProxyObject) proxy).setHandler(handler);
 
       // build reference and set key
-      if (clazz.getAnnotation(Distributed.class)!=null) {
-         String fieldName = ((Distributed) clazz.getAnnotation(Distributed.class)).key();
+      if (clazz.getAnnotation(Entity.class)!=null) {
+         String fieldName = ((Entity) clazz.getAnnotation(Entity.class)).key();
          Field field = clazz.getDeclaredField(fieldName);
          if (key == null) {
             key = field.get(proxy);

@@ -1,10 +1,10 @@
 package org.infinispan.atomic.benchmarks.dining;
 
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 
 import java.io.Serializable;
 
-@Distributed(key = " _name")
+@Entity(key = " _name")
 public class Chopstick implements Serializable{
 
    public boolean used;

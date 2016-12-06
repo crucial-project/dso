@@ -4,7 +4,7 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicObjectFactory;
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 import org.infinispan.atomic.object.*;
 import org.infinispan.atomic.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.context.Flag;
@@ -447,8 +447,8 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
       Object ret = Utils.initObject(reference.getClazz(), Reference.unreference(callOpen.getInitArgs(), cache));
 
       // force the key field, in case it is created per default
-      if (reference.getClazz().getAnnotation(Distributed.class)!=null) {
-         String fieldName = ((Distributed) reference.getClazz().getAnnotation(Distributed.class)).key();
+      if (reference.getClazz().getAnnotation(Entity.class)!=null) {
+         String fieldName = ((Entity) reference.getClazz().getAnnotation(Entity.class)).key();
          Field field = reference.getClazz().getDeclaredField(fieldName);
          field.set(ret, reference.getKey());
       }

@@ -1,7 +1,6 @@
 package org.infinispan.atomic.utils;
 
-import org.infinispan.atomic.Distribute;
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +9,10 @@ import java.util.UUID;
 /**
  * @author Pierre Sutra
  */
-@Distributed(key="uuid")
+@Entity(key="uuid")
 public class AdvancedShardedObject implements ShardedObject{
 
-   @Distribute(key = "list")
+   @Entity(key = "list")
    public static List<AdvancedShardedObject> list = new ArrayList<>();
    public static List<AdvancedShardedObject> getList() {
       return list;

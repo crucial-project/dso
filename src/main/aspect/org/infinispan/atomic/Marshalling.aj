@@ -49,6 +49,6 @@ public aspect Marshalling {
       }
    }
 
-   declare parents: @Distributed * implements Marshallable;
+   declare parents: @Entity * implements Marshallable;
 
 }

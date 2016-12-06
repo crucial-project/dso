@@ -1,6 +1,6 @@
 package org.infinispan.atomic.sharded.collections;
 
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -21,7 +21,7 @@ import java.util.*;
  * @since 7.2
  *
  */
-@Distributed
+@Entity
 public class ShardedTreeMap<K extends Comparable<K>,V> implements SortedMap<K, V>, Externalizable
 {
 

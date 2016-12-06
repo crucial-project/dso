@@ -1,6 +1,6 @@
 package org.infinispan.atomic.benchmarks.queue;
 
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 import org.infinispan.atomic.ReadOnly;
 
 import java.util.Collection;
@@ -10,7 +10,7 @@ import java.util.LinkedList;
 /**
  * @author Pierre Sutra
  */
-@Distributed(key = "name")
+@Entity(key = "name")
 public class Queue<E> implements java.util.Queue<E>{
 
    public String name;

@@ -1,6 +1,6 @@
 package org.infinispan.atomic.object;
 
-import org.infinispan.atomic.Distributed;
+import org.infinispan.atomic.Entity;
 import org.infinispan.atomic.ReadOnly;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.marshall.core.JBossMarshaller;
@@ -70,7 +70,7 @@ public class Utils {
    }
 
    public static boolean isDistributed(Class clazz){
-      return clazz.isAnnotationPresent(Distributed.class);
+      return clazz.isAnnotationPresent(Entity.class);
    }
    
    public static Object callObject(Object obj, String method, Object[] args)

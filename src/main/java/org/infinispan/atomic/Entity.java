@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
  * @author Pierre Sutra
  */
 
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE,ElementType.FIELD})
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface Distributed {
+public @interface Entity {
    String key() default "";
 }
