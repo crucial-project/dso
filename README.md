@@ -1,1 +1,1 @@
-# Atomic Object Factory module
+# CRESON framework atop ISPN

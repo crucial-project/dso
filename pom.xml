@@ -8,8 +8,8 @@
     </parent>
 
     <artifactId>infinispan-atomic-factory</artifactId>
-    <name>Infinispan Atomic Object Factory</name>
-    <description>the Infinispan atomic object factory module</description>
+    <name>CRESON</name>
+    <description>A framework to build (user-defined) shared objects atop Infinispan.</description>
 
     <properties>
         <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
