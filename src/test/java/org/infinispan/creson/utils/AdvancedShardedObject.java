@@ -1,7 +1,6 @@
 package org.infinispan.creson.utils;
 
-import org.infinispan.creson.Entity;
-
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,17 +8,21 @@ import java.util.UUID;
 /**
  * @author Pierre Sutra
  */
-@Entity(key="uuid")
+@Entity
 public class AdvancedShardedObject implements ShardedObject{
 
-   @Entity(key = "list")
+   @ElementCollection
    public static List<AdvancedShardedObject> list = new ArrayList<>();
+
    public static List<AdvancedShardedObject> getList() {
       return list;
    }
 
+   @Id
    public UUID uuid;
+
    private AdvancedShardedObject shard;
+
    private boolean value;
 
    @Deprecated

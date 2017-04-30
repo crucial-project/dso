@@ -1,13 +1,15 @@
 package org.infinispan.creson.benchmarks.dining;
 
-import org.infinispan.creson.Entity;
-
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 
-@Entity(key = " _name")
+@Entity
 public class Chopstick implements Serializable{
 
    public boolean used;
+
+   @Id
    public String _name;
 
    public Chopstick(String _name){

@@ -1,5 +1,8 @@
 package org.infinispan.creson.benchmarks.count;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 /**
  *  The <tt>Counter</tt> class is a mutable data type to encapsulate a counter.
  *  <p>
@@ -10,11 +13,10 @@ package org.infinispan.creson.benchmarks.count;
  *  @author Kevin Wayne
  */
 
-import org.infinispan.creson.Entity;
-
-@Entity(key = "name")
+@Entity
 public class Counter implements Comparable<Counter> {
 
+   @Id
    public String name;     // counter name
    public int count = 0;         // current value
 

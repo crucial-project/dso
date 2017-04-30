@@ -1,12 +1,12 @@
 package org.infinispan.creson.object;
 
-import org.infinispan.creson.Entity;
-import org.infinispan.creson.ReadOnly;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.creson.ReadOnly;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import javax.persistence.Entity;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

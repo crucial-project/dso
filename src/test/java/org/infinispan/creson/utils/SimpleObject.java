@@ -1,14 +1,17 @@
 package org.infinispan.creson.utils;
 
-import org.infinispan.creson.Entity;
 import org.infinispan.creson.ReadOnly;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
 * @author Pierre Sutra
 */
-@Entity(key="field")
+@Entity
 public class SimpleObject {
 
+   @Id
    public String field;
 
    public SimpleObject(){

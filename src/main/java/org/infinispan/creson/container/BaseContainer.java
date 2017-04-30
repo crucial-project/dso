@@ -4,11 +4,12 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.infinispan.creson.Entity;
 import org.infinispan.creson.ReadOnly;
-import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.creson.object.*;
+import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -18,8 +19,6 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.infinispan.creson.object.Utils.isCompatible;
 
 /**
  * @author Pierre Sutra
@@ -54,11 +53,17 @@ public abstract class BaseContainer extends AbstractContainer {
 
       // build reference and set key
       if (clazz.getAnnotation(Entity.class)!=null) {
-         String fieldName = ((Entity) clazz.getAnnotation(Entity.class)).key();
-         Field field = clazz.getDeclaredField(fieldName);
+         Field field = null;
+         for (Field f : clazz.getFields()) {
+            if (f.getAnnotation(Id.class) != null) {
+               field = f;
+               break;
+            }
+         }
+         if (field==null) throw new ClassFormatError("Missing id field");
          if (key == null) {
             key = field.get(proxy);
-            assert key != null : " field " + fieldName + " is null for "+clazz;
+            assert key != null : " field " + field.getName()+ " is null for "+clazz;
          } else  {
             field.set(proxy,key);
          }

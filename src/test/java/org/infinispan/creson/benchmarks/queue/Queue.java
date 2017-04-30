@@ -1,8 +1,9 @@
 package org.infinispan.creson.benchmarks.queue;
 
-import org.infinispan.creson.Entity;
 import org.infinispan.creson.ReadOnly;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -10,9 +11,10 @@ import java.util.LinkedList;
 /**
  * @author Pierre Sutra
  */
-@Entity(key = "name")
+@Entity
 public class Queue<E> implements java.util.Queue<E>{
 
+   @Id
    public String name;
 
    public LinkedList<E> delegate;

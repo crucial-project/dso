@@ -14,13 +14,13 @@ import java.lang.reflect.Modifier;
 @Aspect
 public class Distribution {
 
-   @Pointcut("call((@org.infinispan.creson.Entity *).new(..)) " +
+   @Pointcut("call((@javax.persistence.Entity *).new(..)) " +
          "&& ! within(org.infinispan.creson.container.BaseContainer)" +
          "&& ! within(org.infinispan.creson.filter.ObjectFilterConverter)")
    public static void initEntityClass(ProceedingJoinPoint pjp) {
    }
 
-   @Pointcut("set(@org.infinispan.creson.Entity * *) ")
+   @Pointcut("set(@javax.persistence.ElementCollection * *) ")
    public static void setEntityField(ProceedingJoinPoint pjp) {
    }
 
@@ -41,8 +41,7 @@ public class Distribution {
       String fieldName = pjp.getStaticPart().getSignature().getName();
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getField(fieldName);
       if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
-         String key = field.getAnnotation(Entity.class).key();
-         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), key, true, false));
+         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), fieldName, true, false));
          return;
       }
       throw new IllegalStateException("Entity fields for "+pjp.getTarget().getClass()+" must be both public and static.");

@@ -1,9 +1,9 @@
 package org.infinispan.creson.sharded.collections;
 
-import org.infinispan.creson.Entity;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import javax.persistence.Entity;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;

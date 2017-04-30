@@ -54,7 +54,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       return NMANAGERS;
    }
 
-   @Test(enabled = true)
+   @Test(enabled = false)
    public void baseProperties() throws Exception {
 
       // 0 - validate cache atomicity

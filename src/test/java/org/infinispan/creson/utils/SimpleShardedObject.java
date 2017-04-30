@@ -1,16 +1,18 @@
 package org.infinispan.creson.utils;
 
-import org.infinispan.creson.Entity;
 import org.infinispan.creson.ReadOnly;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.UUID;
 
 /**
  * @author Pierre Sutra
  */
-@Entity(key = "id")
+@Entity
 public class SimpleShardedObject implements ShardedObject {
-   
+
+   @Id
    public UUID id;
    
    private ShardedObject shard;

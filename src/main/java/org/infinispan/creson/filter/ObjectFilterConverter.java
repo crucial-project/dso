@@ -3,11 +3,10 @@ package org.infinispan.creson.filter;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
-import org.infinispan.creson.Factory;
-import org.infinispan.creson.Entity;
-import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.context.Flag;
+import org.infinispan.creson.Factory;
 import org.infinispan.creson.object.*;
+import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.Listener;
@@ -22,6 +21,8 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -445,8 +446,13 @@ public class ObjectFilterConverter extends AbstractCacheEventFilterConverter<Ref
 
       // force the key field, in case it is created per default
       if (reference.getClazz().getAnnotation(Entity.class)!=null) {
-         String fieldName = ((Entity) reference.getClazz().getAnnotation(Entity.class)).key();
-         Field field = reference.getClazz().getDeclaredField(fieldName);
+         Field field = null;
+         for (Field f : reference.getClazz().getFields()) {
+            if (f.getAnnotation(Id.class) != null) {
+               field = f;
+               break;
+            }
+         }
          field.set(ret, reference.getKey());
       }
 

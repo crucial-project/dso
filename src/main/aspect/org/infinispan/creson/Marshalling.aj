@@ -49,6 +49,6 @@ public aspect Marshalling {
       }
    }
 
-   declare parents: @Entity * implements Marshallable;
+   declare parents: @javax.persistence.Entity * implements Marshallable;
 
 }
