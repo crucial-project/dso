@@ -9,8 +9,6 @@ import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.ExternallyMarshallable;
 import org.infinispan.registry.InternalCacheRegistry;
-import org.infinispan.transaction.TransactionMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 
 import java.util.EnumSet;
 
@@ -29,15 +27,12 @@ public class CresonModuleLifeCycle extends AbstractModuleLifecycle {
         final InternalCacheRegistry registry= gcr.getComponent(InternalCacheRegistry.class);
 
         Interceptor interceptor = new Interceptor(cacheManager);
+
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(cacheManager.getDefaultCacheConfiguration());
-        builder.clustering()
-                .locking().isolationLevel(IsolationLevel.SERIALIZABLE)
-                .clustering().l1().disable()
-                .locking().useLockStriping(false)
-                .compatibility().enabled(true)
-                .transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL)
-                .customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(interceptor);
+        builder.compatibility().enabled(true); // FIXME for HotRod
+        builder.clustering().stateTransfer().awaitInitialTransfer(false); // FIXME interceptor is reentrant
+        builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(interceptor);
 
         registry.registerInternalCache(
                 CRESON_CACHE_NAME,

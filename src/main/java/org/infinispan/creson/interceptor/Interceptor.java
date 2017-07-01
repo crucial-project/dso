@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import org.infinispan.Cache;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.creson.Factory;
 import org.infinispan.creson.StaticEntity;
 import org.infinispan.creson.object.*;
 import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
@@ -41,12 +42,9 @@ public class Interceptor extends NonTxDistributionInterceptor {
     @Override
     public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
 
-        if (cache==null)
+        if (cache==null) {
             cache = cacheManager.getCache(CRESON_CACHE_NAME);
-
-        if (log.isTraceEnabled()) {
-            DistributionInfo info = cache.getAdvancedCache().getDistributionManager().getCacheTopology().getDistribution(command.getKey());
-            System.out.println(info.isPrimary() + " " + info.isWriteBackup() + " " + command);
+            Factory.forCache(cache);
         }
 
         if (!(command.getValue() instanceof Call)) {
@@ -55,13 +53,16 @@ public class Interceptor extends NonTxDistributionInterceptor {
 
         assert (command.getKey() instanceof Reference) & (command.getValue() instanceof Call);
 
+        if (log.isTraceEnabled()) {
+            DistributionInfo info = cache.getAdvancedCache().getDistributionManager().getCacheTopology().getDistribution(command.getKey());
+            System.out.println(info.isPrimary() + " " + info.isWriteBackup() + " " + command);
+        }
+
         Reference reference = (Reference) command.getKey();
         Call call = (Call) command.getValue();
-        Object object = null;
-        if (ctx.lookupEntry(reference).getValue()!=null) {
-            object = ctx.lookupEntry(reference).getValue();
-        }
+
         CallFuture future;
+        Object object = null;
 
         if (log.isTraceEnabled())
             log.trace(" Accessing " + reference);
@@ -74,6 +75,10 @@ public class Interceptor extends NonTxDistributionInterceptor {
         }
 
         synchronized (completedCalls.get(reference)) {
+
+            if (ctx.lookupEntry(reference).getValue()!=null) {
+                object = ctx.lookupEntry(reference).getValue();
+            }
 
             if (log.isTraceEnabled())
                 log.trace(" Received [" + call + "] (completed="
@@ -99,7 +104,7 @@ public class Interceptor extends NonTxDistributionInterceptor {
                         CallInvoke invocation = (CallInvoke) call;
 
                         if (object==null) {
-                            log.error("object was re-created!");
+                            log.error(reference+" re-created!");
                             object = createObejct(reference, new Object[]{});
                         }
 

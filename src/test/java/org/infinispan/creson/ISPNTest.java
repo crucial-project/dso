@@ -1,6 +1,7 @@
 package org.infinispan.creson;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
@@ -9,7 +10,10 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,10 +66,11 @@ public class ISPNTest extends BaseTest {
 
       List<Future> futures = new ArrayList<>();
       List<ExercisePutTask> tasks = new ArrayList<>();
-      Set<Integer> set = Collections.synchronizedSet(new HashSet<Integer>());
+      Map<Integer,Integer> map = new ConcurrentHashMap<>();
 
       for(int i=0; i<NMANAGERS; i++){
-         ExercisePutTask putTask = new ExercisePutTask(set);
+         ExercisePutTask putTask = new ExercisePutTask(
+                 map,container(i).getCache(CRESON_CACHE_NAME));
          futures.add(fork(putTask));
          tasks.add(putTask);
       }
@@ -86,6 +91,10 @@ public class ISPNTest extends BaseTest {
          future.get();
       }
 
+      for (int k : map.keySet()) {
+         assert container(0).getCache(CRESON_CACHE_NAME).containsKey(k);
+      }
+
    }
 
    //
@@ -96,7 +105,7 @@ public class ISPNTest extends BaseTest {
 
       @Override
       public Integer call() throws Exception {
-         for (int i=0; i<3; i++) {
+         for (int i=0; i<10; i++) {
             Thread.sleep(3000);
             if (containers().size() == NMANAGERS) {
                addContainer();
@@ -142,10 +151,12 @@ public class ISPNTest extends BaseTest {
    private class ExercisePutTask implements HaltableTask{
 
       private AtomicBoolean halted = new AtomicBoolean(false);
-      private Set<Integer> set;
+      private Map<Integer,Integer> map;
+      private BasicCache cache;
 
-      public ExercisePutTask(Set<Integer> set){
-         this.set = set;
+      public ExercisePutTask(Map<Integer, Integer> map, BasicCache cache){
+         this.map = map;
+         this.cache = cache;
       }
 
       @Override
@@ -155,13 +166,13 @@ public class ISPNTest extends BaseTest {
 
       @Override
       public Integer call() throws Exception {
-         Random random = new Random();
+         Random random = new Random(System.nanoTime());
          while(!halted.get()) {
             try {
                int k = random.nextInt(Integer.MAX_VALUE);
-               assert container(0).getCache(CRESON_CACHE_NAME).put(k,0) != null | !set.contains(k);
-               set.add(k);
-               Thread.sleep(10);
+               cache.put(k, 0);
+               map.put(k,0);
+               Thread.sleep(1);
             }catch (Exception e) {
                e.printStackTrace();
                // ignore

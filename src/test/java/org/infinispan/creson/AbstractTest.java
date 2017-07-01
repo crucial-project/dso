@@ -363,7 +363,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       // elasticity
       Set<Future> completed = new HashSet<>();
       while (completed.size() != futures.size()) {
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          if (containers().size() == NMANAGERS) {
             addContainer();
          } else {

@@ -20,6 +20,7 @@ public class Reference<T> implements Externalizable {
    private Object key;
 
    public static Object unreference(Reference reference, Factory factory) {
+      assert factory!=null;
       return factory.getInstanceOf(reference);
    }
 

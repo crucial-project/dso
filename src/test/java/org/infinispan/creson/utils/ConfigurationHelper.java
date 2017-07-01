@@ -31,12 +31,7 @@ public class ConfigurationHelper {
         builder
                 = getDefaultClusteredCacheConfig(mode, false);
         builder
-                .clustering().hash().numOwners(replicationFactor)
-                .locking().useLockStriping(false);
-
-        builder.clustering().stateTransfer()
-                .awaitInitialTransfer(true)
-                .fetchInMemoryState(false); // FIXME should be set to false
+                .clustering().hash().numOwners(replicationFactor);
 
         if (maxEntries != Long.MAX_VALUE) {
             builder.memory().size(maxEntries);

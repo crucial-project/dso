@@ -32,7 +32,6 @@ public aspect Marshalling {
 
    public void Marshallable.readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
       Factory factory = Factory.getSingleton();
-      assert factory!=null;
       try {
          for (Field field : this.getClass().getFields()) { // same order assumed across nodes
             if (!Modifier.isTransient(field.getModifiers()) &&
