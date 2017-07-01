@@ -138,7 +138,7 @@ public class Benchmark {
          boolean isOver = false;
          int throughput = 0;
          while(!isOver) {
-            Thread.sleep(10000);
+            Thread.sleep(100);
             throughput = 0;
             for(IncrementCallable callable : callables) {
                isOver |= callable.getIsOver();

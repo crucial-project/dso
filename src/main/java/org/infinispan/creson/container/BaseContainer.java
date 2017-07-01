@@ -12,7 +12,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -53,8 +52,8 @@ public abstract class BaseContainer extends AbstractContainer {
 
       // build reference and set key
       if (clazz.getAnnotation(Entity.class)!=null) {
-         Field field = null;
-         for (Field f : clazz.getFields()) {
+         java.lang.reflect.Field field = null;
+         for (java.lang.reflect.Field f : clazz.getFields()) {
             if (f.getAnnotation(Id.class) != null) {
                field = f;
                break;
@@ -70,9 +69,15 @@ public abstract class BaseContainer extends AbstractContainer {
 
       }
 
+      assert key!=null;
+
       this.reference = new Reference(clazz,key);
 
    }
+
+
+   @Override
+   public abstract void execute(Reference reference, Call call);
 
    @Override
    public synchronized void open()
@@ -106,7 +111,6 @@ public abstract class BaseContainer extends AbstractContainer {
 
       if (isOpen) {
 
-         execute(new CallClose(listenerID(), UUID.randomUUID()));
          isOpen = false;
          forceNew = false;
          isClosed = true;
@@ -116,11 +120,6 @@ public abstract class BaseContainer extends AbstractContainer {
       if (log.isTraceEnabled())
          log.trace(" Closed.");
 
-   }
-
-   @Override
-   public synchronized boolean isClosed(){
-      return !isOpen;
    }
 
    @Override
@@ -168,7 +167,6 @@ public abstract class BaseContainer extends AbstractContainer {
          }
 
          if (m.getName().equals("writeReplace")) {
-            if (!isClosed) open(); // mandatory to create the object remotely
             return reference;
          }
 

@@ -18,8 +18,7 @@ import java.util.*;
  * It contains at most <i>threshold</i> objects.
  *
  * @author Pierre Sutra
- * @since 7.2
- *
+  *
  */
 @Entity
 public class ShardedTreeMap<K extends Comparable<K>,V> implements SortedMap<K, V>, Externalizable

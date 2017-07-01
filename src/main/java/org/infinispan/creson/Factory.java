@@ -6,15 +6,14 @@ import com.google.common.cache.RemovalNotification;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.InvalidCacheUsageException;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.creson.container.AbstractContainer;
 import org.infinispan.creson.container.FakeContainer;
 import org.infinispan.creson.container.local.LocalContainer;
 import org.infinispan.creson.container.remote.RemoteContainer;
 import org.infinispan.creson.object.Reference;
-import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.commons.api.BasicCache;
-import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
 import static org.infinispan.creson.object.Reference.unreference;
 
 /**
@@ -51,9 +51,7 @@ public class Factory {
       if (!factories.containsKey(cache))
          factories.put(cache,new Factory(cache, maxContainers));
 
-      String cacheName = (cache.getName().equals(BasicCacheContainer.DEFAULT_CACHE_NAME))
-            ? "" : cache.getName(); // unify remote and embedded
-      if (singleton ==null && cacheName.equals("")) {
+      if (singleton ==null && cache.getName().equals(CRESON_CACHE_NAME)) {
          singleton = factories.get(cache);
          log.info("AOF singleton  is "+ singleton);
       }
@@ -118,7 +116,7 @@ public class Factory {
             .host(host)
             .port(port);
       RemoteCacheManager manager= new RemoteCacheManager(cb.build());
-      return forCache(manager.getCache());
+      return forCache(manager.getCache(CRESON_CACHE_NAME));
    }
 
    public <T> T getInstanceOf(Class clazz) throws InvalidCacheUsageException{

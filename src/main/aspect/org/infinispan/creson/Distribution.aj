@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
+import javax.persistence.Entity;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -16,12 +17,12 @@ public class Distribution {
 
    @Pointcut("call((@javax.persistence.Entity *).new(..)) " +
          "&& ! within(org.infinispan.creson.container.BaseContainer)" +
-         "&& ! within(org.infinispan.creson.filter.ObjectFilterConverter)")
+         "&& ! within(org.infinispan.creson.interceptor.Interceptor)")
    public static void initEntityClass(ProceedingJoinPoint pjp) {
    }
 
-   @Pointcut("set(@javax.persistence.ElementCollection * *) ")
-   public static void setEntityField(ProceedingJoinPoint pjp) {
+   @Pointcut("set(@org.infinispan.creson.StaticEntity * *) ")
+   public static void initStaticEntity(ProceedingJoinPoint pjp) {
    }
 
    @Around("initEntityClass(pjp)")
@@ -35,7 +36,7 @@ public class Distribution {
             pjp.getArgs());
    }
 
-   @Around("setEntityField(pjp)")
+   @Around("initStaticEntity(pjp)")
    public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
       Factory factory = Factory.getSingleton();
       String fieldName = pjp.getStaticPart().getSignature().getName();
@@ -45,6 +46,13 @@ public class Distribution {
          return;
       }
       throw new IllegalStateException("Entity fields for "+pjp.getTarget().getClass()+" must be both public and static.");
+   }
+
+   @Entity
+   public static class A{
+      A a = new A();
+      @StaticEntity
+      A b = new A();
    }
 
 }

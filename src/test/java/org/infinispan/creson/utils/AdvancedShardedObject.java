@@ -1,6 +1,9 @@
 package org.infinispan.creson.utils;
 
-import javax.persistence.*;
+import org.infinispan.creson.StaticEntity;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -11,7 +14,7 @@ import java.util.UUID;
 @Entity
 public class AdvancedShardedObject implements ShardedObject{
 
-   @ElementCollection
+   @StaticEntity
    public static List<AdvancedShardedObject> list = new ArrayList<>();
 
    public static List<AdvancedShardedObject> getList() {

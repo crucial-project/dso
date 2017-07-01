@@ -1,12 +1,12 @@
 package org.infinispan.creson.object;
 
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.creson.StaticEntity;
 import org.infinispan.creson.ReadOnly;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import javax.persistence.Entity;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -70,7 +70,7 @@ public class Utils {
    }
 
    public static boolean isDistributed(Class clazz){
-      return clazz.isAnnotationPresent(Entity.class);
+      return clazz.isAnnotationPresent(StaticEntity.class);
    }
    
    public static Object callObject(Object obj, String method, Object[] args)

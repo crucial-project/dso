@@ -1,11 +1,11 @@
 package org.infinispan.creson.utils;
 
 import org.infinispan.commons.api.BasicCache;
-import org.infinispan.commons.util.concurrent.NotifyingFuture;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -115,90 +115,6 @@ public class FakeCache<K, V> implements BasicCache<K, V> {
       return null;  // TODO: Customise this generated block
    }
 
-   @Override public NotifyingFuture<V> putAsync(K key, V value) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> putAsync(K key, V value, long lifespan, TimeUnit unit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> putAsync(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdle,
-         TimeUnit maxIdleUnit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> data) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan,
-         TimeUnit unit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Void> putAllAsync(Map<? extends K, ? extends V> data, long lifespan,
-         TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Void> clearAsync() {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> putIfAbsentAsync(K key, V value) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> putIfAbsentAsync(K key, V value, long lifespan, TimeUnit unit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> putIfAbsentAsync(K key, V value, long lifespan, TimeUnit lifespanUnit,
-         long maxIdle, TimeUnit maxIdleUnit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> removeAsync(Object key) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Boolean> removeAsync(Object key, Object value) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> replaceAsync(K key, V value) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> replaceAsync(K key, V value, long lifespan, TimeUnit unit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> replaceAsync(K key, V value, long lifespan, TimeUnit lifespanUnit,
-         long maxIdle,
-         TimeUnit maxIdleUnit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Boolean> replaceAsync(K key, V oldValue, V newValue) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Boolean> replaceAsync(K key, V oldValue, V newValue, long lifespan,
-         TimeUnit unit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<Boolean> replaceAsync(K key, V oldValue, V newValue, long lifespan,
-         TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
-      return null;  // TODO: Customise this generated block
-   }
-
-   @Override public NotifyingFuture<V> getAsync(K key) {
-      return null;  // TODO: Customise this generated block
-   }
-
    @Override public V putIfAbsent(K key, V value) {
       return null;  // TODO: Customise this generated block
    }
@@ -221,5 +137,100 @@ public class FakeCache<K, V> implements BasicCache<K, V> {
 
    @Override public void stop() {
       // TODO: Customise this generated block
+   }
+
+   @Override
+   public CompletableFuture<V> putAsync(K k, V v) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> putAsync(K k, V v, long l, TimeUnit timeUnit) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> putAsync(K k, V v, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long l, TimeUnit timeUnit) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Void> putAllAsync(Map<? extends K, ? extends V> map, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Void> clearAsync() {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> putIfAbsentAsync(K k, V v) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> putIfAbsentAsync(K k, V v, long l, TimeUnit timeUnit) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> putIfAbsentAsync(K k, V v, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> removeAsync(Object o) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Boolean> removeAsync(Object o, Object o1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> replaceAsync(K k, V v) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> replaceAsync(K k, V v, long l, TimeUnit timeUnit) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> replaceAsync(K k, V v, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Boolean> replaceAsync(K k, V v, V v1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Boolean> replaceAsync(K k, V v, V v1, long l, TimeUnit timeUnit) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<Boolean> replaceAsync(K k, V v, V v1, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+      return null;
+   }
+
+   @Override
+   public CompletableFuture<V> getAsync(K k) {
+      return null;
    }
 }

@@ -1,17 +1,15 @@
 package org.infinispan.creson;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.infinispan.Cache;
-import org.infinispan.creson.object.Call;
-import org.infinispan.creson.object.CallInvoke;
-import org.infinispan.creson.object.Reference;
-import org.infinispan.creson.utils.AdvancedShardedObject;
-import org.infinispan.creson.utils.ShardedObject;
-import org.infinispan.creson.utils.SimpleObject;
-import org.infinispan.creson.utils.SimpleShardedObject;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.*;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -27,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.testng.Assert.assertEquals;
+import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -38,38 +36,46 @@ import static org.testng.Assert.assertTrue;
 public abstract class AbstractTest extends MultipleCacheManagersTest {
 
    protected static Log log = LogFactory.getLog(AbstractTest.class);
+   static{
+      Configurator.setLevel(System.getProperty("log4j.logger"), Level.INFO);
+   }
 
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
    protected static final int NCALLS = 1000;
-   protected static final int MAX_ENTRIES = 100;
+   protected static final long MAX_ENTRIES = Integer.MAX_VALUE;
    protected static final int REPLICATION_FACTOR = 2;
+   protected static final int NMANAGERS = 3;
    protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
 
-   public int getReplicationFactor(){
-      return REPLICATION_FACTOR;
-   }
-
-   private int NMANAGERS = 3;
-   public int getNumberOfManagers() {
-      return NMANAGERS;
+   protected ConfigurationBuilder buildConfiguration() {
+      return ConfigurationHelper.buildConfiguration(
+              CACHE_MODE,
+              REPLICATION_FACTOR,
+              MAX_ENTRIES,
+              PERSISTENT_STORAGE_DIR + "/" + containers().size());
    }
 
    @Test(enabled = false)
    public void baseProperties() throws Exception {
 
-      // 0 - validate cache atomicity
-      for(int i=0; i<100; i++) {
-         UUID uuid = UUID.randomUUID();
-         container(0).getCache().put(uuid, uuid);
-         assert container(0).getCache().get(uuid).equals(uuid);
+      BasicCache cache = container(0).getCache();
+
+      // 1 - validate cache atomicity
+      Random rand = new Random();
+      for(int i=0; i<1000; i++) {
+         int k = rand.nextInt(10);
+         int v = rand.nextInt();
+         cache.put(k, v);
+         assert cache.get(k).equals(v);
       }
+
    }
 
    @Test
    public void baseUsage() throws Exception {
 
       BasicCacheContainer cacheManager = containers().iterator().next();
-      BasicCache<Object, Object> cache = cacheManager.getCache();
+      BasicCache<Object, Object> cache = cacheManager.getCache(CRESON_CACHE_NAME);
       Factory factory = Factory.forCache(cache);
 
       // 1 - basic call
@@ -82,13 +88,15 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       Marshaller marshaller = new JBossMarshaller();
       assert marshaller.objectFromByteBuffer((marshaller.objectToByteBuffer(set))) instanceof Reference;
 
+      factory.close();
+
    }
 
    @Test(enabled = true)
    public void basePerformance() throws Exception{
 
       BasicCacheContainer cacheManager = containers().iterator().next();
-      BasicCache<Object, Object> cache = cacheManager.getCache();
+      BasicCache<Object, Object> cache = cacheManager.getCache(CRESON_CACHE_NAME);
       Factory factory = Factory.forCache(cache);
 
       int f = 1; // multiplicative factor
@@ -112,11 +120,11 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       Iterator<BasicCacheContainer> it = containers().iterator();
 
       BasicCacheContainer container1 = it.next();
-      BasicCache<Object, Object> cache1 = container1.getCache();
+      BasicCache<Object, Object> cache1 = container1.getCache(CRESON_CACHE_NAME);
       Factory factory1 = Factory.forCache(cache1);
 
       BasicCacheContainer container2 = it.next();
-      BasicCache<Object, Object> cache2 = container2.getCache();
+      BasicCache<Object, Object> cache2 = container2.getCache(CRESON_CACHE_NAME);
       Factory factory2 = Factory.forCache(cache2);
 
       HashSet set1, set2;
@@ -158,15 +166,10 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
    @Test
    public void baseReadOptimization() throws Exception {
-      SimpleObject object = new SimpleObject();
+      SimpleObject object = new SimpleObject("baseReadOptimization");
       object.setField("something");
       String field = object.getField();
       assert field.equals("something");
-      BasicCache cache = container(0).getCache();
-      Call lastCall = (Call) cache.get(new Reference<>(SimpleObject.class, "test"));
-      assertTrue(lastCall != null);
-      assertEquals(lastCall.getClass(), CallInvoke.class);
-      assert ((CallInvoke) lastCall).method.equals("setField");
    }
 
    @Test
@@ -194,7 +197,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
       Iterator<BasicCacheContainer> it = containers().iterator();
       BasicCacheContainer container1 = it.next();
-      BasicCache<Object, Object> cache1 = container1.getCache();
+      BasicCache<Object, Object> cache1 = container1.getCache(CRESON_CACHE_NAME);
       Factory factory1 = Factory.forCache(cache1, 1);
 
       HashSet set1, set2;
@@ -221,10 +224,10 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       List<Future<Integer>> futures = new ArrayList<>();
 
       for (BasicCacheContainer manager : containers()) {
-         BasicCache<Object, Object> cache = manager.getCache();
+         Set set = Factory.forCache(manager.getCache(CRESON_CACHE_NAME))
+                 .getInstanceOf(HashSet.class,"concurrent");
          futures.add(service.submit(
-               new ExerciseAtomicSetTask(
-                     Factory.forCache(cache), "hashSet", NCALLS)));
+                 new ExerciseAtomicSetTask(set, NCALLS)));
       }
 
       long start = System.currentTimeMillis();
@@ -246,11 +249,11 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       Iterator<BasicCacheContainer> it = containers().iterator();
 
       BasicCacheContainer container1 = it.next();
-      BasicCache<Object, Object> cache1 = container1.getCache();
+      BasicCache<Object, Object> cache1 = container1.getCache(CRESON_CACHE_NAME);
       Factory factory1 = Factory.forCache(cache1);
 
       BasicCacheContainer container2 = it.next();
-      BasicCache<Object, Object> cache2 = container2.getCache();
+      BasicCache<Object, Object> cache2 = container2.getCache(CRESON_CACHE_NAME);
       Factory factory2 = Factory.forCache(cache2);
 
       int n = 100;
@@ -314,7 +317,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       AdvancedShardedObject object1 = new AdvancedShardedObject(UUID.randomUUID());
       AdvancedShardedObject object2 = new AdvancedShardedObject(UUID.randomUUID(), object1);
 
-      assert object2.getShard().equals(object1);
+      ShardedObject shard = object2.getShard();
+      assert shard.equals(object1);
       assert object1.flipValue();
       assert !((AdvancedShardedObject) object2.getShard()).flipValue();
       assert object2.flipValue();
@@ -327,46 +331,40 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       assert rlist.get(0).equals(object1) :  rlist.get(0);
    }
 
-   @Test(enabled = false)
+   @Test(enabled = true)
    public void baseElasticity() throws Exception {
-      assertTrue(containers().size() >= 2);
 
-      persistence();
       advancedComposition();
+      baseUsage();
 
       addContainer();
       persistence();
       advancedComposition();
+      baseUsage();
 
       deleteContainer();
-      persistence();
+      baseUsage();
       advancedComposition();
    }
 
-   @Test(enabled = false)
+   @Test(enabled = true)
    public void advancedElasticity() throws Exception {
 
       ExecutorService service = Executors.newCachedThreadPool();
       List<Future<Integer>> futures = new ArrayList<>();
 
       for (BasicCacheContainer manager : containers()) {
-         BasicCache<Object, Object> cache = manager.getCache();
+         Set set = Factory.forCache(manager.getCache(CRESON_CACHE_NAME))
+                 .getInstanceOf(HashSet.class,"elastic");
          futures.add(service.submit(
-               new ExerciseAtomicSetTask(
-                     Factory.forCache(cache), "elastic", NCALLS)));
-      }
-
-      waitForClusterToForm();
+                 new ExerciseAtomicSetTask(set, NCALLS)));
+       }
 
       // elasticity
       Set<Future> completed = new HashSet<>();
-      Random random = new Random();
       while (completed.size() != futures.size()) {
-         Thread.sleep(2000);
-         boolean action = true;
-         if (containers().size() > REPLICATION_FACTOR)
-            action = (random.nextBoolean());
-         if (action) {
+         Thread.sleep(1000);
+         if (containers().size() == NMANAGERS) {
             addContainer();
          } else {
             deleteContainer();
@@ -407,11 +405,11 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
    protected void destroy() {
       Factory factory;
       for (EmbeddedCacheManager manager : cacheManagers) {
-         factory = Factory.forCache(manager.getCache());
+         factory = Factory.forCache(manager.getCache(CRESON_CACHE_NAME));
          if (factory!=null) factory.close();
       }
       for (BasicCacheContainer container : containers()) {
-         factory = Factory.forCache(container.getCache());
+         factory = Factory.forCache(container.getCache(CRESON_CACHE_NAME));
          factory.close();
       }
       super.destroy();
@@ -430,38 +428,30 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       TestingUtil.sleepThread(1000);
    }
 
-   public static class ExerciseAtomicSetTask implements Callable<Integer> {
+   public class ExerciseAtomicSetTask implements Callable<Integer> {
 
-      private String name;
       private int ncalls;
       private Set set;
-      private Factory factory;
 
-      public ExerciseAtomicSetTask(Factory f, String name, int n) {
-         this.name = name;
-         factory = f;
+      public ExerciseAtomicSetTask(Set set, int n) {
          ncalls = n;
+         this.set = set;
       }
 
       @Override
       public Integer call() throws Exception {
 
          int ret = 0;
-
          for (int i = 0; i < ncalls; i++) {
-
-            if (set == null)
-               set = factory.getInstanceOf(HashSet.class, name);
 
             Object r = set.add(i);
             assert r != null;
 
-            // if successful, persist the object
             if (r != null && (boolean) r) {
                ret++;
-               factory.disposeInstanceOf(HashSet.class, name);
-               set = null;
+               Thread.sleep(1);
             }
+
          }
 
          return ret;

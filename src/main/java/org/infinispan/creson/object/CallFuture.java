@@ -3,7 +3,6 @@ package org.infinispan.creson.object;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -19,20 +18,19 @@ import java.util.concurrent.TimeoutException;
  * @author Pierre Sutra
  * @since 6.0
  */
-public class CallFuture implements Future<Object>, Externalizable {
+public class CallFuture extends Call implements Future<Object> {
 
    private static Log log = LogFactory.getLog(CallFuture.class);
 
    private Object ret;
-   private UUID callID;
    private Object state;
    private int status; // 0 => init, 1 => done, -1 => cancelled
 
    @Deprecated
    public CallFuture(){}
 
-   public CallFuture(UUID callID){
-      this.callID = callID;
+   public CallFuture(UUID callID, UUID callerID){
+      super(callerID,callID);
       this.ret = null;
       this.status = 0;
    }
@@ -51,15 +49,6 @@ public class CallFuture implements Future<Object>, Externalizable {
 
       }
 
-   }
-
-   public UUID getCallID(){
-      return callID;
-   }
-
-   @Override
-   public boolean equals(Object o){
-      return o instanceof CallFuture&& ((CallFuture) o).callID.equals(this.callID);
    }
 
    @Override
@@ -114,21 +103,21 @@ public class CallFuture implements Future<Object>, Externalizable {
 
    @Override
    public String toString() {
-      return "Future["+callID+","+ret+"]";
+      return "Future["+getCallID()+","+ret+"]";
    }
 
    @Override
    public void writeExternal(ObjectOutput objectOutput) throws IOException {
+      super.writeExternal(objectOutput);
       objectOutput.writeObject(ret);
-      objectOutput.writeObject(callID);
       objectOutput.writeInt(status);
       objectOutput.writeObject(state);
    }
 
    @Override
    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+      super.readExternal(objectInput);
       ret = objectInput.readObject();
-      callID = (UUID) objectInput.readObject();
       status = objectInput.readInt();
       state = objectInput.readObject();
    }

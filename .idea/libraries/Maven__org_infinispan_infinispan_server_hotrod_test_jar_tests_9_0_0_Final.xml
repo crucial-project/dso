@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.infinispan:infinispan-server-hotrod:test-jar:tests:9.0.0.Final">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/infinispan/infinispan-server-hotrod/9.0.0.Final/infinispan-server-hotrod-9.0.0.Final-tests.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/infinispan/infinispan-server-hotrod/9.0.0.Final/infinispan-server-hotrod-9.0.0.Final-test-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/infinispan/infinispan-server-hotrod/9.0.0.Final/infinispan-server-hotrod-9.0.0.Final-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

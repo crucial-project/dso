@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
+
 /**
  * @author Pierre Sutra
  */
@@ -44,24 +46,21 @@ public class RemoteRealTest extends AbstractTest {
          int port = Integer.valueOf(server.split(":")[1]);
          org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
                = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
-         cb.pingOnStartup(true)
-               .addServer()
-               .host(host)
-               .port(port);
+         cb.addServer().host(host).port(port);
          RemoteCacheManager manager= new RemoteCacheManager(cb.build());
          manager.start();
-         manager.getCache().clear();
+         manager.getCache(CRESON_CACHE_NAME).clear();
          basicCacheContainers.add(manager);
       }
 
       this.cleanup = null;
-      Factory.forCache(basicCacheContainers.get(0).getCache());
+      Factory.forCache(basicCacheContainers.get(0).getCache(CRESON_CACHE_NAME));
    }
 
    @Override
    protected void clearContent() throws Throwable {
       for(BasicCacheContainer container : basicCacheContainers) {
-         container.getCache().clear();
+         container.getCache(CRESON_CACHE_NAME).clear();
       }
    }
 

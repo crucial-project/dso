@@ -52,11 +52,6 @@ public class FakeContainer extends AbstractContainer {
    }
 
    @Override
-   public synchronized boolean isClosed(){
-      return isOpen;
-   }
-
-   @Override 
    public synchronized void close()
          throws InterruptedException, ExecutionException, TimeoutException, IOException {
       isOpen = false;
@@ -68,7 +63,7 @@ public class FakeContainer extends AbstractContainer {
    }
 
    @Override
-   public void putAsync(Reference reference, Call call) {
+   public void execute(Reference reference, Call call) {
       cache.put(reference,call);
    }
 

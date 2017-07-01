@@ -45,6 +45,7 @@ public abstract class AbstractContainer {
    protected Object state;
    protected boolean forceNew;
    protected Object[] initArgs;
+   protected UUID listenerID;
 
    public AbstractContainer(
          Class clazz,
@@ -54,6 +55,7 @@ public abstract class AbstractContainer {
       this.readOptimization = readOptimization && hasReadOnlyMethods(clazz);
       this.forceNew = forceNew;
       this.initArgs = initArgs;
+      this.listenerID = UUID.randomUUID();
    }
 
    public final Object getProxy(){
@@ -68,13 +70,13 @@ public abstract class AbstractContainer {
    public abstract void close()
          throws InterruptedException, ExecutionException, TimeoutException, IOException;
 
-   public abstract boolean isClosed();
-
-   public abstract UUID listenerID();
-
-   public abstract void putAsync(Reference reference, Call call);
-
    public abstract BasicCache getCache();
+
+   public UUID listenerID() {
+      return listenerID;
+   }
+
+   public abstract void execute(Reference reference, Call call);
 
    protected Object execute(Call call)
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
@@ -82,23 +84,23 @@ public abstract class AbstractContainer {
       if (log.isTraceEnabled()) 
          log.trace(this + " Executing "+call);
 
-      CallFuture future = new CallFuture(call.getCallID());
+      CallFuture future = new CallFuture(call.getCallID(), listenerID());
 
       registeredCalls.put(call.getCallID(), future);
 
       Object ret = null;
-      int attemps = 0;
+      int attempts = 0;
       while(!future.isDone()) {
          try {
-            attemps++;
-            putAsync(getReference(), call);
+            attempts++;
+            execute(getReference(), call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
             if (ret instanceof Throwable)
                throw new ExecutionException((Throwable) ret);
          }catch (TimeoutException e) {
             if (!future.isDone())
                log.warn(" Failed "+ call + " ("+e.getMessage()+")");
-            if (attemps==MAX_ATTEMPTS) {
+            if (attempts==MAX_ATTEMPTS) {
                registeredCalls.remove(call.getCallID());
                throw new TimeoutException(call + " failed");
             }

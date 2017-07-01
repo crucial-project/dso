@@ -2,36 +2,22 @@ package org.infinispan.creson;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.test.fwk.TransportFlags;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
+
 /**
  * @author Pierre Sutra
- * @since 7.0
  */
 @org.testng.annotations.Test(testName = "BaseTest", groups = "unit")
 public class BaseTest extends AbstractTest {
 
-   private ConfigurationBuilder defaultConfigurationBuilder;
    private static List<Cache<Object,Object>> caches = new ArrayList<>();
-
-   public BaseTest() {
-      defaultConfigurationBuilder
-            = getDefaultClusteredCacheConfig(CACHE_MODE, false);
-      defaultConfigurationBuilder
-            .clustering().hash().numOwners(getReplicationFactor())
-            .locking().useLockStriping(false);
-      defaultConfigurationBuilder.clustering().stateTransfer()
-            .awaitInitialTransfer(true)
-            .timeout(1000000)
-            .fetchInMemoryState(true);
-      if (MAX_ENTRIES!=Integer.MAX_VALUE)
-         defaultConfigurationBuilder.eviction().maxEntries(MAX_ENTRIES);
-   }
 
    @Override 
    public BasicCacheContainer container(int i) {
@@ -45,9 +31,13 @@ public class BaseTest extends AbstractTest {
 
    @Override
    public synchronized boolean addContainer() {
-      EmbeddedCacheManager cm = addClusterEnabledCacheManager(defaultConfigurationBuilder);
-      caches.add(cm.getCache());
-      waitForClusterToForm();
+      TransportFlags flags = new TransportFlags();
+      flags.withFD(true).withMerge(true);
+      EmbeddedCacheManager cm = addClusterEnabledCacheManager(buildConfiguration(), flags);
+      waitForClusterToForm(CRESON_CACHE_NAME);
+      Cache cache = cm.getCache(CRESON_CACHE_NAME);
+      caches.add(cache);
+      Factory.forCache(cache);
       System.out.println("Node " + cm+ " added.");
       return true;
    }
@@ -68,10 +58,9 @@ public class BaseTest extends AbstractTest {
 
    @Override
    protected void createCacheManagers() throws Throwable {
-      for(int i=0; i<getNumberOfManagers(); i++) {
+      for(int i=0; i<NMANAGERS; i++) {
          addContainer();
       }
-      Factory.forCache(cache(0));
    }
 }
 

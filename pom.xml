@@ -4,15 +4,16 @@
     <parent>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-parent</artifactId>
-        <version>7.2.0-SNAPSHOT</version>
+        <version>9.0.3.Final</version>
     </parent>
 
     <artifactId>infinispan-creson</artifactId>
-    <name>CRESON</name>
+    <name>infinispan-creson</name>
     <description>A framework to build (user-defined) shared objects atop Infinispan.</description>
 
     <properties>
         <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
+        <version.infinispan>9.0.0.Final</version.infinispan>
     </properties>
 
     <dependencies>
@@ -20,16 +21,19 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-client-hotrod</artifactId>
+            <version>${version.infinispan}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-core</artifactId>
+            <version>${version.infinispan}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-commons</artifactId>
+            <version>${version.infinispan}</version>
         </dependency>
 
         <dependency>
@@ -55,28 +59,36 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
-            <!--<scope>test</scope>-->
+            <version>${version.infinispan}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-core</artifactId>
+            <version>${version.infinispan}</version>
             <type>test-jar</type>
-            <!--<scope>test</scope>-->
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
+            <version>${version.infinispan}</version>
             <type>test-jar</type>
-            <!--<scope>test</scope>-->
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-commons-test</artifactId>
+            <version>${version.infinispan}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-client-hotrod</artifactId>
+            <version>${version.infinispan}</version>
             <type>test-jar</type>
-            <!--<scope>test</scope>-->
         </dependency>
 
         <dependency>
@@ -97,6 +109,13 @@
             <version>7.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${version.testng}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -111,9 +130,9 @@
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.7</version>
                 <configuration>
-                    <complianceLevel>1.7</complianceLevel>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
                 <executions>
                     <execution>
@@ -127,6 +146,7 @@
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.2</version>
                 <executions>
                     <execution>
                         <id>generate-blueprint</id>

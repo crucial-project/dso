@@ -1,23 +1,20 @@
 package org.infinispan.creson;
 
-import org.infinispan.creson.filter.FilterConverterFactory;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
-import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
 import static org.infinispan.test.TestingUtil.blockUntilCacheStatusAchieved;
 import static org.testng.Assert.assertEquals;
 
@@ -45,39 +42,14 @@ public class RemoteTest extends AbstractTest {
    public boolean addContainer() {
       int index = servers.size();
 
-      // set-up data eviction and persistence
-      if (MAX_ENTRIES!=Integer.MAX_VALUE) {
-         defaultBuilder.eviction().maxEntries(MAX_ENTRIES);
-         defaultBuilder.eviction().strategy(EvictionStrategy.LRU);
-
-         File file = new File(PERSISTENT_STORAGE_DIR + "/" + index);
-         if (file.exists()) {
-            // clear previous stuff
-            for (File children : file.listFiles()) {
-               children.delete();
-            }
-            file.delete();
-         }
-
-         SingleFileStoreConfigurationBuilder storeConfigurationBuilder
-               = defaultBuilder.persistence().addSingleFileStore();
-         storeConfigurationBuilder.location(file.getPath());
-         storeConfigurationBuilder.purgeOnStartup(true);
-         storeConfigurationBuilder.fetchPersistentState(false);
-         storeConfigurationBuilder.persistence().passivation(true);
-      }
-
       // embedded cache manager
-      addClusterEnabledCacheManager(defaultBuilder).getCache();
-      waitForClusterToForm();
+      addClusterEnabledCacheManager(buildConfiguration()).getCache(CRESON_CACHE_NAME);
+      waitForClusterToForm(CRESON_CACHE_NAME);
 
       // hotrod server
       HotRodServer server = HotRodTestingUtil.startHotRodServer(
             manager(index),
             11222+index);
-      FilterConverterFactory factory = new FilterConverterFactory();
-      server.addCacheEventFilterConverterFactory(FilterConverterFactory.FACTORY_NAME, factory);
-      server.startDefaultCache();
       servers.add(server);
 
       // remote manager
@@ -121,21 +93,21 @@ public class RemoteTest extends AbstractTest {
    protected void createCacheManagers() throws Throwable {
       createDefaultBuilder();
 
-      for (int j = 0; j < getNumberOfManagers(); j++) {
+      for (int j = 0; j < NMANAGERS; j++) {
          addContainer();
       }
 
       // Verify that default caches are started.
-      for (int j = 0; j < getNumberOfManagers(); j++) {
+      for (int j = 0; j < NMANAGERS; j++) {
          blockUntilCacheStatusAchieved(
-               manager(j).getCache(), ComponentStatus.RUNNING, 10000);
+               manager(j).getCache(CRESON_CACHE_NAME), ComponentStatus.RUNNING, 10000);
       }
 
       waitForClusterToForm();
 
-      assertEquals(manager(0).getTransport().getMembers().size(), getNumberOfManagers());
+      assertEquals(manager(0).getTransport().getMembers().size(), NMANAGERS);
 
-      Factory.forCache(container(0).getCache());
+      Factory.forCache(container(0).getCache(CRESON_CACHE_NAME));
    }
 
    // Helpers
@@ -143,12 +115,12 @@ public class RemoteTest extends AbstractTest {
    private void createDefaultBuilder() {
       defaultBuilder = getDefaultClusteredCacheConfig(CACHE_MODE,false);
       defaultBuilder
-            .clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(getReplicationFactor())
+            .clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(REPLICATION_FACTOR)
             .locking().useLockStriping(false)
             .compatibility().enable();
       defaultBuilder.clustering().stateTransfer()
             .awaitInitialTransfer(true)
-            .timeout(1000000)
+            .timeout(10000)
             .fetchInMemoryState(true);
    }
 
