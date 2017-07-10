@@ -6,21 +6,19 @@ import java.io.ObjectOutput;
 import java.util.UUID;
 
 /**
- *
  * @author Pierre Sutra
- * @since 7.2
  */
-public class CallOpen extends Call{
+public class CallConstruct extends Call{
 
    private boolean forceNew;
    private boolean readOptimization;
    private Object[] initArgs;
    
    @Deprecated
-   public CallOpen(){}
+   public CallConstruct(){}
 
-   public CallOpen(UUID callerID, UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
-      super(callerID, callID);
+   public CallConstruct(UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
+      super(callID);
       this.forceNew = forceNew;
       this.initArgs = initargs;
       this.readOptimization = readOptimization;
@@ -28,7 +26,7 @@ public class CallOpen extends Call{
 
    @Override
    public String toString() {
-      return super.toString()+"-OPEN";
+      return super.toString()+"-CONS";
    }
 
    public boolean getForceNew() {

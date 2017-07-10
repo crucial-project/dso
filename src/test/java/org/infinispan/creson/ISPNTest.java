@@ -68,12 +68,10 @@ public class ISPNTest extends BaseTest {
       List<ExercisePutTask> tasks = new ArrayList<>();
       Map<Integer,Integer> map = new ConcurrentHashMap<>();
 
-      for(int i=0; i<NMANAGERS; i++){
-         ExercisePutTask putTask = new ExercisePutTask(
-                 map,container(i).getCache(CRESON_CACHE_NAME));
-         futures.add(fork(putTask));
-         tasks.add(putTask);
-      }
+      ExercisePutTask putTask = new ExercisePutTask(
+              map,container(0).getCache(CRESON_CACHE_NAME));
+      futures.add(fork(putTask));
+      tasks.add(putTask);
 
       try {
          // FIXME for some reason, we cannot do it outside of this thread
@@ -122,37 +120,11 @@ public class ISPNTest extends BaseTest {
       void halt();
    }
 
-   private class ExerciseGetTask implements HaltableTask{
-
-      private AtomicBoolean halted = new AtomicBoolean(false);
-      private List<Integer> list;
-
-      public ExerciseGetTask(List<Integer> list){
-         this.list = list;
-      }
-
-      @Override
-      public void halt() {
-         halted.set(true);
-      }
-
-      @Override
-      public Integer call() throws Exception {
-         Random rand  = new Random(System.currentTimeMillis());
-         while(!halted.get()) {
-            int k = list.get(rand.nextInt(list.size()));
-            assert container(0).getCache().get(k) != null;
-            Thread.sleep(1);
-         }
-         return 0;
-      }
-   }
-
    private class ExercisePutTask implements HaltableTask{
 
       private AtomicBoolean halted = new AtomicBoolean(false);
       private Map<Integer,Integer> map;
-      private BasicCache cache;
+      private BasicCache<Integer,Integer> cache;
 
       public ExercisePutTask(Map<Integer, Integer> map, BasicCache cache){
          this.map = map;
@@ -169,10 +141,12 @@ public class ISPNTest extends BaseTest {
          Random random = new Random(System.nanoTime());
          while(!halted.get()) {
             try {
-               int k = random.nextInt(Integer.MAX_VALUE);
-               cache.put(k, 0);
-               map.put(k,0);
-               Thread.sleep(1);
+               Integer k = random.nextInt(Integer.MAX_VALUE);
+               Integer v = random.nextInt(Integer.MAX_VALUE);
+               Integer w = cache.put(k, v);
+               if (map.containsKey(k))
+                  assert w.equals(map.get(k));
+               map.put(k,v);
             }catch (Exception e) {
                e.printStackTrace();
                // ignore

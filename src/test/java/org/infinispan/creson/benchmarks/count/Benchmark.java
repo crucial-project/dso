@@ -79,7 +79,7 @@ public class Benchmark {
             avgTime += future.get();
          }
          avgTime=avgTime/futures.size();
-         System.out.println("Average time: " + avgTime +" [Throughput="+(1/avgTime)*Math.pow(10,3)*clients.size()+"]");
+         System.out.println("Average time: " + avgTime +" [Throughput="+(1/avgTime)*clients.size()+"]");
       } catch (InterruptedException | ExecutionException e) {
          e.printStackTrace();
       }
@@ -90,6 +90,7 @@ public class Benchmark {
 
       private int T;
       private List<Counter> counters;
+      private List<Long> latencies;
       private Random random;
 
       private AtomicDouble throughput;
@@ -100,6 +101,7 @@ public class Benchmark {
          this.T = T;
          random = new Random();
 
+         latencies = new ArrayList<>();
          throughput = new AtomicDouble(0);
          isOver = false;
       }
@@ -114,14 +116,23 @@ public class Benchmark {
 
       @Override
       public Double call() throws Exception {
-         long start = System.currentTimeMillis();
+         long beg = System.currentTimeMillis();
          // increment T counters at random
          for (int t = 0; t < T; t++) {
+            long start = System.nanoTime();
             counters.get(random.nextInt(counters.size())).increment();
-            throughput.set(t*Math.pow(10, 3) * ((double) 1) / ((double) (System.currentTimeMillis() - start)));
+            latencies.add(System.nanoTime()-start);
+            double avrgLatency = 0; // average latency over the last 100 operations
+            int count = Math.min(1000,latencies.size());
+            for(int i = 1; i <= count; i++) {
+               avrgLatency += latencies.get(latencies.size()-i);
+            }
+            avrgLatency = avrgLatency/((double)count);
+            avrgLatency = avrgLatency*Math.pow(10, -9);
+            throughput.set(((double)1)/avrgLatency);
          }
          isOver = true;
-         return ((double)(System.currentTimeMillis()-start)/(double)T);
+         return (Math.pow(10,-3)*((double)(System.currentTimeMillis()-beg)))/(double)T;
       }
    }
 

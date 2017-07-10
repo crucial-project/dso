@@ -30,8 +30,11 @@ public class ConfigurationHelper {
 
         builder
                 = getDefaultClusteredCacheConfig(mode, false);
-        builder
-                .clustering().hash().numOwners(replicationFactor);
+        builder.clustering()
+                .stateTransfer().fetchInMemoryState(true)
+                .stateTransfer().chunkSize(Integer.MAX_VALUE)
+                .awaitInitialTransfer(true)
+                .hash().numOwners(replicationFactor);
 
         if (maxEntries != Long.MAX_VALUE) {
             builder.memory().size(maxEntries);

@@ -1,13 +1,12 @@
 package org.infinispan.creson.container;
 
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.object.Utils;
-import org.infinispan.commons.api.BasicCache;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +20,6 @@ public class FakeContainer extends AbstractContainer {
    private static ConcurrentMap<Reference,Object> objects = new ConcurrentHashMap<>();
 
    private BasicCache cache;
-   private boolean isOpen;
    private Reference reference;
 
    public FakeContainer(BasicCache cache, Class clazz, Object key,
@@ -34,7 +32,6 @@ public class FakeContainer extends AbstractContainer {
          Object o = Utils.initObject(reference.getClazz(), initArgs);
          objects.putIfAbsent(reference,o);
          proxy = objects.get(reference);
-         isOpen = false;
       } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
          e.printStackTrace(); 
       } 
@@ -48,18 +45,11 @@ public class FakeContainer extends AbstractContainer {
 
    @Override
    public synchronized void open() throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      isOpen = true;
    }
 
    @Override
    public synchronized void close()
          throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      isOpen = false;
-   }
-
-   @Override 
-   public UUID listenerID() {
-      return UUID.randomUUID();
    }
 
    @Override

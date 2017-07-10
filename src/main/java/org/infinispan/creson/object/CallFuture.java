@@ -14,9 +14,7 @@ import java.util.concurrent.TimeoutException;
 
 
 /**
- * Idempotent future object.
  * @author Pierre Sutra
- * @since 6.0
  */
 public class CallFuture extends Call implements Future<Object> {
 
@@ -29,8 +27,8 @@ public class CallFuture extends Call implements Future<Object> {
    @Deprecated
    public CallFuture(){}
 
-   public CallFuture(UUID callID, UUID callerID){
-      super(callerID,callID);
+   public CallFuture(UUID callID){
+      super(callID);
       this.ret = null;
       this.status = 0;
    }

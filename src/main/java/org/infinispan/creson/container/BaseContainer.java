@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,8 +27,9 @@ public abstract class BaseContainer extends AbstractContainer {
 
    // object's fields
    private AtomicInteger pendingCalls;
-   private boolean isOpen, isClosed;
+   private boolean isOpen;
    private Reference reference;
+   private RandomBasedGenerator generator;
 
    public BaseContainer(Class clazz, Object key, final boolean readOptimization,
          final boolean forceNew, final Object... initArgs)
@@ -38,7 +40,6 @@ public abstract class BaseContainer extends AbstractContainer {
       super(clazz, readOptimization, forceNew, initArgs);
       this.pendingCalls = new AtomicInteger();
       this.isOpen = false;
-      this.isClosed = false;
 
       // build the proxy
       MethodHandler handler = new BaseContainerMethodHandler(this);
@@ -68,11 +69,11 @@ public abstract class BaseContainer extends AbstractContainer {
          }
 
       }
-
       assert key!=null;
-
       this.reference = new Reference(clazz,key);
 
+      // build generator
+      generator = new RandomBasedGenerator(new Random(System.nanoTime()));
    }
 
 
@@ -88,7 +89,7 @@ public abstract class BaseContainer extends AbstractContainer {
          if (log.isTraceEnabled())
             log.trace(" Opening.");
 
-         execute(new CallOpen(listenerID(), UUID.randomUUID(), forceNew, initArgs, readOptimization));
+         execute(new CallConstruct(generator.generate(), forceNew, initArgs, readOptimization));
          isOpen = true;
 
          if (log.isTraceEnabled())
@@ -113,7 +114,6 @@ public abstract class BaseContainer extends AbstractContainer {
 
          isOpen = false;
          forceNew = false;
-         isClosed = true;
 
       }
 
@@ -129,7 +129,7 @@ public abstract class BaseContainer extends AbstractContainer {
 
    @Override
    public String toString(){
-      return "Container["+listenerID().toString().substring(0,5)+":"+getReference()+"]";
+      return "Container["+getReference()+"]";
    }
 
    private class BaseContainerMethodHandler implements MethodHandler, Serializable{
@@ -191,16 +191,15 @@ public abstract class BaseContainer extends AbstractContainer {
          open();
 
          // handle UUID generator
-         RandomBasedGenerator generator = ThreadLocalUUIDGenerator.getThreadLocal();
-         UUID uuid = generator==null ? UUID.randomUUID() : generator.generate();
+         RandomBasedGenerator lgenerator = ThreadLocalUUIDGenerator.getThreadLocal();
+         UUID uuid = lgenerator==null ? generator.generate() : lgenerator.generate();
          if (log.isTraceEnabled()) {
                log.trace("generated " + uuid + " m=" + m.getName()
-                     + ", reference=" + reference + "[" + ((generator == null) ? "null" : generator.toString())+ "]");
+                     + ", reference=" + reference + "[" + ((lgenerator == null) ? "null" : lgenerator.toString())+ "]");
          }
 
          Object ret = execute(
                new CallInvoke(
-                     listenerID(),
                      uuid,
                      m.getName(),
                      args)

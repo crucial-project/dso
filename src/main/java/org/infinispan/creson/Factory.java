@@ -275,8 +275,8 @@ public class Factory {
             &&
             (
                   ((Cache)cache).getCacheConfiguration().transaction().transactionMode().isTransactional()
-                        ||
-                        ((Cache)cache).getCacheConfiguration().locking().useLockStriping()
+                          ||
+                          ((Cache)cache).getCacheConfiguration().locking().useLockStriping()
             ))
          throw new InvalidCacheUsageException("Cache should not be transactional, nor use lock stripping."); // as of 7.2.x
    }

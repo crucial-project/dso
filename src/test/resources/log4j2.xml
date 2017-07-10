@@ -11,16 +11,16 @@
     <Console name="STDOUT">
       <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p (%t) [%c{1}] %m%n%throwable{10}"/>
     </Console>
-    <File name="File" fileName="${sys:infinispan.log.path}/infinispan${sys:infinispan.module-suffix}.log"
+    <File name="File" fileName="${sys:infinispan.log.path}/infinispan.log"
           append="false">
       <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p (%t:%x) [%c{1}] %m%n"/>
     </File>
   </Appenders>
 
   <Loggers>
-    <Logger name="org.infinispan" level="DEBUG"/>
-    <Logger name="com.mchange" level="WARN"/>
+    <Logger name="org.infinispan" level="INFO"/>
     <Logger name="org.jgroups" level="DEBUG"/>
+    <Logger name="org.infinispan.server.hotrod.Decoder2x" level="ERROR"/>
 
     <Root level="DEBUG">
       <AppenderRef ref="STDOUT" level="ERROR"/>

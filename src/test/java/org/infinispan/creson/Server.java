@@ -35,6 +35,9 @@ public class Server {
    @Option(name = "-me", usage = "max #entries in the object cache (implies -p)")
    private long maxEntries = Long.MAX_VALUE;
 
+   @Option(name = "-ec2", usage = "use AWS EC2 jgroups configuration")
+   private boolean useEC2 = false;
+
    public Server () {}
 
    public Server (String server, String proxyServer, int replicationFactor, boolean usePersistence) {
@@ -71,7 +74,9 @@ public class Server {
       GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
       gbuilder.transport().clusterName("creson-cluster");
       gbuilder.transport().nodeName("creson-server-" + host);
-      // gbuilder.transport().addProperty("configurationFile", "jgroups-creson.xml"); FIXME using default TCP configuration
+
+      if (useEC2)
+         gbuilder.transport().addProperty("configurationFile", "jgroups-creson-ec2.xml");
 
       ConfigurationBuilder builder= ConfigurationHelper.buildConfiguration(
               CacheMode.DIST_ASYNC,

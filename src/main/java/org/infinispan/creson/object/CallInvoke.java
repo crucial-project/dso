@@ -8,7 +8,6 @@ import java.util.UUID;
 
 /**
  * @author Pierre Sutra
- * @since 7.2
  */
 public class CallInvoke extends Call implements Externalizable{
 
@@ -18,8 +17,8 @@ public class CallInvoke extends Call implements Externalizable{
    @Deprecated
    public CallInvoke(){}
 
-   public CallInvoke(UUID callerID, UUID callID, String m, Object[] args) {
-      super(callerID, callID);
+   public CallInvoke(UUID callID, String m, Object[] args) {
+      super(callID);
       method = m;
       arguments = args;
 

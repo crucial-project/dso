@@ -8,27 +8,20 @@ import java.util.UUID;
 
 /**
  * @author Pierre Sutra
- * @since 7.2
  */
 public class Call implements Externalizable {
 
    private UUID callID;
-   private UUID listenerID;
 
    @Deprecated
    public Call(){}
 
-   public Call(UUID listenerID, UUID callID){
+   public Call(UUID callID){
       this.callID = callID;
-      this.listenerID = listenerID;
    }
 
    public UUID getCallID(){
       return callID;
-   }
-
-   public UUID getListenerID(){
-      return listenerID;
    }
 
    @Override
@@ -37,8 +30,11 @@ public class Call implements Externalizable {
    }
 
    @Override
-   public boolean equals(Object o){
-      return o instanceof Call && ((Call) o).callID.equals(this.callID);
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || !(o instanceof Call)) return false;
+      Call call = (Call) o;
+      return callID.equals(call.callID);
    }
 
    @Override
@@ -49,13 +45,11 @@ public class Call implements Externalizable {
    @Override
    public void writeExternal(ObjectOutput objectOutput) throws IOException {
       objectOutput.writeObject(callID);
-      objectOutput.writeObject(listenerID);
    }
 
    @Override
    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
       callID = (UUID) objectInput.readObject();
-      listenerID = (UUID) objectInput.readObject();
    }
 
 

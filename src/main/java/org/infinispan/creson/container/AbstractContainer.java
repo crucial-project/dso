@@ -45,7 +45,6 @@ public abstract class AbstractContainer {
    protected Object state;
    protected boolean forceNew;
    protected Object[] initArgs;
-   protected UUID listenerID;
 
    public AbstractContainer(
          Class clazz,
@@ -55,7 +54,6 @@ public abstract class AbstractContainer {
       this.readOptimization = readOptimization && hasReadOnlyMethods(clazz);
       this.forceNew = forceNew;
       this.initArgs = initArgs;
-      this.listenerID = UUID.randomUUID();
    }
 
    public final Object getProxy(){
@@ -72,10 +70,6 @@ public abstract class AbstractContainer {
 
    public abstract BasicCache getCache();
 
-   public UUID listenerID() {
-      return listenerID;
-   }
-
    public abstract void execute(Reference reference, Call call);
 
    protected Object execute(Call call)
@@ -84,7 +78,7 @@ public abstract class AbstractContainer {
       if (log.isTraceEnabled()) 
          log.trace(this + " Executing "+call);
 
-      CallFuture future = new CallFuture(call.getCallID(), listenerID());
+      CallFuture future = new CallFuture(call.getCallID());
 
       registeredCalls.put(call.getCallID(), future);
 

@@ -37,11 +37,11 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
    protected static Log log = LogFactory.getLog(AbstractTest.class);
    static{
-      Configurator.setLevel(System.getProperty("log4j.logger"), Level.INFO);
+      Configurator.setLevel(System.getProperty("log4j.logger"), Level.ERROR);
    }
 
    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-   protected static final int NCALLS = 1000;
+   protected static final int NCALLS = 10000;
    protected static final long MAX_ENTRIES = Integer.MAX_VALUE;
    protected static final int REPLICATION_FACTOR = 2;
    protected static final int NMANAGERS = 3;
@@ -175,20 +175,19 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
    @Test
    public void advancedReadOptimization() throws Exception {
 
-      int f = 10; // multiplicative factor
       SimpleObject object = new SimpleObject("performance");
 
       long start = System.currentTimeMillis();
-      for(int i=0; i<NCALLS*f;i++){
+      for(int i=0; i<NCALLS;i++){
          object.setField(Integer.toString(i));
       }
-      System.out.println("op/sec:"+((float)(NCALLS*f))/((float)(System.currentTimeMillis() - start))*1000);
+      System.out.println("op/sec:"+((float)(NCALLS))/((float)(System.currentTimeMillis() - start))*1000);
 
       start = System.currentTimeMillis();
-      for(int i=0; i<NCALLS*f;i++){
+      for(int i=0; i<NCALLS;i++){
          object.getField();
       }
-      System.out.println("op/sec:" + ((float) (NCALLS * f)) / ((float) (System.currentTimeMillis() - start)) * 1000);
+      System.out.println("op/sec:" + ((float) (NCALLS)) / ((float) (System.currentTimeMillis() - start)) * 1000);
 
    }
 
@@ -290,7 +289,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
    }
 
-   @Test(enabled = true)
+   @Test
    public void baseComposition() throws Exception {
       assert ShardedObject.class.isAssignableFrom(SimpleShardedObject.class);
       SimpleShardedObject object = new SimpleShardedObject();
@@ -312,7 +311,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
    }
 
-   @Test(enabled = true)
+   @Test
    public void advancedComposition() throws Exception {
       AdvancedShardedObject object1 = new AdvancedShardedObject(UUID.randomUUID());
       AdvancedShardedObject object2 = new AdvancedShardedObject(UUID.randomUUID(), object1);
@@ -331,7 +330,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       assert rlist.get(0).equals(object1) :  rlist.get(0);
    }
 
-   @Test(enabled = true)
+   @Test
    public void baseElasticity() throws Exception {
 
       advancedComposition();
@@ -347,18 +346,16 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
       advancedComposition();
    }
 
-   @Test(enabled = true)
+   @Test
    public void advancedElasticity() throws Exception {
 
       ExecutorService service = Executors.newCachedThreadPool();
       List<Future<Integer>> futures = new ArrayList<>();
 
-      for (BasicCacheContainer manager : containers()) {
-         Set set = Factory.forCache(manager.getCache(CRESON_CACHE_NAME))
-                 .getInstanceOf(HashSet.class,"elastic");
-         futures.add(service.submit(
-                 new ExerciseAtomicSetTask(set, NCALLS)));
-       }
+      Set set = Factory.forCache(manager(0).getCache(CRESON_CACHE_NAME))
+              .getInstanceOf(HashSet.class,"elastic");
+      futures.add(service.submit(
+              new ExerciseAtomicSetTask(set, NCALLS)));
 
       // elasticity
       Set<Future> completed = new HashSet<>();
@@ -380,7 +377,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
          total += future.get();
       }
 
-      assert total == (NCALLS) : "obtained = " + total + "; espected = " + (NCALLS);
+      assert total == (NCALLS) : "obtained = " + total + "; expected = " + (NCALLS);
 
    }
 
@@ -444,12 +441,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
          int ret = 0;
          for (int i = 0; i < ncalls; i++) {
 
-            Object r = set.add(i);
-            assert r != null;
-
-            if (r != null && (boolean) r) {
+            if (set.add(i)) {
                ret++;
-               Thread.sleep(1);
             }
 
          }
