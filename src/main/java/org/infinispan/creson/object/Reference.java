@@ -16,92 +16,95 @@ import java.util.List;
  */
 public class Reference<T> implements Externalizable {
 
-   private Class<T> clazz;
-   private Object key;
+    private Class<T> clazz;
+    private Object key;
 
-   public static Object unreference(Reference reference, Factory factory) {
-      assert factory!=null;
-      return factory.getInstanceOf(reference);
-   }
+    public static Object unreference(Reference reference, Factory factory) {
+        assert factory != null;
+        return factory.getInstanceOf(reference);
+    }
 
-   public static Object unreference(Object arg, BasicCache cache) {
-      if (arg==null) return null;
-      return unreference(Collections.singleton(arg).toArray(),cache)[0];
-   }
+    public static Object unreference(Object arg, BasicCache cache) {
+        if (arg == null) return null;
+        return unreference(Collections.singleton(arg).toArray(), cache)[0];
+    }
 
-   public static Object[] unreference(Object[] args, BasicCache cache) {
-      List<Object> ret = new ArrayList<>(args.length);
-      for(Object arg : args) {
-         if (arg instanceof Reference) {
-            ret.add(unreference((Reference)arg, Factory.forCache(cache)));
-         } else {
-            if (arg instanceof List) {
-               List list = new ArrayList(((List) arg).size());
-               for(int i = 0; i<((List) arg).size(); i++) {
-                  Object item = ((List)arg).get(i);
-                  list.add(unreference(item, cache));
-               }
-               ret.add(list);
+    public static Object[] unreference(Object[] args, BasicCache cache) {
+        List<Object> ret = new ArrayList<>(args.length);
+        for (Object arg : args) {
+            if (arg instanceof Reference) {
+                ret.add(unreference((Reference) arg, Factory.forCache(cache)));
             } else {
-               ret.add(arg);
+                if (arg instanceof List) {
+                    List list = new ArrayList(((List) arg).size());
+                    for (int i = 0; i < ((List) arg).size(); i++) {
+                        Object item = ((List) arg).get(i);
+                        list.add(unreference(item, cache));
+                    }
+                    ret.add(list);
+                } else {
+                    ret.add(arg);
+                }
             }
-         }
-      }
-      return ret.toArray();
-   }
+        }
+        return ret.toArray();
+    }
 
-   // Object fields
+    // Object fields
 
-   public Reference(){}
-   
-   public Reference(Class<T> c, Object key){
-      clazz = c;
-      this.key = key;
-   }
+    public Reference() {
+    }
 
-   @Override
-   public boolean equals(Object o) {
-      if (this == o)
-         return true;
-      if (o == null || getClass() != o.getClass())
-         return false;
+    public Reference(Class<T> c, Object key) {
+        clazz = c;
+        this.key = key;
+    }
 
-      Reference<?> reference = (Reference<?>) o;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
-      if (clazz != null ? !clazz.equals(reference.clazz) : reference.clazz != null)
-         return false;
-      return !(key != null ? !key.equals(reference.key) : reference.key != null);
+        Reference<?> reference = (Reference<?>) o;
 
-   }
+        if (clazz != null ? !clazz.equals(reference.clazz) : reference.clazz != null)
+            return false;
+        return !(key != null ? !key.equals(reference.key) : reference.key != null);
 
-   // Care about Class.hashCode() not being portable ...
-   @Override
-   public int hashCode() {
-      int result = (key != null ? key.hashCode() : 0);
-      return result;
-   }
+    }
 
-   @Override
-   public String toString(){
-      return getClazz().getName().toString()+"#"+getKey().toString();
-   }
+    // Care about Class.hashCode() not being portable ...
+    @Override
+    public int hashCode() {
+        int result = (key != null ? key.hashCode() : 0);
+        return result;
+    }
 
-   public Object getKey() {
-      return key;
-   }
-   
-   public Class getClazz(){ return clazz;}
+    @Override
+    public String toString() {
+        return getClazz().getName().toString() + "#" + getKey().toString();
+    }
 
-   @Override
-   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-      objectOutput.writeObject(clazz);
-      objectOutput.writeObject(key);
-   }
+    public Object getKey() {
+        return key;
+    }
 
-   @Override 
-   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-      clazz = (Class) objectInput.readObject();
-      key = objectInput.readObject();
-   }
+    public Class getClazz() {
+        return clazz;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput objectOutput) throws IOException {
+        objectOutput.writeObject(clazz);
+        objectOutput.writeObject(key);
+    }
+
+    @Override
+    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+        clazz = (Class) objectInput.readObject();
+        key = objectInput.readObject();
+    }
 
 }

@@ -21,113 +21,114 @@ import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
  */
 public class Server {
 
-   private static final String defaultServer ="localhost:11222";
+    private static final String defaultServer = "localhost:11222";
 
-   @Option(name = "-server", usage = "ip:port or ip of the server")
-   private String server = defaultServer;
-   
-   @Option(name = "-proxy", usage = "proxy server as seen by clients")
-   private String proxyServer = null;
+    @Option(name = "-server", usage = "ip:port or ip of the server")
+    private String server = defaultServer;
 
-   @Option(name = "-rf", usage = "replication factor")
-   private int replicationFactor = 1;
+    @Option(name = "-proxy", usage = "proxy server as seen by clients")
+    private String proxyServer = null;
 
-   @Option(name = "-me", usage = "max #entries in the object cache (implies -p)")
-   private long maxEntries = Long.MAX_VALUE;
+    @Option(name = "-rf", usage = "replication factor")
+    private int replicationFactor = 1;
 
-   @Option(name = "-ec2", usage = "use AWS EC2 jgroups configuration")
-   private boolean useEC2 = false;
+    @Option(name = "-me", usage = "max #entries in the object cache (implies -p)")
+    private long maxEntries = Long.MAX_VALUE;
 
-   public Server () {}
+    @Option(name = "-ec2", usage = "use AWS EC2 jgroups configuration")
+    private boolean useEC2 = false;
 
-   public Server (String server, String proxyServer, int replicationFactor, boolean usePersistence) {
-      this.server = server;
-      this.proxyServer = proxyServer;
-      this.replicationFactor = replicationFactor;
-   }
-   
-   public static void main(String args[]) {
-      new Server().doMain(args);
-   }
-   
-   
-   public void doMain(String[] args) {
-      
-      CmdLineParser parser = new CmdLineParser(this);
+    public Server() {
+    }
 
-      parser.setUsageWidth(80);
+    public Server(String server, String proxyServer, int replicationFactor, boolean usePersistence) {
+        this.server = server;
+        this.proxyServer = proxyServer;
+        this.replicationFactor = replicationFactor;
+    }
 
-      try {
-         parser.parseArgument(args);
-      } catch( CmdLineException e ) {
-         System.err.println(e.getMessage());
-         parser.printUsage(System.err);
-         System.err.println();
-         return;
-      }
+    public static void main(String args[]) {
+        new Server().doMain(args);
+    }
 
-      String host = server.split(":")[0];
-      int port = Integer.valueOf(
-            server.split(":").length == 2
-                  ? server.split(":")[1] : "11222");
 
-      GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
-      gbuilder.transport().clusterName("creson-cluster");
-      gbuilder.transport().nodeName("creson-server-" + host);
+    public void doMain(String[] args) {
 
-      if (useEC2)
-         gbuilder.transport().addProperty("configurationFile", "jgroups-creson-ec2.xml");
+        CmdLineParser parser = new CmdLineParser(this);
 
-      ConfigurationBuilder builder= ConfigurationHelper.buildConfiguration(
-              CacheMode.DIST_ASYNC,
-              replicationFactor,
-              maxEntries,
-              System.getProperty("store-creson-server" + host),
-              false);
+        parser.setUsageWidth(80);
 
-      final EmbeddedCacheManager cm
-              = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
+        try {
+            parser.parseArgument(args);
+        } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
+            parser.printUsage(System.err);
+            System.err.println();
+            return;
+        }
 
-      HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();
-      hbuilder.topologyStateTransfer(true);
-      hbuilder.host(host);
-      hbuilder.port(port);
+        String host = server.split(":")[0];
+        int port = Integer.valueOf(
+                server.split(":").length == 2
+                        ? server.split(":")[1] : "11222");
 
-      if (proxyServer != null && !proxyServer.equals(defaultServer)) {
-         String proxyHost = proxyServer.split(":")[0];
-         int proxyPort = Integer.valueOf(
-               proxyServer.split(":").length == 2
-                     ? proxyServer.split(":")[1] : "11222");
-         hbuilder.proxyHost(proxyHost);
-         hbuilder.proxyPort(proxyPort);
-      }
+        GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
+        gbuilder.transport().clusterName("creson-cluster");
+        gbuilder.transport().nodeName("creson-server-" + host);
 
-      hbuilder.workerThreads(100);
-      hbuilder.tcpNoDelay(true);
+        if (useEC2)
+            gbuilder.transport().addProperty("configurationFile", "jgroups-creson-ec2.xml");
 
-      final HotRodServer server = new HotRodServer();
-      server.start(hbuilder.build(), cm);
+        ConfigurationBuilder builder = ConfigurationHelper.buildConfiguration(
+                CacheMode.DIST_ASYNC,
+                replicationFactor,
+                maxEntries,
+                System.getProperty("store-creson-server" + host),
+                false);
 
-      System.out.println("LAUNCHED");
+        final EmbeddedCacheManager cm
+                = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
 
-      SignalHandler sh = s -> {
-         System.out.println("CLOSING");
-         try {
-            Factory factory = Factory.forCache(cm.getCache(CRESON_CACHE_NAME));
-            if (factory != null)
-               factory.close();
-            server.stop();
-            cm.stop();
-            System.exit(0);
-         }catch(Throwable t) {
-            System.exit(-1);
-         }
-      };
-      Signal.handle(new Signal("INT"), sh);
-      Signal.handle(new Signal("TERM"), sh);
+        HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();
+        hbuilder.topologyStateTransfer(true);
+        hbuilder.host(host);
+        hbuilder.port(port);
 
-      Thread.currentThread().interrupt();
+        if (proxyServer != null && !proxyServer.equals(defaultServer)) {
+            String proxyHost = proxyServer.split(":")[0];
+            int proxyPort = Integer.valueOf(
+                    proxyServer.split(":").length == 2
+                            ? proxyServer.split(":")[1] : "11222");
+            hbuilder.proxyHost(proxyHost);
+            hbuilder.proxyPort(proxyPort);
+        }
 
-   }
+        hbuilder.workerThreads(100);
+        hbuilder.tcpNoDelay(true);
+
+        final HotRodServer server = new HotRodServer();
+        server.start(hbuilder.build(), cm);
+
+        System.out.println("LAUNCHED");
+
+        SignalHandler sh = s -> {
+            System.out.println("CLOSING");
+            try {
+                Factory factory = Factory.forCache(cm.getCache(CRESON_CACHE_NAME));
+                if (factory != null)
+                    factory.close();
+                server.stop();
+                cm.stop();
+                System.exit(0);
+            } catch (Throwable t) {
+                System.exit(-1);
+            }
+        };
+        Signal.handle(new Signal("INT"), sh);
+        Signal.handle(new Signal("TERM"), sh);
+
+        Thread.currentThread().interrupt();
+
+    }
 
 }

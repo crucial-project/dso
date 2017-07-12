@@ -8,51 +8,54 @@ import java.util.UUID;
 /**
  * @author Pierre Sutra
  */
-public class CallConstruct extends Call{
+public class CallConstruct extends Call {
 
-   private boolean forceNew;
-   private boolean readOptimization;
-   private Object[] initArgs;
-   
-   @Deprecated
-   public CallConstruct(){}
+    private boolean forceNew;
+    private boolean readOptimization;
+    private Object[] initArgs;
 
-   public CallConstruct(UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
-      super(callID);
-      this.forceNew = forceNew;
-      this.initArgs = initargs;
-      this.readOptimization = readOptimization;
-   }
+    @Deprecated
+    public CallConstruct() {
+    }
 
-   @Override
-   public String toString() {
-      return super.toString()+"-CONS";
-   }
+    public CallConstruct(UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
+        super(callID);
+        this.forceNew = forceNew;
+        this.initArgs = initargs;
+        this.readOptimization = readOptimization;
+    }
 
-   public boolean getForceNew() {
-      return forceNew;
-   }
-   
-   public boolean getReadOptimization(){return readOptimization;}
-   
-   public Object[] getInitArgs(){
-      return initArgs;
-   }
+    @Override
+    public String toString() {
+        return super.toString() + "-CONS";
+    }
 
-   @Override
-   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-      super.writeExternal(objectOutput);
-      objectOutput.writeBoolean(forceNew);
-      objectOutput.writeObject(initArgs);
-      objectOutput.writeBoolean(readOptimization);
-   }
+    public boolean getForceNew() {
+        return forceNew;
+    }
 
-   @Override
-   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-      super.readExternal(objectInput);
-      forceNew = objectInput.readBoolean();
-      initArgs = (Object[]) objectInput.readObject();
-      readOptimization = objectInput.readBoolean();
-   }
+    public boolean getReadOptimization() {
+        return readOptimization;
+    }
+
+    public Object[] getInitArgs() {
+        return initArgs;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput objectOutput) throws IOException {
+        super.writeExternal(objectOutput);
+        objectOutput.writeBoolean(forceNew);
+        objectOutput.writeObject(initArgs);
+        objectOutput.writeBoolean(readOptimization);
+    }
+
+    @Override
+    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
+        super.readExternal(objectInput);
+        forceNew = objectInput.readBoolean();
+        initArgs = (Object[]) objectInput.readObject();
+        readOptimization = objectInput.readBoolean();
+    }
 
 }

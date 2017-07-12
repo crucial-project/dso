@@ -12,30 +12,30 @@ import java.util.UUID;
 @Entity
 public class SimpleShardedObject implements ShardedObject {
 
-   @Id
-   public UUID id;
-   
-   private ShardedObject shard;
+    @Id
+    public UUID id;
 
-   public SimpleShardedObject(){
-      id = UUID.randomUUID();
-   }
-   
-   public SimpleShardedObject(ShardedObject shard) {
-      id = UUID.randomUUID();
-      this.shard = shard;
-   }
-   
-   @ReadOnly
-   @Override
-   public ShardedObject getShard(){
-      return shard;
-   }
+    private ShardedObject shard;
 
-   @ReadOnly
-   @Override
-   public String toString(){
-      return id.toString();
-   }
+    public SimpleShardedObject() {
+        id = UUID.randomUUID();
+    }
+
+    public SimpleShardedObject(ShardedObject shard) {
+        id = UUID.randomUUID();
+        this.shard = shard;
+    }
+
+    @ReadOnly
+    @Override
+    public ShardedObject getShard() {
+        return shard;
+    }
+
+    @ReadOnly
+    @Override
+    public String toString() {
+        return id.toString();
+    }
 
 }

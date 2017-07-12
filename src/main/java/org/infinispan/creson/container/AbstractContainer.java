@@ -21,9 +21,9 @@ import static org.infinispan.creson.object.Utils.hasReadOnlyMethods;
 
 /**
  *
- * Uninstalling a listener is not necessary, as when all clients disconnect, 
- * it is automatically removed. 
- * 
+ * Uninstalling a listener is not necessary, as when all clients disconnect,
+ * it is automatically removed.
+ *
  * @author Pierre Sutra
  */
 public abstract class AbstractContainer {
@@ -75,7 +75,7 @@ public abstract class AbstractContainer {
    protected Object execute(Call call)
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
 
-      if (log.isTraceEnabled()) 
+      if (log.isTraceEnabled())
          log.trace(this + " Executing "+call);
 
       CallFuture future = new CallFuture(call.getCallID());
@@ -110,7 +110,7 @@ public abstract class AbstractContainer {
 
       if (log.isTraceEnabled())
          log.trace(this + " Returning " + ret);
-      
+
       return ret;
 
    }

@@ -14,7 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
@@ -99,7 +104,7 @@ public class ISPNTest extends BaseTest {
    // Helpers
    //
 
-   private class ExerciseElasticityTask implements  Callable<Integer> {
+   private class ExerciseElasticityTask implements Callable<Integer> {
 
       @Override
       public Integer call() throws Exception {

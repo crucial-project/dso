@@ -6,7 +6,12 @@ import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.StaticEntity;
-import org.infinispan.creson.object.*;
+import org.infinispan.creson.object.Call;
+import org.infinispan.creson.object.CallConstruct;
+import org.infinispan.creson.object.CallFuture;
+import org.infinispan.creson.object.CallInvoke;
+import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.object.Utils;
 import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.distribution.DistributionManager;
@@ -22,7 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.infinispan.creson.CresonModuleLifeCycle.CRESON_CACHE_NAME;
-import static org.infinispan.creson.object.Utils.*;
+import static org.infinispan.creson.object.Utils.hasReadOnlyMethods;
+import static org.infinispan.creson.object.Utils.marshall;
+import static org.infinispan.creson.object.Utils.unmarshall;
 
 public class Interceptor extends NonTxDistributionInterceptor {
 

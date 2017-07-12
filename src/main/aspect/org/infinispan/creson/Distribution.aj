@@ -5,7 +5,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
-import javax.persistence.Entity;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -46,13 +45,6 @@ public class Distribution {
          return;
       }
       throw new IllegalStateException("Entity fields for "+pjp.getTarget().getClass()+" must be both public and static.");
-   }
-
-   @Entity
-   public static class A{
-      A a = new A();
-      @StaticEntity
-      A b = new A();
    }
 
 }

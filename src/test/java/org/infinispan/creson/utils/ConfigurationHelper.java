@@ -7,7 +7,7 @@ import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import static org.infinispan.test.AbstractCacheTest.getDefaultClusteredCacheConfig;
 
 /**
- * Created by otrack on 01/07/17.
+ * @author Pierre Sutra
  */
 public class ConfigurationHelper {
 

@@ -17,30 +17,30 @@ import java.util.concurrent.TimeoutException;
  */
 public class LocalContainer extends BaseContainer {
 
-   private AdvancedCache<Reference,Call> cache;
-      
-   public LocalContainer(
-         BasicCache c,
-         Class clazz,
-         Object key,
-         boolean readOptimization,
-         boolean forceNew,
-         Object... initArgs)
-         throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
-         InterruptedException,
-         ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException, NoSuchFieldException {
-      super(clazz, key, readOptimization, forceNew, initArgs);
-      this.cache = ((org.infinispan.Cache)c).getAdvancedCache();
-      if (log.isTraceEnabled()) log.trace(this+"Created successfully");
-   }
+    private AdvancedCache<Reference, Call> cache;
 
-   @Override
-   public BasicCache getCache() {
-      return cache;
-   }
+    public LocalContainer(
+            BasicCache c,
+            Class clazz,
+            Object key,
+            boolean readOptimization,
+            boolean forceNew,
+            Object... initArgs)
+            throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
+            InterruptedException,
+            ExecutionException, NoSuchMethodException, InvocationTargetException, TimeoutException, NoSuchFieldException {
+        super(clazz, key, readOptimization, forceNew, initArgs);
+        this.cache = ((org.infinispan.Cache) c).getAdvancedCache();
+        if (log.isTraceEnabled()) log.trace(this + "Created successfully");
+    }
 
-   @Override
-   public void execute(Reference reference, Call call) {
-      handleFuture((CallFuture) getCache().put(reference, call));
-   }
+    @Override
+    public BasicCache getCache() {
+        return cache;
+    }
+
+    @Override
+    public void execute(Reference reference, Call call) {
+        handleFuture((CallFuture) getCache().put(reference, call));
+    }
 }
