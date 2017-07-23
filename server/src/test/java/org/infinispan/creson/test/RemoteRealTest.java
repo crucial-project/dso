@@ -1,7 +1,8 @@
-package org.infinispan.creson;
+package org.infinispan.creson.test;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.creson.Factory;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;

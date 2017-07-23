@@ -207,12 +207,14 @@ public class Factory {
     }
 
 
-    void disposeInstanceOf(Reference reference)
+    @Deprecated
+    public void disposeInstanceOf(Reference reference)
             throws CacheException {
         disposeInstanceOf(reference.getClazz(), reference.getKey());
     }
 
-    void disposeInstanceOf(Class clazz, Object key)
+    @Deprecated
+    public void disposeInstanceOf(Class clazz, Object key)
             throws CacheException {
 
         Reference reference = new Reference<>(clazz, key);

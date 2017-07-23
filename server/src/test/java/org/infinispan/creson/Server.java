@@ -8,11 +8,19 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
+
+import java.io.File;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 
@@ -21,7 +29,9 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
  */
 public class Server {
 
+    private static final Log log = LogFactory.getLog(Server.class);
     private static final String defaultServer = "localhost:11222";
+    private static final String userLibraries = "/tmp";
 
     @Option(name = "-server", usage = "ip:port or ip of the server")
     private String server = defaultServer;
@@ -37,6 +47,11 @@ public class Server {
 
     @Option(name = "-ec2", usage = "use AWS EC2 jgroups configuration")
     private boolean useEC2 = false;
+
+    @Option(name = "-userLibs", usage = "directory containing the user libraries")
+    private String userLib = userLibraries;
+
+    private volatile boolean running = false;
 
     public Server() {
     }
@@ -109,11 +124,26 @@ public class Server {
         final HotRodServer server = new HotRodServer();
         server.start(hbuilder.build(), cm);
 
+        ScheduledExecutorService scheduler =
+                Executors.newScheduledThreadPool(1);
+        scheduler.schedule((Callable<Void>) () -> {
+            while(true) {
+                Thread.sleep(1000);
+                File folder = new File(userLib);
+                File[] listOfFiles = folder.listFiles();
+                for (File file : listOfFiles) {
+                    if (file.isFile() && file.getName().matches(".*\\.jar")) {
+                        loadLibrary(file);
+                    }
+                }
+            }},1, TimeUnit.SECONDS);
+
         System.out.println("LAUNCHED");
 
         SignalHandler sh = s -> {
             System.out.println("CLOSING");
             try {
+                scheduler.shutdown();
                 Factory factory = Factory.forCache(cm.getCache(CRESON_CACHE_NAME));
                 if (factory != null)
                     factory.close();
@@ -131,4 +161,25 @@ public class Server {
 
     }
 
+    public static synchronized void loadLibrary(java.io.File jar) {
+        try {
+            java.net.URLClassLoader loader = (java.net.URLClassLoader) ClassLoader.getSystemClassLoader();
+            java.net.URL url = jar.toURI().toURL();
+            for (java.net.URL it : java.util.Arrays.asList(loader.getURLs())) {
+                if (it.equals(url)) {
+                    return;
+                }
+            }
+            System.out.println("Loading "+jar.getName());
+            java.lang.reflect.Method method = java.net.URLClassLoader.class.
+                    getDeclaredMethod("addURL", new Class[]{java.net.URL.class});
+            method.setAccessible(true); /*promote the method to public access*/
+            method.invoke(loader, new Object[]{url});
+        } catch (final java.lang.NoSuchMethodException |
+                java.lang.IllegalAccessException |
+                java.net.MalformedURLException |
+                java.lang.reflect.InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
 }

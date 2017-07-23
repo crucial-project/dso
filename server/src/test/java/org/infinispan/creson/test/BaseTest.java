@@ -1,7 +1,8 @@
-package org.infinispan.creson;
+package org.infinispan.creson.test;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.creson.Factory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.fwk.TransportFlags;
 

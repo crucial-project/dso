@@ -1,4 +1,4 @@
-package org.infinispan.creson;
+package org.infinispan.creson.test;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -8,6 +8,7 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.creson.Factory;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.AdvancedShardedObject;
 import org.infinispan.creson.utils.ConfigurationHelper;
