@@ -58,6 +58,7 @@ public class RemoteTest extends AbstractTest {
                 new org.infinispan.client.hotrod.configuration.ConfigurationBuilder()
                         .addServers(server.getHost() + ":" + server.getPort())
                         .marshaller((Marshaller) null)
+                        .forceReturnValues(true)
                         .build());
         remoteCacheManagers.add(manager);
 

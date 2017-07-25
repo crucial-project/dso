@@ -53,6 +53,20 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-creson-client</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
             <scope>test</scope>
         </dependency>
@@ -110,6 +124,12 @@
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.10</version>
                 <configuration>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>org.infinispan</groupId>
+                            <artifactId>infinispan-creson-client</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>
                     <source>1.8</source>
                     <target>1.8</target>

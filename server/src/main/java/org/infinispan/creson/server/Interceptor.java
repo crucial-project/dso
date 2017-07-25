@@ -5,12 +5,12 @@ import org.infinispan.Cache;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
-import org.infinispan.creson.StaticEntity;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.Reflection;
 import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.distribution.DistributionManager;
@@ -19,16 +19,13 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import javax.persistence.Id;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
-import static org.infinispan.creson.object.Utils.callObject;
-import static org.infinispan.creson.object.Utils.hasReadOnlyMethods;
-import static org.infinispan.creson.object.Utils.initObject;
+import static org.infinispan.creson.utils.Reflection.callObject;
+import static org.infinispan.creson.utils.Reflection.hasReadOnlyMethods;
 import static org.infinispan.creson.server.Marshalling.marshall;
 import static org.infinispan.creson.server.Marshalling.unmarshall;
 
@@ -47,7 +44,7 @@ public class  Interceptor extends NonTxDistributionInterceptor {
     }
 
     @Override
-    public Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
+    public java.lang.Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
 
         if (!(command.getValue() instanceof Call)) {
             return handleDefault(ctx,command);
@@ -72,7 +69,7 @@ public class  Interceptor extends NonTxDistributionInterceptor {
 
         Call call = (Call) command.getValue();
         CallFuture future;
-        Object object;
+        java.lang.Object object;
 
         synchronized (ctx.lookupEntry(reference)) { // FIXME state transfer can be concurrent
 
@@ -104,17 +101,17 @@ public class  Interceptor extends NonTxDistributionInterceptor {
 
                         if (object == null) {
                             log.warn(reference + " re-created " + " @" + cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress());
-                            object = createObejct(reference, new Object[]{});
+                            object = Reflection.open(reference, new java.lang.Object[]{},cache);
                         }
 
-                        Object[] args = Reference.unreference(
+                        java.lang.Object[] args = Reference.unreference(
                                 invocation.arguments,
                                 cache);
 
                         ThreadLocalUUIDGenerator.setThreadLocal(generator);
 
                         try {
-                            Object response =
+                            java.lang.Object response =
                                     callObject(
                                             object,
                                             invocation.method,
@@ -141,7 +138,7 @@ public class  Interceptor extends NonTxDistributionInterceptor {
                             if (log.isTraceEnabled())
                                 log.trace(" New [" + reference + "]");
 
-                            object = createObejct(reference, callConstruct.getInitArgs());
+                            object = Reflection.open(reference, callConstruct.getInitArgs(), cache);
 
                         }
 
@@ -178,29 +175,6 @@ public class  Interceptor extends NonTxDistributionInterceptor {
     }
 
     // utils
-
-    private Object createObejct(Reference reference, Object[] initArgs)
-            throws IllegalAccessException, InstantiationException,
-            NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
-
-        Object ret = initObject(
-                reference.getClazz(),Reference.unreference(initArgs,cache));
-
-        // force the key field, in case it is created per default
-        if (reference.getClazz().getAnnotation(StaticEntity.class)!=null) {
-            java.lang.reflect.Field field = null;
-            for (java.lang.reflect.Field f : reference.getClazz().getFields()) {
-                if (f.getAnnotation(Id.class) != null) {
-                    field = f;
-                    break;
-                }
-            }
-            field.set(ret, reference.getKey());
-        }
-
-        return ret;
-
-    }
 
     @Override
     protected Log getLog() {
