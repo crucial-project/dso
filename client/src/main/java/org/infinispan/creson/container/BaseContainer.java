@@ -13,7 +13,7 @@ import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
-import org.infinispan.creson.object.Utils;
+import org.infinispan.creson.utils.Object;
 import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 
 import javax.persistence.Entity;
@@ -40,8 +40,8 @@ public class BaseContainer extends AbstractContainer {
     private RandomBasedGenerator generator;
     private BasicCache<Reference, Call> cache;
 
-    public BaseContainer(BasicCache c, Class clazz, Object key, final boolean readOptimization,
-                         final boolean forceNew, final Object... initArgs)
+    public BaseContainer(BasicCache c, Class clazz, java.lang.Object key, final boolean readOptimization,
+                         final boolean forceNew, final java.lang.Object... initArgs)
             throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
             InterruptedException, ExecutionException, NoSuchMethodException, InvocationTargetException,
             java.util.concurrent.TimeoutException, NoSuchFieldException {
@@ -57,7 +57,7 @@ public class BaseContainer extends AbstractContainer {
         fact.setFilter(methodFilter);
         fact.setInterfaces(new Class[]{WriteReplace.class});
         fact.setUseWriteReplace(false);
-        this.proxy = Utils.instantiate(fact.createClass(), initArgs);
+        this.proxy = Object.instantiate(fact.createClass(), initArgs);
         ((ProxyObject) proxy).setHandler(handler);
 
         // build reference and set key
@@ -161,7 +161,7 @@ public class BaseContainer extends AbstractContainer {
             this.container = container;
         }
 
-        public Object invoke(Object self, Method m, Method proceed, Object[] args) throws Throwable {
+        public java.lang.Object invoke(java.lang.Object self, Method m, Method proceed, java.lang.Object[] args) throws Throwable {
 
             if (log.isTraceEnabled())
                 log.trace("Calling " + reference.getClazz() + "." + m.getName() + "(" + Arrays.toString(args) + ")");
@@ -191,7 +191,7 @@ public class BaseContainer extends AbstractContainer {
                 return reference;
             }
 
-            if (!Utils.isMethodSupported(reference.getClazz(), m)) {
+            if (!Object.isMethodSupported(reference.getClazz(), m)) {
                 throw new IllegalArgumentException("Unsupported method " + m.getName() + " in " + reference.getClazz());
             }
 
@@ -199,7 +199,7 @@ public class BaseContainer extends AbstractContainer {
                     && state != null
                     && (m.isAnnotationPresent(ReadOnly.class))) {
                 if (log.isTraceEnabled()) log.trace("local call: " + m.getName());
-                return Utils.callObject(state, m.getName(), args);
+                return Object.callObject(state, m.getName(), args);
             } else {
                 if (log.isTraceEnabled())
                     log.trace("remote call: " + m.getName() + ";reason: +"
@@ -219,7 +219,7 @@ public class BaseContainer extends AbstractContainer {
                         + ", reference=" + reference + "[" + ((lgenerator == null) ? "null" : lgenerator.toString()) + "]");
             }
 
-            Object ret = execute(
+            java.lang.Object ret = execute(
                     new CallInvoke(
                             uuid,
                             m.getName(),
@@ -234,7 +234,7 @@ public class BaseContainer extends AbstractContainer {
 
             ret = Reference.unreference(ret, cache);
 
-            assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Utils.isCompatible(ret, m.getReturnType())
+            assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Object.isCompatible(ret, m.getReturnType())
                     : m.getReturnType() + " => " + ret.getClass() + " [" + reference.getClazz() + "." + m.getName() + "()]";
 
             return ret;
@@ -249,7 +249,7 @@ public class BaseContainer extends AbstractContainer {
     }
 
     public interface WriteReplace {
-        Object writeReplace() throws java.io.ObjectStreamException;
+        java.lang.Object writeReplace() throws java.io.ObjectStreamException;
     }
 
 }

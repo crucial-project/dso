@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.infinispan.creson.object.Utils.hasReadOnlyMethods;
+import static org.infinispan.creson.utils.Object.hasReadOnlyMethods;
 
 /**
  *
