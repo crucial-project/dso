@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Documented
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface StaticEntity {
+public @interface Shared {
 }

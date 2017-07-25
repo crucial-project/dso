@@ -15,16 +15,15 @@ import java.lang.reflect.Modifier;
 public class Distribution {
 
    @Pointcut("call((@javax.persistence.Entity *).new(..)) " +
-         "&& ! within(org.infinispan.creson.container.BaseContainer)" +
-         "&& ! within(org.infinispan.creson.interceptor.Interceptor)")
-   public static void initEntityClass(ProceedingJoinPoint pjp) {
+         "&& ! within(org.infinispan.creson.container.BaseContainer)")
+   public static void distributeEntity(ProceedingJoinPoint pjp) {
    }
 
-   @Pointcut("set(@org.infinispan.creson.StaticEntity * *) ")
-   public static void initStaticEntity(ProceedingJoinPoint pjp) {
+   @Pointcut("set(@org.infinispan.creson.Shared * *)")
+   public static void distributeField(ProceedingJoinPoint pjp) {
    }
 
-   @Around("initEntityClass(pjp)")
+   @Around("distributeEntity(pjp)")
    public Object distributionAdviceClass(ProceedingJoinPoint pjp) throws Throwable{
       Factory factory = Factory.getSingleton();
       return factory.getInstanceOf(
@@ -35,16 +34,17 @@ public class Distribution {
             pjp.getArgs());
    }
 
-   @Around("initStaticEntity(pjp)")
+   @Around("distributeField(pjp)")
    public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
       Factory factory = Factory.getSingleton();
       String fieldName = pjp.getStaticPart().getSignature().getName();
-      Field field = pjp.getStaticPart().getSignature().getDeclaringType().getField(fieldName);
-      if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
+      Field field = pjp.getStaticPart().getSignature().getDeclaringType().getDeclaredField(fieldName);
+      if (!Modifier.isStatic(field.getModifiers())) {
+         field.setAccessible(true);
          field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), fieldName, true, false));
          return;
       }
-      throw new IllegalStateException("Entity fields for "+pjp.getTarget().getClass()+" must be both public and static.");
+      throw new IllegalStateException("Field "+fieldName+" should not be static.");
    }
 
 }

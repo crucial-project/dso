@@ -57,13 +57,14 @@ public class BaseContainer extends AbstractContainer {
         fact.setFilter(methodFilter);
         fact.setInterfaces(new Class[]{WriteReplace.class});
         fact.setUseWriteReplace(false);
-        this.proxy = Utils.initObject(fact.createClass(), initArgs);
+        this.proxy = Utils.instantiate(fact.createClass(), initArgs);
         ((ProxyObject) proxy).setHandler(handler);
 
         // build reference and set key
         if (clazz.getAnnotation(Entity.class) != null) {
             java.lang.reflect.Field field = null;
-            for (java.lang.reflect.Field f : clazz.getFields()) {
+            for (java.lang.reflect.Field f : clazz.getDeclaredFields()) {
+                f.setAccessible(true);
                 if (f.getAnnotation(Id.class) != null) {
                     field = f;
                     break;
@@ -71,6 +72,7 @@ public class BaseContainer extends AbstractContainer {
             }
             if (field == null) throw new ClassFormatError("Missing id field");
             if (key == null) {
+                field.setAccessible(true);
                 key = field.get(proxy);
                 assert key != null : " field " + field.getName() + " is null for " + clazz;
             } else {

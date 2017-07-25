@@ -168,9 +168,8 @@ public class Factory {
             throw new CacheException(clazz + " should be serializable.");
         }
 
-        // FIXME full check that the class is a Java Bean
         try {
-            clazz.getConstructor();
+            clazz.getDeclaredConstructor().setAccessible(true);
         } catch (NoSuchMethodException e) {
             throw new CacheException(clazz + " does not have an empty constructor.");
         }

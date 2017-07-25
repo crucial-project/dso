@@ -1,9 +1,12 @@
 package org.infinispan.creson.object;
 
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.creson.ReadOnly;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,21 +29,65 @@ public class Utils {
 
     static {
         try {
-            unsupportedMethods.put(AbstractCollection.class, new HashSet<Method>());
+            unsupportedMethods.put(AbstractCollection.class, new HashSet<>());
             unsupportedMethods.get(AbstractCollection.class).add(Collection.class.getDeclaredMethod("iterator"));
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
     }
 
-    public static Object getMethod(Object obj, String method, Object[] args)
-            throws IllegalAccessException {
-        for (Method m : obj.getClass().getMethods()) { // only public methods (inherited and not)
+    public static Object open(Reference reference, Object[] initArgs, BasicCache cache)
+            throws IllegalAccessException, InstantiationException,
+            NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
+
+        Object ret = instantiate(
+                reference.getClazz(),Reference.unreference(initArgs,cache));
+
+        // force the key field to the value in the reference
+        if (reference.getClazz().getAnnotation(Entity.class)!=null) {
+            assert reference.getKey() != null;
+            java.lang.reflect.Field field = null;
+            for (java.lang.reflect.Field f : reference.getClazz().getDeclaredFields()) {
+                f.setAccessible(true);
+                if (f.getAnnotation(Id.class) != null) {
+                    field = f;
+                    break;
+                }
+            }
+            assert field != null : reference;
+            field.set(ret, reference.getKey());
+        }
+
+        return ret;
+
+    }
+
+    public static Object instantiate(Class clazz, Object... initArgs)
+            throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Constructor[] allConstructors = clazz.getDeclaredConstructors();
+        for (Constructor ctor : allConstructors) {
+            ctor.setAccessible(true);
+            if (ctor.getParameterTypes().length == initArgs.length) {
+                if (isCompatible(ctor, initArgs)) {
+                    if (log.isTraceEnabled())
+                        log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
+                    return ctor.newInstance(initArgs);
+                }
+            }
+        }
+        throw new IllegalArgumentException("Unable to find constructor for " + clazz.toString() + " with " + Arrays.toString(initArgs));
+    }
+
+    // methods
+
+    public static Object callObject(Object obj, String method, Object[] args)
+            throws InvocationTargetException, IllegalAccessException {
+        for (Method m : obj.getClass().getDeclaredMethods()) {
+            m.setAccessible(true);
             if (method.equals(m.getName())) {
-                if (m.getGenericParameterTypes().length == args.length) {
-                    if (isCompatible(m, args)) {
-                        return m;
-                    }
+                if (m.getParameterTypes().length == args.length) {
+                    if (isCompatible(m, args))
+                        return m.invoke(obj, args);
                 }
             }
         }
@@ -62,42 +109,6 @@ public class Utils {
             if (unsupportedMethods.get(clazz).contains(method))
                 return false;
         return isMethodSupported(clazz.getSuperclass(), method);
-    }
-
-    public static boolean hasDefaultConstructor(Class clazz) {
-        for (Constructor constructor : clazz.getConstructors()) {
-            if (constructor.getParameterTypes().length == 0)
-                return true;
-        }
-        return false;
-    }
-
-    public static Object callObject(Object obj, String method, Object[] args)
-            throws InvocationTargetException, IllegalAccessException {
-        for (Method m : obj.getClass().getMethods()) { // only public methods (inherited and not)
-            if (method.equals(m.getName())) {
-                if (m.getParameterTypes().length == args.length) {
-                    if (isCompatible(m, args))
-                        return m.invoke(obj, args);
-                }
-            }
-        }
-        throw new IllegalStateException("Method " + method + " not found.");
-    }
-
-    public static Object initObject(Class clazz, Object... initArgs)
-            throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        Constructor[] allConstructors = clazz.getDeclaredConstructors();
-        for (Constructor ctor : allConstructors) {
-            if (ctor.getParameterTypes().length == initArgs.length) {
-                if (isCompatible(ctor, initArgs)) {
-                    if (log.isTraceEnabled())
-                        log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
-                    return ctor.newInstance(initArgs);
-                }
-            }
-        }
-        throw new IllegalArgumentException("Unable to find constructor for " + clazz.toString() + " with " + Arrays.toString(initArgs));
     }
 
     /**
