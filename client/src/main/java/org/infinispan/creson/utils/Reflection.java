@@ -65,14 +65,19 @@ public class Reflection {
 
     public static java.lang.Object instantiate(Class clazz, java.lang.Object... initArgs)
             throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        if (log.isTraceEnabled())
+            log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
+        return constructor(clazz, initArgs).newInstance(initArgs);
+    }
+
+    public static Constructor constructor(Class clazz, java.lang.Object... initArgs)
+            throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Constructor[] allConstructors = clazz.getDeclaredConstructors();
         for (Constructor ctor : allConstructors) {
             ctor.setAccessible(true);
             if (ctor.getParameterTypes().length == initArgs.length) {
                 if (isCompatible(ctor, initArgs)) {
-                    if (log.isTraceEnabled())
-                        log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
-                    return ctor.newInstance(initArgs);
+                    return ctor;
                 }
             }
         }

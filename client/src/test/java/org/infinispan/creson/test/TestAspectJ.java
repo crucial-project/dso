@@ -21,7 +21,7 @@ public class TestAspectJ {
         Factory.forCache(new FakeCache());
     }
 
-    @Shared private List list;
+    @Shared private List list = new ArrayList();
 
     @Test
     public void sharedAnnotation(){

@@ -1,6 +1,5 @@
 package org.infinispan.creson.test;
 
-import javassist.util.proxy.Proxy;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.infinispan.Cache;
@@ -9,12 +8,9 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.creson.AdvancedShardedObject;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
-import org.infinispan.creson.Shared;
 import org.infinispan.creson.SimpleObject;
-import org.infinispan.creson.SimpleShardedObject;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.ConfigurationHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -35,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -299,17 +294,17 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         // 3 - equals()
         for (int i = 0; i < 100; i++) {
-            AdvancedShardedObject advancedShardedObject = new AdvancedShardedObject(UUID.randomUUID());
-            assert advancedShardedObject.equals(advancedShardedObject);
+            ShardedObject object2 = new ShardedObject();
+            assert object2.equals(object2);
         }
 
     }
 
     @Test
     public void baseComposition() throws Exception {
-        assert ShardedObject.class.isAssignableFrom(SimpleShardedObject.class);
-        SimpleShardedObject object = new SimpleShardedObject();
-        SimpleShardedObject object2 = new SimpleShardedObject(object);
+        assert ShardedObject.class.isAssignableFrom(ShardedObject.class);
+        ShardedObject object = new ShardedObject();
+        ShardedObject object2 = new ShardedObject(object);
         ShardedObject object3 = object2.getShard();
         assert object3.equals(object);
 
@@ -327,23 +322,16 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Shared
-    public List<AdvancedShardedObject> list;
-
     @Test
     public void advancedComposition() throws Exception {
-//        AdvancedShardedObject object1 = new AdvancedShardedObject(UUID.randomUUID());
-//        AdvancedShardedObject object2 = new AdvancedShardedObject(UUID.randomUUID());
-//        object2.getList().add(object1);
-//
-//        ShardedObject shard = object2.getShard();
-//        assert shard.equals(object1);
-//        assert object1.flipValue();
-//        assert !((AdvancedShardedObject) object2.getShard()).flipValue();
-//        assert object2.flipValue();
+        ShardedObject object1 = new ShardedObject();
+        ShardedObject object2 = new ShardedObject(object1);
 
-        list = new ArrayList<>();
-        assert list instanceof Proxy;
+        ShardedObject shard = object2.getShard();
+        assert shard.equals(object1);
+        assert object1.flipValue();
+        assert !(object2.getShard()).flipValue();
+        assert object2.flipValue();
 
 //        // TODO improve tests on static fields
 //        List<AdvancedShardedObject> rlist = object2.getList();
