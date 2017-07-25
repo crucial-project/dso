@@ -1,4 +1,4 @@
-package org.infinispan.creson;
+package org.infinispan.creson.test;
 
 import org.infinispan.commons.api.BasicCache;
 

@@ -13,7 +13,7 @@ import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
-import org.infinispan.creson.utils.Object;
+import org.infinispan.creson.utils.Reflection;
 import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 
 import javax.persistence.Entity;
@@ -57,7 +57,7 @@ public class BaseContainer extends AbstractContainer {
         fact.setFilter(methodFilter);
         fact.setInterfaces(new Class[]{WriteReplace.class});
         fact.setUseWriteReplace(false);
-        this.proxy = Object.instantiate(fact.createClass(), initArgs);
+        this.proxy = Reflection.instantiate(fact.createClass(), initArgs);
         ((ProxyObject) proxy).setHandler(handler);
 
         // build reference and set key
@@ -191,7 +191,7 @@ public class BaseContainer extends AbstractContainer {
                 return reference;
             }
 
-            if (!Object.isMethodSupported(reference.getClazz(), m)) {
+            if (!Reflection.isMethodSupported(reference.getClazz(), m)) {
                 throw new IllegalArgumentException("Unsupported method " + m.getName() + " in " + reference.getClazz());
             }
 
@@ -199,7 +199,7 @@ public class BaseContainer extends AbstractContainer {
                     && state != null
                     && (m.isAnnotationPresent(ReadOnly.class))) {
                 if (log.isTraceEnabled()) log.trace("local call: " + m.getName());
-                return Object.callObject(state, m.getName(), args);
+                return Reflection.callObject(state, m.getName(), args);
             } else {
                 if (log.isTraceEnabled())
                     log.trace("remote call: " + m.getName() + ";reason: +"
@@ -234,7 +234,7 @@ public class BaseContainer extends AbstractContainer {
 
             ret = Reference.unreference(ret, cache);
 
-            assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Object.isCompatible(ret, m.getReturnType())
+            assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Reflection.isCompatible(ret, m.getReturnType())
                     : m.getReturnType() + " => " + ret.getClass() + " [" + reference.getClazz() + "." + m.getName() + "()]";
 
             return ret;

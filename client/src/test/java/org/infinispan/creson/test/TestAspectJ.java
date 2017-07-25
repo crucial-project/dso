@@ -1,6 +1,8 @@
-package org.infinispan.creson;
+package org.infinispan.creson.test;
 
 import javassist.util.proxy.Proxy;
+import org.infinispan.creson.Factory;
+import org.infinispan.creson.Shared;
 import org.testng.annotations.Test;
 
 import javax.persistence.Entity;
@@ -19,8 +21,7 @@ public class TestAspectJ {
         Factory.forCache(new FakeCache());
     }
 
-    @Shared
-    private List list;
+    @Shared private List list;
 
     @Test
     public void sharedAnnotation(){

@@ -1,4 +1,4 @@
-package org.infinispan.creson.utils;
+package org.infinispan.creson;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -9,8 +9,7 @@ import javax.persistence.Id;
 @Entity
 public class SimpleObject {
 
-   @Id
-   public String field;
+   @Id public String field;
 
    public SimpleObject(){
       field = "test";

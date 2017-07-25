@@ -1,9 +1,10 @@
-package org.infinispan.creson.object;
+package org.infinispan.creson.utils;
 
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.creson.ReadOnly;
+import org.infinispan.creson.object.Reference;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -21,9 +22,9 @@ import java.util.Set;
 /**
  * @author Pierre Sutra
  */
-public class Utils {
+public class Reflection {
 
-    private static Log log = LogFactory.getLog(Utils.class);
+    private static Log log = LogFactory.getLog(Reflection.class);
 
     private static Map<Class, Set<Method>> unsupportedMethods = new HashMap<>();
 
@@ -36,11 +37,11 @@ public class Utils {
         }
     }
 
-    public static Object open(Reference reference, Object[] initArgs, BasicCache cache)
+    public static java.lang.Object open(Reference reference, java.lang.Object[] initArgs, BasicCache cache)
             throws IllegalAccessException, InstantiationException,
             NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
 
-        Object ret = instantiate(
+        java.lang.Object ret = instantiate(
                 reference.getClazz(),Reference.unreference(initArgs,cache));
 
         // force the key field to the value in the reference
@@ -62,7 +63,7 @@ public class Utils {
 
     }
 
-    public static Object instantiate(Class clazz, Object... initArgs)
+    public static java.lang.Object instantiate(Class clazz, java.lang.Object... initArgs)
             throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Constructor[] allConstructors = clazz.getDeclaredConstructors();
         for (Constructor ctor : allConstructors) {
@@ -80,7 +81,7 @@ public class Utils {
 
     // methods
 
-    public static Object callObject(Object obj, String method, Object[] args)
+    public static java.lang.Object callObject(java.lang.Object obj, String method, java.lang.Object[] args)
             throws InvocationTargetException, IllegalAccessException {
         for (Method m : obj.getClass().getDeclaredMethods()) {
             m.setAccessible(true);
@@ -103,7 +104,7 @@ public class Utils {
     }
 
     public static boolean isMethodSupported(Class clazz, Method method) {
-        if (clazz.equals(Object.class))
+        if (clazz.equals(java.lang.Object.class))
             return true;
         if (unsupportedMethods.containsKey(clazz))
             if (unsupportedMethods.get(clazz).contains(method))
@@ -118,14 +119,14 @@ public class Utils {
      * @throws IllegalAccessException
      * @author Sean Patrick Floyd
      */
-    public static boolean isCompatible(final Method method, final Object[] params)
+    public static boolean isCompatible(final Method method, final java.lang.Object[] params)
             throws IllegalAccessException {
         final Class<?>[] parameterTypes = method.getParameterTypes();
         if (params.length != parameterTypes.length) {
             return false;
         }
         for (int i = 0; i < params.length; i++) {
-            final Object object = params[i];
+            final java.lang.Object object = params[i];
             final Class<?> paramType = parameterTypes[i];
             if (!isCompatible(object, paramType)) {
                 return false;
@@ -141,14 +142,14 @@ public class Utils {
      * @throws IllegalAccessException
      * @author Sean Patrick Floyd
      */
-    public static boolean isCompatible(final Constructor constructor, final Object[] params)
+    public static boolean isCompatible(final Constructor constructor, final java.lang.Object[] params)
             throws IllegalAccessException {
         final Class<?>[] parameterTypes = constructor.getParameterTypes();
         if (params.length != parameterTypes.length) {
             return false;
         }
         for (int i = 0; i < params.length; i++) {
-            final Object object = params[i];
+            final java.lang.Object object = params[i];
             final Class<?> paramType = parameterTypes[i];
             if (!isCompatible(object, paramType)) {
                 return false;
@@ -164,7 +165,7 @@ public class Utils {
      * @throws IllegalAccessException
      * @author Sean Patrick Floyd
      */
-    public static boolean isCompatible(final Object object, final Class<?> paramType)
+    public static boolean isCompatible(final java.lang.Object object, final Class<?> paramType)
             throws IllegalAccessException {
         if (object == null) {
             // primitive parameters are the only parameters
@@ -175,7 +176,7 @@ public class Utils {
         if (paramType.isAssignableFrom(object.getClass())) {
             return true;
         }
-        // special case: the arg may be the Object wrapper for the
+        // special case: the arg may be the object wrapper for the
         // primitive parameter type
         if (paramType.isPrimitive()) {
             return isWrapperTypeOf(object.getClass(), paramType);

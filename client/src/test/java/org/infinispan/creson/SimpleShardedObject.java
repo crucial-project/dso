@@ -1,4 +1,4 @@
-package org.infinispan.creson.utils;
+package org.infinispan.creson;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,8 +10,7 @@ import java.util.UUID;
 @Entity
 public class SimpleShardedObject implements ShardedObject {
 
-    @Id
-    public UUID id;
+    @Id public UUID id;
 
     private ShardedObject shard;
 
@@ -27,6 +26,11 @@ public class SimpleShardedObject implements ShardedObject {
     @Override
     public ShardedObject getShard() {
         return shard;
+    }
+
+    @Override
+    public UUID getID() {
+        return id;
     }
 
     @Override
