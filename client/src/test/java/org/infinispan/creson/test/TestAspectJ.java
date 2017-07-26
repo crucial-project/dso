@@ -21,10 +21,10 @@ public class TestAspectJ {
         Factory.forCache(new FakeCache());
     }
 
-    @Shared private List list = new ArrayList();
+    @Shared private List list;
 
     @Test
-    public void sharedAnnotation(){
+    public void sharedAnnotation() {
         list = new ArrayList();
         assert list instanceof Proxy;
     }

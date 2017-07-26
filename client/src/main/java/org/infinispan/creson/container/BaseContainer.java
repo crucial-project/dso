@@ -222,6 +222,7 @@ public class BaseContainer extends AbstractContainer {
             java.lang.Object ret = execute(
                     new CallInvoke(
                             uuid,
+                            containerID,
                             m.getName(),
                             args)
             );

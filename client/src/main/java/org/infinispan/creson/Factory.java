@@ -12,6 +12,7 @@ import org.infinispan.creson.container.BaseContainer;
 import org.infinispan.creson.object.Reference;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.infinispan.creson.object.Reference.unreference;
+import static org.infinispan.creson.utils.Reflection.constructor;
 
 /**
  * @author Pierre Sutra
@@ -169,9 +171,9 @@ public class Factory {
         }
 
         try {
-            clazz.getDeclaredConstructor().setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new CacheException(clazz + " does not have an empty constructor.");
+            constructor(clazz,initArgs);
+        } catch (Exception e) {
+            throw new CacheException(clazz + " no constructor with "+ Arrays.toString(initArgs));
         }
 
         Reference reference;
