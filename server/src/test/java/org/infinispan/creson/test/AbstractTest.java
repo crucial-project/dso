@@ -1,5 +1,6 @@
 package org.infinispan.creson.test;
 
+import javassist.util.proxy.Proxy;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.infinispan.Cache;
@@ -10,6 +11,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
+import org.infinispan.creson.Shared;
 import org.infinispan.creson.SimpleObject;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.ConfigurationHelper;
@@ -35,6 +37,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 import static org.testng.Assert.assertTrue;
@@ -332,12 +336,24 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert object1.flipValue();
         assert !(object2.getShard()).flipValue();
         assert object2.flipValue();
+    }
 
-//        // TODO improve tests on static fields
-//        List<AdvancedShardedObject> rlist = object2.getList();
-//        object1.getList().add(object1);
-//        assert rlist.get(0) instanceof AdvancedShardedObject;
-//        assert rlist.get(0).equals(object1) : rlist.get(0);
+    @Shared List<SimpleObject> l1;
+    @Shared Lock lock;
+
+    @Test
+    void sharedAnnotation() throws Exception{
+        l1 = new ArrayList<>();
+        SimpleObject object1 = new SimpleObject();
+        l1.add(object1);
+        assert l1 instanceof Proxy;
+        assert l1.size() == 1;
+        l1.remove(0);
+        assert l1.size() == 1;
+
+        lock = (Lock) new ReentrantReadWriteLock();
+        lock.lock();
+        lock.unlock();
     }
 
     @Test

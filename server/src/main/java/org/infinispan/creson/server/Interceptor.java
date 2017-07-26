@@ -24,10 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
-import static org.infinispan.creson.utils.Reflection.callObject;
-import static org.infinispan.creson.utils.Reflection.hasReadOnlyMethods;
 import static org.infinispan.creson.server.Marshalling.marshall;
 import static org.infinispan.creson.server.Marshalling.unmarshall;
+import static org.infinispan.creson.utils.Reflection.callObject;
+import static org.infinispan.creson.utils.Reflection.hasReadOnlyMethods;
 
 public class  Interceptor extends NonTxDistributionInterceptor {
 
@@ -91,10 +91,6 @@ public class  Interceptor extends NonTxDistributionInterceptor {
 
                 try {
 
-                    RandomBasedGenerator generator = new RandomBasedGenerator(
-                            new Random(call.getCallID().getLeastSignificantBits()
-                                    + call.getCallID().getMostSignificantBits()));
-
                     if (call instanceof CallInvoke) {
 
                         CallInvoke invocation = (CallInvoke) call;
@@ -104,27 +100,38 @@ public class  Interceptor extends NonTxDistributionInterceptor {
                             object = Reflection.open(reference, new java.lang.Object[]{},cache);
                         }
 
+                        assert object != null;
+
                         java.lang.Object[] args = Reference.unreference(
                                 invocation.arguments,
                                 cache);
 
+                        RandomBasedGenerator generator = new RandomBasedGenerator(
+                                new Random(call.getCallID().getLeastSignificantBits()
+                                        + call.getCallID().getMostSignificantBits()));
+
                         ThreadLocalUUIDGenerator.setThreadLocal(generator);
 
-                        try {
-                            java.lang.Object response =
-                                    callObject(
-                                            object,
-                                            invocation.method,
-                                            args);
+                        synchronized (object) { // to enforce atomicity
 
-                            future.set(response);
+                            try {
 
-                            if (log.isTraceEnabled())
-                                log.trace(" Called " + invocation + " on " + reference + " (=" +
-                                        (response == null ? "null" : response.toString()) + ")");
+                                java.lang.Object response =
+                                        callObject(
+                                                object,
+                                                invocation.method,
+                                                args);
 
-                        } catch (Throwable e) {
-                            future.set(e);
+                                future.set(response);
+
+                                if (log.isTraceEnabled())
+                                    log.trace(" Called " + invocation + " on " + reference + " (=" +
+                                            (response == null ? "null" : response.toString()) + ")");
+
+                            } catch (Throwable e) {
+                                future.set(e);
+                            }
+
                         }
 
                         ThreadLocalUUIDGenerator.unsetThreadLocal();
