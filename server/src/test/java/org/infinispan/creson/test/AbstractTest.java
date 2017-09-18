@@ -37,8 +37,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 import static org.testng.Assert.assertTrue;
@@ -339,7 +337,6 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Shared List<SimpleObject> l1;
-    @Shared Lock lock;
 
     @Test
     void sharedAnnotation() throws Exception{
@@ -350,10 +347,6 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert l1.size() == 1;
         l1.remove(0);
         assert l1.size() == 1;
-
-        lock = (Lock) new ReentrantReadWriteLock();
-        lock.lock();
-        lock.unlock();
     }
 
     @Test

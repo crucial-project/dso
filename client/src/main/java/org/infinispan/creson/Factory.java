@@ -161,10 +161,10 @@ public class Factory {
     public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
             throws CacheException {
 
-        if (HashMap.class.isAssignableFrom(clazz)) {
-            assert key != null; // can only occur for static distributed field
-            return (T) new DistributedObjectsMap(this, new Reference(clazz, key), cache);
-        }
+//        if (HashMap.class.isAssignableFrom(clazz)) {
+//            assert key != null; // can only occur for static distributed field
+//            return (T) new DistributedObjectsMap(this, new Reference(clazz, key), cache);
+//        }
 
         if (!(Serializable.class.isAssignableFrom(clazz))) {
             throw new CacheException(clazz + " should be serializable.");

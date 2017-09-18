@@ -41,7 +41,7 @@ public class Distribution {
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getDeclaredField(fieldName);
       if (!Modifier.isStatic(field.getModifiers())) {
          field.setAccessible(true);
-         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), fieldName, true, false));
+         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), fieldName, true, field.getAnnotation(Shared.class).create()));
          return;
       }
       throw new IllegalStateException("Field "+fieldName+" should not be static.");
