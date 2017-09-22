@@ -53,7 +53,7 @@ public class CresonModuleLifeCycle extends AbstractModuleLifecycle {
         if (cacheName.equals(CRESON_CACHE_NAME)) {
             Cache cache = cr.getComponent(org.infinispan.Cache.class);
             Factory factory = Factory.forCache(cache);
-            stateMachineInterceptor.setup(factory,cr);
+            stateMachineInterceptor.setup(factory);
         }
     }
 }

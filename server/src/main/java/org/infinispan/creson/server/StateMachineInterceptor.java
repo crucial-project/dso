@@ -13,9 +13,7 @@ import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.Identities;
 import org.infinispan.creson.utils.Reflection;
 import org.infinispan.distribution.DistributionInfo;
-import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
-import org.infinispan.statetransfer.StateTransferLock;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -34,7 +32,6 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
     private ConcurrentMap<Reference, CallFuture> lastCall = new ConcurrentHashMap<>();
-    private ComponentRegistry componentRegistry;
     private Factory factory;
 
     @Override
@@ -58,13 +55,10 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         Call call = (Call) command.getValue();
         CallFuture future;
 
-        // FIXME
-        StateTransferLock stateTransferLock = componentRegistry.getStateTransferLock();
-        if (stateTransferLock!=null)
-            stateTransferLock.acquireSharedTopologyLock();
+        // FIXME elasticity
 
         CacheEntry<Reference, Object> entry = ctx.lookupEntry(reference);
-        assert (entry.getValue()!=null) | (call instanceof CallConstruct);
+        assert (call instanceof CallConstruct) | (entry.getValue()!=null);
 
         if (log.isTraceEnabled())
             log.trace(" Received [" + call + "] " +
@@ -159,17 +153,11 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                 command.getMetadata(), command.getFlagsBitSet());
         invokeNext(ctx, clone);
 
-        // FIXME
-        stateTransferLock = componentRegistry.getStateTransferLock();
-        if (stateTransferLock!=null)
-            stateTransferLock.releaseSharedTopologyLock();
-
         return future;
     }
 
-    public void setup(Factory factory, ComponentRegistry componentRegistry) {
+    public void setup(Factory factory) {
         this.factory = factory;
-        this.componentRegistry = componentRegistry;
     }
 
     // utils
