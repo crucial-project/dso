@@ -55,7 +55,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-    protected static final int NCALLS = 10000;
+    protected static final int NCALLS = 5000;
     protected static final long MAX_ENTRIES = Integer.MAX_VALUE;
     protected static final int REPLICATION_FACTOR = 2;
     protected static final int NMANAGERS = 3;
@@ -240,7 +240,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
             Set set = Factory.forCache(manager.getCache(CRESON_CACHE_NAME))
                     .getInstanceOf(HashSet.class, "concurrent");
             futures.add(service.submit(
-                    new ExerciseAtomicSetTask(set, NCALLS)));
+                    new SetTask(set, NCALLS)));
         }
 
         long start = System.currentTimeMillis();
@@ -339,7 +339,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     @Shared List<SimpleObject> l1;
 
     @Test
-    void sharedAnnotation() throws Exception{
+    void baseAnnotation() throws Exception{
         l1 = new ArrayList<>();
         SimpleObject object1 = new SimpleObject();
         l1.add(object1);
@@ -349,7 +349,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert l1.size() == 1;
     }
 
-    @Test
+    @Test(enabled = true)
     public void baseElasticity() throws Exception {
 
         advancedComposition();
@@ -365,7 +365,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         advancedComposition();
     }
 
-    @Test
+    @Test(enabled = true)
     public void advancedElasticity() throws Exception {
 
         ExecutorService service = Executors.newCachedThreadPool();
@@ -374,7 +374,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         Set set = Factory.forCache(manager(0).getCache(CRESON_CACHE_NAME))
                 .getInstanceOf(HashSet.class, "elastic");
         futures.add(service.submit(
-                new ExerciseAtomicSetTask(set, NCALLS)));
+                new SetTask(set, NCALLS)));
 
         // elasticity
         Set<Future> completed = new HashSet<>();
@@ -444,12 +444,12 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         TestingUtil.sleepThread(1000);
     }
 
-    public class ExerciseAtomicSetTask implements Callable<Integer> {
+    public class SetTask implements Callable<Integer> {
 
         private int ncalls;
         private Set set;
 
-        public ExerciseAtomicSetTask(Set set, int n) {
+        public SetTask(Set set, int n) {
             ncalls = n;
             this.set = set;
         }

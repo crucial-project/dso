@@ -2,6 +2,7 @@ package org.infinispan.creson.benchmarks.count;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import org.infinispan.creson.Factory;
+import org.infinispan.creson.concurrent.Counter;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
