@@ -1,5 +1,6 @@
 package org.infinispan.creson.container;
 
+import com.fasterxml.uuid.NoArgGenerator;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
@@ -7,14 +8,15 @@ import javassist.util.proxy.ProxyObject;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
+import org.infinispan.creson.Factory;
 import org.infinispan.creson.ReadOnly;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.Identities;
 import org.infinispan.creson.utils.Reflection;
-import org.infinispan.creson.utils.ThreadLocalUUIDGenerator;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -24,7 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -70,7 +71,10 @@ public class BaseContainer extends AbstractContainer {
                     break;
                 }
             }
-            if (field == null) throw new ClassFormatError("Missing id field");
+            if (clazz.getPackage().getName().startsWith("java.util.concurrent"))
+                throw new ClassFormatError("Not supported");
+            if (field == null)
+                throw new ClassFormatError("Missing id field");
             if (key == null) {
                 field.setAccessible(true);
                 key = field.get(proxy);
@@ -211,9 +215,9 @@ public class BaseContainer extends AbstractContainer {
 
             open();
 
-            // handle UUID generator
-            RandomBasedGenerator lgenerator = ThreadLocalUUIDGenerator.getThreadLocal();
-            UUID uuid = lgenerator == null ? generator.generate() : lgenerator.generate();
+            // handle Identities generator
+            NoArgGenerator lgenerator = Identities.getThreadLocal();
+            java.util.UUID uuid = lgenerator == null ? generator.generate() : lgenerator.generate();
             if (log.isTraceEnabled()) {
                 log.trace("generated " + uuid + " m=" + m.getName()
                         + ", reference=" + reference + "[" + ((lgenerator == null) ? "null" : lgenerator.toString()) + "]");
@@ -222,7 +226,6 @@ public class BaseContainer extends AbstractContainer {
             java.lang.Object ret = execute(
                     new CallInvoke(
                             uuid,
-                            containerID,
                             m.getName(),
                             args)
             );
@@ -233,7 +236,7 @@ public class BaseContainer extends AbstractContainer {
                 }
             }
 
-            ret = Reference.unreference(ret, cache);
+            ret = Reference.unreference(ret, Factory.forCache(cache));
 
             assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Reflection.isCompatible(ret, m.getReturnType())
                     : m.getReturnType() + " => " + ret.getClass() + " [" + reference.getClazz() + "." + m.getName() + "()]";

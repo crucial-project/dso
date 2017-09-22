@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.infinispan.creson.object.Reference.unreference;
-import static org.infinispan.creson.utils.Reflection.constructor;
+import static org.infinispan.creson.utils.Reflection.getConstructor;
 
 /**
  * @author Pierre Sutra
@@ -110,14 +110,17 @@ public class Factory {
         return forCache(manager.getCache(CRESON_CACHE_NAME));
     }
 
+    @Deprecated
     public <T> T getInstanceOf(Class clazz) throws CacheException {
         return (T) getInstanceOf(clazz, null, false, false);
     }
 
+    @Deprecated
     public <T> T getInstanceOf(Reference reference) throws CacheException {
         return (T) getInstanceOf(reference.getClazz(), reference.getKey(), false, false);
     }
 
+    @Deprecated
     public <T> T getInstanceOf(Class clazz, Object key) throws CacheException {
         return (T) getInstanceOf(clazz, key, false, false);
     }
@@ -136,6 +139,7 @@ public class Factory {
      * @return an object of the class <i>clazz</i>
      * @throws CacheException
      */
+    @Deprecated
     public <T> T getInstanceOf(Class<T> clazz, boolean withReadOptimization)
             throws CacheException {
         return getInstanceOf(clazz, null, withReadOptimization, false);
@@ -158,6 +162,7 @@ public class Factory {
      * @return an object of the class <i>clazz</i>
      * @throws CacheException
      */
+    @Deprecated
     public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
             throws CacheException {
 
@@ -171,7 +176,7 @@ public class Factory {
         }
 
         try {
-            constructor(clazz,initArgs);
+            getConstructor(clazz,initArgs);
         } catch (Exception e) {
             throw new CacheException(clazz + " no constructor with "+ Arrays.toString(initArgs));
         }

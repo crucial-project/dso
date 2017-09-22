@@ -1,8 +1,8 @@
 package org.infinispan.creson.utils;
 
-import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
+import org.infinispan.creson.Factory;
 import org.infinispan.creson.ReadOnly;
 import org.infinispan.creson.object.Reference;
 
@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,12 +38,12 @@ public class Reflection {
         }
     }
 
-    public static java.lang.Object open(Reference reference, java.lang.Object[] initArgs, BasicCache cache)
+    public static java.lang.Object open(Reference reference, java.lang.Object[] initArgs, Factory factory)
             throws IllegalAccessException, InstantiationException,
             NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
 
         java.lang.Object ret = instantiate(
-                reference.getClazz(),Reference.unreference(initArgs,cache));
+                reference.getClazz(),Reference.unreference(initArgs,factory));
 
         // force the key field to the value in the reference
         if (reference.getClazz().getAnnotation(Entity.class)!=null) {
@@ -67,10 +68,10 @@ public class Reflection {
             throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         if (log.isTraceEnabled())
             log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
-        return constructor(clazz, initArgs).newInstance(initArgs);
+        return getConstructor(clazz, initArgs).newInstance(initArgs);
     }
 
-    public static Constructor constructor(Class clazz, java.lang.Object... initArgs)
+    public static Constructor getConstructor(Class clazz, java.lang.Object... initArgs)
             throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Constructor[] allConstructors = clazz.getDeclaredConstructors();
         for (Constructor ctor : allConstructors) {
@@ -93,7 +94,7 @@ public class Reflection {
             if (method.equals(m.getName())) {
                 if (m.getParameterTypes().length == args.length) {
                     if (isCompatible(m, args))
-                        return m.invoke(obj, args);
+                            return m.invoke(obj, args);
                 }
             }
         }
@@ -109,11 +110,17 @@ public class Reflection {
     }
 
     public static boolean isMethodSupported(Class clazz, Method method) {
+
         if (clazz.equals(java.lang.Object.class))
             return true;
+
         if (unsupportedMethods.containsKey(clazz))
             if (unsupportedMethods.get(clazz).contains(method))
                 return false;
+
+        if ((method.getModifiers() & (Modifier.FINAL | Modifier.PUBLIC | Modifier.STATIC)) != Modifier.PUBLIC)
+            return false;
+
         return isMethodSupported(clazz.getSuperclass(), method);
     }
 

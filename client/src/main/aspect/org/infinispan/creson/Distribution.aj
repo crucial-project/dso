@@ -38,10 +38,11 @@ public class Distribution {
    public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
       Factory factory = Factory.getSingleton();
       String fieldName = pjp.getStaticPart().getSignature().getName();
+      String className = pjp.getStaticPart().getSignature().getDeclaringType().getName();
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getDeclaredField(fieldName);
       if (!Modifier.isStatic(field.getModifiers())) {
          field.setAccessible(true);
-         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), fieldName, true, field.getAnnotation(Shared.class).create()));
+         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), className+"."+fieldName, false, false));
          return;
       }
       throw new IllegalStateException("Field "+fieldName+" should not be static.");

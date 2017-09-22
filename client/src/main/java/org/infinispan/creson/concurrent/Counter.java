@@ -1,4 +1,4 @@
-package org.infinispan.creson.benchmarks.count;
+package org.infinispan.creson.concurrent;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

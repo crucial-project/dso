@@ -6,7 +6,6 @@ import org.infinispan.commons.logging.LogFactory;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -28,8 +27,8 @@ public class CallFuture extends Call implements Future<Object> {
     public CallFuture() {
     }
 
-    public CallFuture(UUID callID) {
-        super(callID);
+    public CallFuture(Call call) {
+        super(call);
         this.ret = null;
         this.status = 0;
     }
@@ -102,7 +101,7 @@ public class CallFuture extends Call implements Future<Object> {
 
     @Override
     public String toString() {
-        return "Future[" + getCallID() + "," + ret + "]";
+        return super.toString()+"-RESP-" + ret + "]";
     }
 
     @Override

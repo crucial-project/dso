@@ -1,7 +1,6 @@
 package org.infinispan.creson.object;
 
 import org.infinispan.creson.Factory;
-import org.infinispan.commons.api.BasicCache;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -24,22 +23,22 @@ public class Reference<T> implements Externalizable {
         return factory.getInstanceOf(reference);
     }
 
-    public static Object unreference(Object arg, BasicCache cache) {
+    public static Object unreference(Object arg, Factory factory) {
         if (arg == null) return null;
-        return unreference(Collections.singleton(arg).toArray(), cache)[0];
+        return unreference(Collections.singleton(arg).toArray(), factory)[0];
     }
 
-    public static Object[] unreference(Object[] args, BasicCache cache) {
+    public static Object[] unreference(Object[] args, Factory factory) {
         List<Object> ret = new ArrayList<>(args.length);
         for (Object arg : args) {
             if (arg instanceof Reference) {
-                ret.add(unreference((Reference) arg, Factory.forCache(cache)));
+                ret.add(unreference((Reference) arg, factory));
             } else {
                 if (arg instanceof List) {
                     List list = new ArrayList(((List) arg).size());
                     for (int i = 0; i < ((List) arg).size(); i++) {
                         Object item = ((List) arg).get(i);
-                        list.add(unreference(item, cache));
+                        list.add(unreference(item, factory));
                     }
                     ret.add(list);
                 } else {

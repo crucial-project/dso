@@ -11,23 +11,17 @@ import java.util.UUID;
  */
 public class CallInvoke extends Call implements Externalizable{
 
-   public UUID callerID;
    public String method;
    public Object[] arguments;
 
    @Deprecated
    public CallInvoke(){}
 
-   public CallInvoke(UUID callID, UUID caller, String m, Object[] args) {
+   public CallInvoke(UUID callID, String m, Object[] args) {
       super(callID);
-      callerID = caller;
       method = m;
       arguments = args;
 
-   }
-
-   public UUID getCallerID(){
-      return callerID;
    }
 
    @Override
@@ -36,14 +30,13 @@ public class CallInvoke extends Call implements Externalizable{
       for(Object a : arguments){
          args+=(a==null?"null":a.toString())+" ";
       }
-      return super.toString()+"-INV-"+method+ "()";
+      return super.toString()+"-INV-"+method+ "("+args+")";
    }
 
 
    @Override
    public void writeExternal(ObjectOutput objectOutput) throws IOException {
       super.writeExternal(objectOutput);
-      objectOutput.writeObject(callerID);
       objectOutput.writeObject(method);
       objectOutput.writeObject(arguments);
    }
@@ -51,7 +44,6 @@ public class CallInvoke extends Call implements Externalizable{
    @Override
    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
       super.readExternal(objectInput);
-      callerID = (UUID) objectInput.readObject();
       method = (String) objectInput.readObject();
       arguments = (Object[]) objectInput.readObject();
    }
