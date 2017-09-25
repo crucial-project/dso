@@ -13,13 +13,10 @@ import org.infinispan.creson.object.Reference;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.infinispan.creson.object.Reference.unreference;
 import static org.infinispan.creson.utils.Reflection.getConstructor;
 
 /**
@@ -166,11 +163,6 @@ public class Factory {
     public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
             throws CacheException {
 
-        if (HashMap.class.isAssignableFrom(clazz)) {
-            assert key != null; // can only occur for static distributed field
-            return (T) new DistributedObjectsMap(this, new Reference(clazz, key), cache);
-        }
-
         if (!(Serializable.class.isAssignableFrom(clazz))) {
             throw new CacheException(clazz + " should be serializable.");
         }
@@ -252,99 +244,6 @@ public class Factory {
     @Override
     public String toString() {
         return "Factory[" + cache.toString() + "]";
-    }
-
-    // Helpers
-
-    public static class DistributedObjectsMap implements Map {
-
-        private Factory factory;
-        private Reference reference;
-        private BasicCache cache;
-
-        public DistributedObjectsMap(Factory factory, Reference reference, BasicCache cache) {
-            this.factory = factory;
-            this.reference = reference;
-            this.cache = cache;
-        }
-
-        // FIXME use instead an object pairing (reference, key)
-        private Object transformKey(Object key) {
-            return reference.toString() + "#" + key.toString(); // portable
-        }
-
-        @Override
-        public Object get(Object key) {
-            Object object = cache.get(transformKey(key));
-            if (object instanceof Reference)
-                return unreference((Reference) object, factory);
-            return object;
-        }
-
-
-        @Override
-        public int size() {
-            return cache.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return cache.isEmpty();
-        }
-
-        @Override
-        public boolean containsKey(Object key) {
-            return cache.containsKey(transformKey(key));
-        }
-
-        @Override
-        public boolean containsValue(Object value) {
-            return cache.containsValue(value);
-        }
-
-        @Override
-        public Object put(Object key, Object value) {
-            return cache.put(transformKey(key), value);
-        }
-
-        @Override
-        public Object remove(Object key) {
-            return cache.remove(transformKey(key));
-        }
-
-        @Override
-        public void putAll(Map m) {
-            Set<Map.Entry> entries = m.entrySet();
-            for (Map.Entry entry : entries) {
-                put(transformKey(entry.getKey()), entry.getValue());
-            }
-        }
-
-        @Override
-        public void clear() {
-            cache.clear();
-        }
-
-        @Override
-        public Set keySet() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Collection values() {
-            return cache.values();
-        }
-
-        @Override
-        public Set<Entry> entrySet() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String toString() {
-            return cache.toString();
-        }
-
     }
 
 }
