@@ -56,13 +56,12 @@ To deploy one or more servers in EC2, Creson uses the S3 ping facility of JGroup
 The configuration file for the server is `jgroups-creson-ec2.xml`.
 To deploy the server in your own EC2 instances, you need to fix the following 3 parameters in this XML file. 
 
-``
-   <S3_PING
-           location="your_bucket"
-           access_key="your_key"
-           secret_access_key="your_secret"
-   />
-``
+<S3_PING   
+    location="your_bucket"  
+    access_key="your_key"  
+    secret_access_key="your_secret"  
+    />
+
 The access key and the corresponding secret are credentials to write in the bucket.
 We advice you to [create](http://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) an IAM in EC2 for that purpose.
 
