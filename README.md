@@ -38,7 +38,7 @@ In the example above, this means that if two heroes stand in the same rooom, onl
 Some examples in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
 A toy server that you can remotely call is available in EC2 at the address `creson.otrack.org`.
 
-## WHat do Creson provide?
+## What do Creson provide?
 
 The synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
 In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
