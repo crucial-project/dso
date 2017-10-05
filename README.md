@@ -55,8 +55,6 @@ To deploy one or more servers in EC2, Creson uses the S3 ping facility of JGroup
 
 The configuration file for the server is `jgroups-creson-ec2.xml`.
 To deploy the server in your own EC2 instances, you need to fix the following 3 parameters in this XML file. 
-The access key and the corresponding secret are credentials to write in the bucket.
-We advice you to [create](http://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) an IAM in EC2 for that purpose.
 
 ``
    <S3_PING
@@ -65,16 +63,18 @@ We advice you to [create](http://docs.aws.amazon.com/AmazonS3/latest/dev/using-i
            secret_access_key="your_secret"
    />
 ``
+The access key and the corresponding secret are credentials to write in the bucket.
+We advice you to [create](http://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) an IAM in EC2 for that purpose.
 
 # Advanced usage
 
-Methods annotated with `@ReadOnly` allows to execute an operation at the client tier.
-This implies that a `@ReadOnly` method sees a consistent but not necessarily latest state of the object.
-In other words, the object is sequentially consistent.
-If some method m is releasing the monitor of `o`, then there must be no `@ReadOnly` methods in `o`.
+Methods annotated with `@ReadOnly` allow to execute the corresponding operation at the client tier.
+This is done by fetching the full state on the client, similarly to a common ORM.
 
+A call to a `@ReadOnly` method is consistent, yet ot does not necessarily see latest state of the object.
+In other words, for the programmer the object is now [sequentially consistent](https://en.wikipedia.org/wiki/Sequential_consistency).
 
 # White paper
 
-A white paper about Creson was published at the 37th IEEE International Conference on Distributed Computing Systems (ICDCS 2017). 
+A white paper about Creson was published in the proceedings of the 37th IEEE International Conference on Distributed Computing Systems (ICDCS 2017). 
 A preprint is available [here](https://drive.google.com/open?id=0BwFkGepvBDQoR3FNQk9VY1U2Q1U)
