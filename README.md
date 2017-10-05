@@ -25,6 +25,7 @@ Creson ensures that the objects are persisted and shared consistently among seve
 
 To declare a Creson object, the programmer uses the keyword `@Shared` on the field of an object.
 The object should be part of the classpath of Creson.
+
 As an example, consider the following two classes.
 
 	class Hero{@Shared Room location;}
@@ -32,18 +33,16 @@ As an example, consider the following two classes.
 
 The `Hero` class contains a `location` field annotated with `@shared`.
 This tells Creson to push the `location` to the storage tier, allowing several instances of `Hero` on several application machines to access the same `location` object transparently.
+
 Creson ensures that the object are _strongly consistent_ over time.
 In the example above, this means that if two heroes stand in the same rooom, only one of them may loot the treasure.
+More precisely, the synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
+In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
 
 Some examples in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
 A toy server that you can remotely call is available in EC2 at the address `creson.otrack.org`.
 
-## What do Creson provide?
-
-The synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
-In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
-
-## How to deploy Creson in EC2 ?
+## How to deploy Creson in Amazon EC2 ?
 
 Creson comes with a server program named `org.infinispan.creson.Server` and available under `src/test`.
 To use this program, a shell script is provided in `src/test/bin`.
