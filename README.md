@@ -21,11 +21,9 @@ Creson is a general purpose synchronization framework.
 With Creson, instead of fetching objects from the storage, the application directly calls them.
 Creson ensures that the objects are persisted and shared consistently among several client machines.
 
-## Usage 
+## Programming with Creson 
 
 To declare a Creson object, the programmer uses the keyword `@Shared` on the field of an object.
-The object should be part of the classpath of Creson.
-
 As an example, consider the following two classes.
 
 	class Hero{@Shared Room location;}
@@ -39,23 +37,25 @@ In the example above, this means that if two heroes stand in the same rooom, onl
 More precisely, the synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
 In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
 
-## Deployment
+## Usage
 
-To run Creson, a server is provided together with a bash script to launch it.
+Creson relies on a client-server architecture.
+The current server implementation is based on [Infinispan](http://infinispan.org/).
 To build an archive containing the server, use the `mvn package` at the root of the project.
-The resulting archive, named `infinispan-creson-server-*.tar.gz`, is located in `server/target`. 
+The resulting archive, named `infinispan-creson-server-*.tar.gz`, is located in `server/target`.
+Then, to launch the server run the script `server.sh` from the root of the archive.
 
-Some examples in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
-In addition, a server that you can remotely call is available in EC2 at the address `creson.otrack.org`.
+Every class used by a client, e.g., the `Hero` class above, should be known at the server.
+This requires to add the appropriates `.class` files or jars to the classpath of the server.
+Alternatively, the server can dynamically load new jars (by default, they should be located in `/tmp`).
+
+Some examples of Creson in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
+To run them, clone the project, build a jar using `mvn package` then add it to `/tmp`.   
 
 ## How to deploy Creson in Amazon EC2 ?
 
-Creson comes with a server program named `org.infinispan.creson.Server` and available under `src/test`.
-To use this program, a shell script is provided in `src/test/bin`.
-The script is designed for AWS EC2, but can be adapted easily for other purposes.
-
-Creson is built atop [Infinispan](http://infinispan.org/), the distributed in-memory key/value store of RedHat.
-As such, it relies on the [JGroups](http://www.jgroups.org/) stack for discovery and communication.
+The server shell script can be used with AWS EC2.
+Internally, Creson uses Infinispan which itself relies on the [JGroups](http://www.jgroups.org/) stack for discovery and communication.
 To deploy one or more servers in EC2, Creson uses the S3 ping facility of JGroups.
 
 The configuration file for the server is `jgroups-creson-ec2.xml`.
