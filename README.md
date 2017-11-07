@@ -39,8 +39,14 @@ In the example above, this means that if two heroes stand in the same rooom, onl
 More precisely, the synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
 In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
 
+## Deployment
+
+To run Creson, a server is provided together with a bash script to launch it.
+To build an archive containing the server, use the `mvn package` at the root of the project.
+The resulting archive, named `infinispan-creson-server-*.tar.gz`, is located in `server/target`. 
+
 Some examples in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
-A toy server that you can remotely call is available in EC2 at the address `creson.otrack.org`.
+In addition, a server that you can remotely call is available in EC2 at the address `creson.otrack.org`.
 
 ## How to deploy Creson in Amazon EC2 ?
 

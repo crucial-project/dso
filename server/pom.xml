@@ -2,19 +2,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-creson</artifactId>
-      <version>9.0.3.Final</version>
-      <relativePath>../</relativePath>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-creson</artifactId>
+        <version>9.0.3.Final</version>
+        <relativePath>../</relativePath>
     </parent>
-    
+
     <artifactId>infinispan-creson-server</artifactId>
     <name>infinispan-creson-server</name>
     <description>Server side of the CRESON framework.</description>
 
     <properties>
-      <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
-      <skipTests>true</skipTests>
+        <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
@@ -114,104 +114,104 @@
     </dependencies>
 
     <build>
-      <resources>
-        <resource>
-          <directory>${project.basedir}/src/main/resources</directory>
-        </resource>
-      </resources>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>aspectj-maven-plugin</artifactId>
-          <version>1.10</version>
-          <configuration>
-            <aspectLibraries>
-              <aspectLibrary>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-creson-client</artifactId>
-              </aspectLibrary>
-            </aspectLibraries>
-            <complianceLevel>1.8</complianceLevel>
-            <source>1.8</source>
-            <target>1.8</target>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
-                <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>org.scala-tools</groupId>
-          <artifactId>maven-scala-plugin</artifactId>
-          <version>2.15.2</version>
-          <executions>
-            <execution>
-              <id>generate-blueprint</id>
-              <phase>prepare-package</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>maven-bundle-plugin</artifactId>
-          <configuration>
-            <instructions>
-              <Export-Package>
-                ${project.groupId}.query.*;version=${project.version};-split-package:=merge-last
-              </Export-Package>
-              <Include-Resource>
-                {maven-resources},
-                /META-INF/services=${project.basedir}/target/classes/META-INF/services,
-                /OSGI-INF/blueprint/blueprint.xml=${project.basedir}/target/classes/OSGI-INF/blueprint/blueprint.xml
-              </Include-Resource>
-            </instructions>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <executions>
-            <execution>
-              <phase>package</phase>
-              <goals>
-                <goal>copy-dependencies</goal>
-              </goals>
-              <configuration>
-                <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-	<plugin>	
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <executions>	    
-            <execution>
-	      <id>assembly</id>	      
-              <phase>package</phase>
-              <goals>
-		<goal>single</goal>
-              </goals>
-	      <configuration>
-		<appendAssemblyId>false</appendAssemblyId>
-		<descriptor>src/assembly/bin.xml</descriptor>
-		<finalName>${project.name}-${project.version}</finalName>
-              </configuration>
-            </execution>
-          </executions>
-	</plugin>
-	<plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.20.1</version>
-          <configuration>
-            <skipTests>${skipTests}</skipTests>
-          </configuration>
-	</plugin>
-      </plugins>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.10</version>
+                <configuration>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>org.infinispan</groupId>
+                            <artifactId>infinispan-creson-client</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
+                            <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.2</version>
+                <executions>
+                    <execution>
+                        <id>generate-blueprint</id>
+                        <phase>prepare-package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            ${project.groupId}.query.*;version=${project.version};-split-package:=merge-last
+                        </Export-Package>
+                        <Include-Resource>
+                            {maven-resources},
+                            /META-INF/services=${project.basedir}/target/classes/META-INF/services,
+                            /OSGI-INF/blueprint/blueprint.xml=${project.basedir}/target/classes/OSGI-INF/blueprint/blueprint.xml
+                        </Include-Resource>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptor>src/assembly/bin.xml</descriptor>
+                            <finalName>${project.name}-${project.version}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20.1</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
