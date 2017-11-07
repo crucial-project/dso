@@ -46,7 +46,7 @@ The resulting archive, named `infinispan-creson-server-*.tar.gz`, is located in 
 Then, to launch the server run the script `server.sh` from the root of the archive.
 
 Every class used by a client, e.g., the `Hero` class above, should be known at the server.
-This requires to add the appropriates `.class` files or jars to the classpath of the server.
+This requires to add the appropriates `.class` or `jar` files to the classpath of the server.
 Alternatively, the server can dynamically load new jars (by default, they should be located in `/tmp`).
 
 Some examples of Creson in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
@@ -54,7 +54,7 @@ To run them, clone the project, build a jar using `mvn package` then add it to `
 
 ## How to deploy Creson in Amazon EC2 ?
 
-The server shell script can be used with AWS EC2.
+The server shell script can be used inside AWS EC2.
 Internally, Creson uses Infinispan which itself relies on the [JGroups](http://www.jgroups.org/) stack for discovery and communication.
 To deploy one or more servers in EC2, Creson uses the S3 ping facility of JGroups.
 
