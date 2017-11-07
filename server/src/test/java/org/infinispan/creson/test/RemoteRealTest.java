@@ -14,7 +14,7 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "RemoteRealTest", groups = "unit", enabled = true)
+@Test(testName = "RemoteRealTest", groups = {"unit"})
 public class RemoteRealTest extends AbstractTest {
 
     private static List<BasicCacheContainer> basicCacheContainers = new ArrayList<>();

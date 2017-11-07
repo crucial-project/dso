@@ -22,7 +22,7 @@ import static org.testng.Assert.assertEquals;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "RemoteTest", groups = "unit")
+@Test(testName = "RemoteTest", groups = {"unit"})
 public class RemoteTest extends AbstractTest {
 
     private static List<HotRodServer> servers = new ArrayList<>();
