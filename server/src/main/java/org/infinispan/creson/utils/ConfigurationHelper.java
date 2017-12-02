@@ -3,8 +3,7 @@ package org.infinispan.creson.utils;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
-
-import static org.infinispan.test.AbstractCacheTest.getDefaultClusteredCacheConfig;
+import org.infinispan.test.AbstractCacheTest;
 
 /**
  * @author Pierre Sutra
@@ -29,7 +28,7 @@ public class ConfigurationHelper {
         ConfigurationBuilder builder;
 
         builder
-                = getDefaultClusteredCacheConfig(mode, false);
+                = AbstractCacheTest.getDefaultClusteredCacheConfig(mode, false);
         builder.clustering()
                 .stateTransfer().fetchInMemoryState(true)
                 .stateTransfer().chunkSize(Integer.MAX_VALUE)

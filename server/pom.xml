@@ -31,6 +31,19 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-server-hotrod</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-server-hotrod</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-creson-client</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -50,6 +63,24 @@
             <artifactId>aspectjrt</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>args4j</groupId>
+            <artifactId>args4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-commons-test</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-core</artifactId>
+            <type>test-jar</type>
+        </dependency>
+
         <!-- TEST -->
 
         <dependency>
@@ -67,57 +98,10 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-server-hotrod</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-server-hotrod</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-commons-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-client-hotrod</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>args4j</groupId>
-            <artifactId>args4j</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <scope>test</scope>
         </dependency>
 
-	<!-- fixme -->
-	<dependency>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-api</artifactId>
-	  <version>1.7.7</version>
-	</dependency>
-	
     </dependencies>
 
     <build>
@@ -204,7 +188,7 @@
                         </goals>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
-                            <descriptor>src/assembly/bin.xml</descriptor>
+                            <descriptor>src/main/assembly/bin.xml</descriptor>
                             <finalName>${project.name}-${project.version}</finalName>
                         </configuration>
                     </execution>

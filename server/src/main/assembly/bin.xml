@@ -7,7 +7,7 @@
   </formats>
   <fileSets>
     <fileSet>
-      <directory>src/test/bin</directory>
+      <directory>src/main/bin</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>*.sh</include>
@@ -15,7 +15,7 @@
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
-      <directory>src/test/resources</directory>
+      <directory>src/main/resources</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>*.xml</include>
@@ -33,7 +33,6 @@
       <outputDirectory>lib</outputDirectory>
       <includes>
         <include>infinispan-creson-server.jar</include>
-        <include>infinispan-creson-server-tests.jar</include>
       </includes>
     </fileSet>
   </fileSets>

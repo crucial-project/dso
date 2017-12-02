@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CLASSPATH="${DIR}/*:${DIR}/lib/*"
-IP="127.0.0.1"
+IP="0.0.0.0"
 EXTRA="-rf 1"
 
 if [ "$1" == "-ec2" ];
