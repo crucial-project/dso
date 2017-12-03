@@ -1,6 +1,5 @@
 package org.infinispan.creson.container;
 
-import com.fasterxml.uuid.NoArgGenerator;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
@@ -15,7 +14,7 @@ import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
-import org.infinispan.creson.utils.Identities;
+import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.creson.utils.Reflection;
 
 import javax.persistence.Entity;
@@ -215,12 +214,12 @@ public class BaseContainer extends AbstractContainer {
 
             open();
 
-            // handle Identities generator
-            NoArgGenerator lgenerator = Identities.getThreadLocal();
-            java.util.UUID uuid = lgenerator == null ? generator.generate() : lgenerator.generate();
+            // retrieve generator from context (if any)
+            java.util.UUID uuid = (ContextManager.getContext()== null)
+                    ? generator.generate() : ContextManager.getContext().getGenerator().generate();
             if (log.isTraceEnabled()) {
                 log.trace("generated " + uuid + " m=" + m.getName()
-                        + ", reference=" + reference + "[" + ((lgenerator == null) ? "null" : lgenerator.toString()) + "]");
+                        + ", reference=" + reference + "[" + ContextManager.getContext() + "]");
             }
 
             java.lang.Object ret = execute(

@@ -10,7 +10,7 @@ import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
-import org.infinispan.creson.utils.Identities;
+import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.creson.utils.Reflection;
 import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
@@ -94,14 +94,14 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
                     try {
 
-                         if (log.isTraceEnabled())
-                             log.trace(dm.getCacheTopology().getLocalAddress()+"#"+call);
+                        if (log.isTraceEnabled())
+                            log.trace(dm.getCacheTopology().getLocalAddress()+"#"+call);
 
-                         Identities.setThreadLocal(generator);
-                         synchronized (entry.getValue()) { // synchronization contract
+                        ContextManager.setContext(generator,reference);
+                        synchronized (entry.getValue()) { // synchronization contract
                             response = callObject(entry.getValue(), invocation.method, args);
-                         }
-                         Identities.unsetThreadLocal();
+                        }
+                        ContextManager.unsetContext();
 
                         future.set(response);
                         if (log.isTraceEnabled())

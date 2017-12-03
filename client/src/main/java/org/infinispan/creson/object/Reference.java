@@ -15,6 +15,7 @@ import java.util.List;
  */
 public class Reference<T> implements Externalizable {
 
+    public static String SEPARATOR = "#";
     private Class<T> clazz;
     private Object key;
 
@@ -83,7 +84,7 @@ public class Reference<T> implements Externalizable {
 
     @Override
     public String toString() {
-        return getClazz().getName().toString() + "#" + getKey().toString();
+        return  getKey().toString() + SEPARATOR + getClazz().getCanonicalName();
     }
 
     public Object getKey() {

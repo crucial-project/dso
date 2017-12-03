@@ -1,6 +1,6 @@
 package org.infinispan.creson.object;
 
-import org.infinispan.creson.utils.Identities;
+import org.infinispan.creson.utils.ContextManager;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class Call implements Externalizable {
    public Call(){}
 
    public Call(java.util.UUID callID){
-      this(Identities.getThreadID(),callID);
+      this(ContextManager.getThreadID(),callID);
    }
 
    public Call(Call call) {
