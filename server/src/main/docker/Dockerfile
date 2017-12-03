@@ -18,9 +18,9 @@ RUN mkdir /app/userlibs
 
 ENV JVMPERF="-XX:+UseConcMarkSweepGC -Xms64m -Xmx2048m"
 ENV CLASSPATH="/app/infinispan-creson-server-9.0.3.Final/*:/app/infinispan-creson-server-9.0.3.Final/lib/*"
-ENV IP="0.0.0.0"
+ENV SERVER="0.0.0.0::11222"
 ENV USERLIBS="/app/userlibs"
 ENV RF="1"
 ENV EXTRA=""
 
-CMD java ${JVMPERF} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configuration=log4j2.xml -cp ${CLASSPATH} org.infinispan.creson.Server -server ${IP}:11222 -userLibs ${USERLIBS} -rf 1 ${EXTRA}
+CMD java ${JVMPERF} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configuration=log4j2.xml -cp ${CLASSPATH} org.infinispan.creson.Server -server ${SERVER} -userLibs ${USERLIBS} -rf 1 ${EXTRA}
