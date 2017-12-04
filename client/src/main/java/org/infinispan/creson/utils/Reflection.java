@@ -89,7 +89,7 @@ public class Reflection {
 
     public static java.lang.Object callObject(java.lang.Object obj, String method, java.lang.Object[] args)
             throws InvocationTargetException, IllegalAccessException {
-        for (Method m : obj.getClass().getDeclaredMethods()) {
+        for (Method m : obj.getClass().getMethods()) { // only public methods (inherited and not)
             m.setAccessible(true);
             if (method.equals(m.getName())) {
                 if (m.getParameterTypes().length == args.length) {
@@ -102,7 +102,7 @@ public class Reflection {
     }
 
     public static boolean hasReadOnlyMethods(Class clazz) {
-        for (Method m : clazz.getMethods()) { // only public methods (inherited and not)
+        for (Method m : clazz.getMethods()) {
             if (m.isAnnotationPresent(ReadOnly.class))
                 return true;
         }

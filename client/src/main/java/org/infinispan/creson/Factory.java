@@ -31,16 +31,18 @@ public class Factory {
     private static Factory singleton;
     private static Map<BasicCache, Factory> factories = new HashMap<>();
 
-
+    @Deprecated
     public static Factory getSingleton() {
         assert singleton != null;
         return singleton;
     }
 
+    @Deprecated
     public synchronized static Factory forCache(BasicCache cache) {
         return Factory.forCache(cache, MAX_CONTAINERS);
     }
 
+    @Deprecated
     public synchronized static Factory forCache(BasicCache cache, int maxContainers) {
         if (!factories.containsKey(cache))
             factories.put(cache, new Factory(cache, maxContainers));
@@ -52,6 +54,20 @@ public class Factory {
 
         return factories.get(cache);
     }
+
+    public static Factory get(String server) {
+        int port = Integer.valueOf(server.split(":")[1]);
+        String host = server.split(":")[0];
+        org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
+                = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
+        cb.tcpNoDelay(true)
+                .addServer()
+                .host(host)
+                .port(port);
+        RemoteCacheManager manager = new RemoteCacheManager(cb.build());
+        return forCache(manager.getCache(CRESON_CACHE_NAME));
+    }
+
 
     protected static final int MAX_CONTAINERS = Integer.MAX_VALUE;
 
@@ -92,19 +108,6 @@ public class Factory {
                 })
                 .build().asMap();
         log.info(this + " Created");
-    }
-
-    public static Factory get(String server) {
-        int port = Integer.valueOf(server.split(":")[1]);
-        String host = server.split(":")[0];
-        org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
-                = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
-        cb.tcpNoDelay(true)
-                .addServer()
-                .host(host)
-                .port(port);
-        RemoteCacheManager manager = new RemoteCacheManager(cb.build());
-        return forCache(manager.getCache(CRESON_CACHE_NAME));
     }
 
     @Deprecated
