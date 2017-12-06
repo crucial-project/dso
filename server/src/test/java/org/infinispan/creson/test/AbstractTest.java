@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -287,13 +286,13 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     public void baseAspectJ() throws Exception {
 
         // 1 - constructor
-        SimpleObject object = new SimpleObject();
+        SimpleObject object = new SimpleObject("aspectj");
         String field = object.getField();
-        assert field.equals("test");
+        assert field.equals("aspectj");
 
         // 2 - constructor w. arguments
-        SimpleObject object1 = new SimpleObject("test2");
-        assert object1.getField().equals("test2");
+        SimpleObject object1 = new SimpleObject("aspectj2");
+        assert object1.getField().equals("aspectj2");
 
         // 3 - equals()
         for (int i = 0; i < 100; i++) {
@@ -336,7 +335,6 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert !(object2.getShard()).flipValue();
         assert object2.flipValue();
 
-        UUID id = UUID.randomUUID();
         ShardedObject object3 = new ShardedObject();
         ShardedObject object4 = new ShardedObject(object3);
         object3.addShard(object4);

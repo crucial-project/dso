@@ -49,7 +49,7 @@ public class Reference<T> implements Externalizable {
                 } else if (Collection.class.isAssignableFrom(object.getClass())){
                     Collection collection = (Collection) object.getClass().newInstance();
                     for(Object element: (Collection)object) {
-                        collection.add(element);
+                        collection.add(unreference(element,factory));
                     }
                     ret[i] = collection;
                 } else {

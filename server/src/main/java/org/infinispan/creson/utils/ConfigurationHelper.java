@@ -35,7 +35,7 @@ public class ConfigurationHelper {
                 .awaitInitialTransfer(true)
                 .hash().numOwners(replicationFactor);
 
-        if (maxEntries != 0) {
+        if (maxEntries >= 0) {
             builder.memory().size(maxEntries);
             SingleFileStoreConfigurationBuilder storeConfigurationBuilder
                     = builder.persistence().addSingleFileStore();

@@ -29,7 +29,6 @@ public class ShardedObject {
 
     public void addShard(ShardedObject other) {
         this.shard = other;
-        System.out.println(other.getShard());
     }
 
     public ShardedObject getShard() {

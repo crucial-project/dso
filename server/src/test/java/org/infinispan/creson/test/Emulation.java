@@ -18,13 +18,12 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 public class Emulation extends MultipleCacheManagersTest {
 
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
-    protected static final long MAX_ENTRIES = 0;
     protected static final int REPLICATION_FACTOR = 1;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
 
     private static List<BasicCacheContainer> remoteCacheManagers = new ArrayList<>();
 
-    protected int numberOfContainers(){
+    protected int numberOfCaches(){
         return 1;
     }
 
@@ -34,7 +33,7 @@ public class Emulation extends MultipleCacheManagersTest {
         return ConfigurationHelper.buildConfiguration(
                 CACHE_MODE,
                 REPLICATION_FACTOR,
-                MAX_ENTRIES,
+                -1, // disable data persistence
                 PERSISTENT_STORAGE_DIR + "/" + this.cacheManagers.size());
     }
 
@@ -65,7 +64,7 @@ public class Emulation extends MultipleCacheManagersTest {
 
     @Override
     protected void createCacheManagers() throws Throwable {
-        for (int i=0; i<numberOfContainers(); i++) {
+        for (int i = 0; i< numberOfCaches(); i++) {
             addContainer();
             waitForClusterToForm();
             System.out.println("Node " + remoteCacheManagers.get(i)+ " added.");
