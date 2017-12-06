@@ -182,7 +182,9 @@ public class BaseContainer extends AbstractContainer {
                 return args[0].equals(proxy);
             }
 
-            if (m.getName().equals("toString")) {
+            if (m.getName().equals("toString")
+                    && (reference.getClazz().getMethod("toString")
+                    .getDeclaringClass().equals(Object.class))){
                 return reference.toString();
             }
 
@@ -221,6 +223,20 @@ public class BaseContainer extends AbstractContainer {
                 log.trace("generated " + uuid + " m=" + m.getName()
                         + ", reference=" + reference + "[" + ContextManager.getContext() + "]");
             }
+
+            // any arg that is a proxy should be opened and replaced by a reference
+            Object[] newArgs = new Object[args.length];
+            for (int i=0; i<args.length; i++) {
+                if (args[i] instanceof ProxyObject) {
+                    ProxyObject proxyObject = (ProxyObject)args[i];
+                    BaseContainerMethodHandler handler = (BaseContainerMethodHandler)proxyObject.getHandler();
+                    handler.container.open();
+                    newArgs[i] = handler.container.reference;
+                } else {
+                    newArgs[i] = args[i];
+                }
+            }
+            args = newArgs;
 
             java.lang.Object ret = execute(
                     new CallInvoke(

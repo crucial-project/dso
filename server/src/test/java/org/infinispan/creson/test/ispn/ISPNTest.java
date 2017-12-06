@@ -1,7 +1,8 @@
-package org.infinispan.creson.test;
+package org.infinispan.creson.test.ispn;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
+import org.infinispan.creson.test.BaseTest;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;

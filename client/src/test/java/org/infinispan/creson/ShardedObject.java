@@ -18,9 +18,18 @@ public class ShardedObject {
         id = UUID.randomUUID();
     }
 
+    public ShardedObject(UUID id) {
+        this.id = id;
+    }
+
     public ShardedObject(ShardedObject shard) {
         id = UUID.randomUUID();
         this.shard = shard;
+    }
+
+    public void addShard(ShardedObject other) {
+        this.shard = other;
+        System.out.println(other.getShard());
     }
 
     public ShardedObject getShard() {

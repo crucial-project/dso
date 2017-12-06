@@ -15,7 +15,7 @@ public class ConfigurationHelper {
             int replicationFactor,
             long maxEntries,
             String storagePath) {
-        return buildConfiguration(mode, replicationFactor, maxEntries, storagePath, false);
+        return buildConfiguration(mode, replicationFactor, maxEntries, storagePath, true);
     }
 
     public static ConfigurationBuilder buildConfiguration(
@@ -35,7 +35,7 @@ public class ConfigurationHelper {
                 .awaitInitialTransfer(true)
                 .hash().numOwners(replicationFactor);
 
-        if (maxEntries != Long.MAX_VALUE) {
+        if (maxEntries != 0) {
             builder.memory().size(maxEntries);
             SingleFileStoreConfigurationBuilder storeConfigurationBuilder
                     = builder.persistence().addSingleFileStore();

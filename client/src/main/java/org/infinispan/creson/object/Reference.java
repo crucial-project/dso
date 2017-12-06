@@ -6,9 +6,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Pierre Sutra
@@ -24,30 +23,42 @@ public class Reference<T> implements Externalizable {
         return factory.getInstanceOf(reference);
     }
 
-    public static Object unreference(Object arg, Factory factory) {
+    public static Object unreference(Object arg, Factory factory) throws IllegalAccessException, InstantiationException {
         if (arg == null) return null;
         return unreference(Collections.singleton(arg).toArray(), factory)[0];
     }
 
-    public static Object[] unreference(Object[] args, Factory factory) {
-        List<Object> ret = new ArrayList<>(args.length);
-        for (Object arg : args) {
-            if (arg instanceof Reference) {
-                ret.add(unreference((Reference) arg, factory));
+    public static Object[] unreference(Object[] args, Factory factory) throws IllegalAccessException, InstantiationException {
+        Object[] ret = new Object[args.length];
+        for (int i=0; i<args.length; i++) {
+            if (args[i] instanceof Reference) {
+                ret[i] = unreference((Reference) args[i], factory);
             } else {
-                if (arg instanceof List) {
-                    List list = new ArrayList(((List) arg).size());
-                    for (int i = 0; i < ((List) arg).size(); i++) {
-                        Object item = ((List) arg).get(i);
-                        list.add(unreference(item, factory));
+                Object object = args[i];
+                if (object == null) {
+                    ret[i] = null;
+                } else if (object.getClass().isPrimitive()) {
+                    ret[i] = args[i];
+                } else if (object.getClass().isArray()) {
+                    Object[] array = (Object[])object;
+                    Object[] copy = new Object[array.length];
+                    for (int j=0; j<copy.length; j++) {
+                        copy[j] = unreference(array[j], factory);
                     }
-                    ret.add(list);
+                    ret[i] = copy;
+                } else if (Collection.class.isAssignableFrom(object.getClass())){
+                    Collection collection = (Collection) object.getClass().newInstance();
+                    for(Object element: (Collection)object) {
+                        collection.add(element);
+                    }
+                    ret[i] = collection;
                 } else {
-                    ret.add(arg);
+                    // FIXME
+                    ret[i] = object;
                 }
             }
         }
-        return ret.toArray();
+        return ret;
     }
 
     // Object fields
@@ -75,7 +86,7 @@ public class Reference<T> implements Externalizable {
 
     }
 
-    // Care about Class.hashCode() not being portable ...
+    // FIXME Class.hashCode() not being portable ...
     @Override
     public int hashCode() {
         int result = (key != null ? key.hashCode() : 0);

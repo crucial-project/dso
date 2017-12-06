@@ -170,12 +170,6 @@ public class Factory {
             throw new CacheException(clazz + " should be serializable.");
         }
 
-        try {
-            getConstructor(clazz,initArgs);
-        } catch (Exception e) {
-            throw new CacheException(clazz + " no constructor with "+ Arrays.toString(initArgs));
-        }
-
         Reference reference;
         AbstractContainer container = null;
 
@@ -187,6 +181,11 @@ public class Factory {
             }
 
             if (container == null) {
+                try {
+                    getConstructor(clazz,initArgs);
+                } catch (Exception e) {
+                    throw new CacheException(clazz + " no constructor with "+ Arrays.toString(initArgs));
+                }
                 container = new BaseContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
                 reference = container.getReference();
                 if (registeredContainers.putIfAbsent(reference, container) == null) {
