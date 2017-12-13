@@ -48,11 +48,12 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
             System.out.println(info.isPrimary() + " " + info.isWriteBackup() + " " + command);
         }
 
-        Reference reference = (Reference) command.getKey();
+        Call call = (Call) command.getValue();
+
+        Reference reference = call.getReference();
         if (log.isTraceEnabled())
             log.trace(" Accessing " + reference);
 
-        Call call = (Call) command.getValue();
         CallFuture future;
 
         // FIXME elasticity
@@ -64,7 +65,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
             log.trace(" Received [" + call + "] " +
                     "(completed=" + lastCall.get(reference).equals(call) + ", " + reference + ")");
 
-        future = new CallFuture(call);
+        future = new CallFuture(reference ,call);
 
         if (lastCall.containsKey(reference)
                 && lastCall.get(reference).equals(future)) {
@@ -76,19 +77,19 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
             try {
 
+                RandomBasedGenerator generator = new RandomBasedGenerator(
+                        new Random(call.getCallID().getLeastSignificantBits()
+                                + call.getCallID().getMostSignificantBits()));
+
+                ContextManager.setContext(generator,reference, factory);
+
                 if (call instanceof CallInvoke) {
 
                     CallInvoke invocation = (CallInvoke) call;
 
                     assert (entry.getValue() != null);
 
-                    java.lang.Object[] args = Reference.unreference(
-                            invocation.arguments,
-                            factory);
-
-                    RandomBasedGenerator generator = new RandomBasedGenerator(
-                            new Random(call.getCallID().getLeastSignificantBits()
-                                    + call.getCallID().getMostSignificantBits()));
+                    java.lang.Object[] args = invocation.arguments;
 
                     java.lang.Object response;
 
@@ -97,11 +98,9 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                         if (log.isTraceEnabled())
                             log.trace(dm.getCacheTopology().getLocalAddress()+"#"+call);
 
-                        ContextManager.setContext(generator,reference);
                         synchronized (entry.getValue()) { // synchronization contract
                             response = callObject(entry.getValue(), invocation.method, args);
                         }
-                        ContextManager.unsetContext();
 
                         future.set(response);
                         if (log.isTraceEnabled())
@@ -122,7 +121,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                             log.trace(" New [" + reference + "]");
 
                         entry.setValue(
-                                Reflection.open(reference, callConstruct.getInitArgs(),factory));
+                                Reflection.open(reference, callConstruct.getInitArgs()));
                     }
 
                     future.set(null);
@@ -131,6 +130,8 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
             } catch (Exception e) {
                 throw e;
+            } finally {
+                ContextManager.unsetContext();
             }
 
         } // end compute return value

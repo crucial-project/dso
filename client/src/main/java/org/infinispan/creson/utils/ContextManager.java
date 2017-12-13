@@ -3,6 +3,7 @@ package org.infinispan.creson.utils;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.NoArgGenerator;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import org.infinispan.creson.Factory;
 import org.infinispan.creson.object.Reference;
 
 import java.util.Map;
@@ -32,8 +33,12 @@ public class ContextManager {
       return contexts.get(getThreadID());
    }
 
-   public static void setContext(final RandomBasedGenerator g, final Reference r) {
-      contexts.put(getThreadID(), new Context(g,r));
+   public static void setContext(final Reference r, final Factory f) {
+      contexts.put(getThreadID(), new Context(null,r,f));
+   }
+
+   public static void setContext(final RandomBasedGenerator g, final Reference r, final Factory f) {
+      contexts.put(getThreadID(), new Context(g,r,f));
    }
 
    public static void unsetContext() {

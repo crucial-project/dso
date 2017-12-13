@@ -75,7 +75,7 @@ public abstract class AbstractContainer {
       if (log.isTraceEnabled())
          log.trace(this + " Executing "+call);
 
-      CallFuture future = new CallFuture(call);
+      CallFuture future = new CallFuture(getReference(), call);
 
       registeredCalls.put(call.getCallID(), future);
 

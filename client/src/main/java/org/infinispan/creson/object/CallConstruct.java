@@ -18,8 +18,8 @@ public class CallConstruct extends Call {
     public CallConstruct() {
     }
 
-    public CallConstruct(UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
-        super(callID);
+    public CallConstruct(Reference reference, UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
+        super(reference, callID);
         this.forceNew = forceNew;
         this.initArgs = initargs;
         this.readOptimization = readOptimization;
@@ -46,16 +46,16 @@ public class CallConstruct extends Call {
     public void writeExternal(ObjectOutput objectOutput) throws IOException {
         super.writeExternal(objectOutput);
         objectOutput.writeBoolean(forceNew);
-        objectOutput.writeObject(initArgs);
         objectOutput.writeBoolean(readOptimization);
+        objectOutput.writeObject(initArgs);
     }
 
     @Override
     public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
         super.readExternal(objectInput);
         forceNew = objectInput.readBoolean();
-        initArgs = (Object[]) objectInput.readObject();
         readOptimization = objectInput.readBoolean();
+        initArgs = (Object[]) objectInput.readObject();
     }
 
 }

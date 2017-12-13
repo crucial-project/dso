@@ -27,8 +27,8 @@ public class CallFuture extends Call implements Future<Object> {
     public CallFuture() {
     }
 
-    public CallFuture(Call call) {
-        super(call);
+    public CallFuture(Reference reference, Call call) {
+        super(reference, call);
         this.ret = null;
         this.status = 0;
     }
@@ -107,16 +107,16 @@ public class CallFuture extends Call implements Future<Object> {
     @Override
     public void writeExternal(ObjectOutput objectOutput) throws IOException {
         super.writeExternal(objectOutput);
-        objectOutput.writeObject(ret);
         objectOutput.writeInt(status);
         objectOutput.writeObject(state);
+        objectOutput.writeObject(ret);
     }
 
     @Override
     public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
         super.readExternal(objectInput);
-        ret = objectInput.readObject();
         status = objectInput.readInt();
         state = objectInput.readObject();
+        ret = objectInput.readObject();
     }
 }

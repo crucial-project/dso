@@ -2,7 +2,6 @@ package org.infinispan.creson.utils;
 
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
-import org.infinispan.creson.Factory;
 import org.infinispan.creson.ReadOnly;
 import org.infinispan.creson.object.Reference;
 
@@ -38,12 +37,12 @@ public class Reflection {
         }
     }
 
-    public static java.lang.Object open(Reference reference, java.lang.Object[] initArgs, Factory factory)
+    public static java.lang.Object open(Reference reference, java.lang.Object[] initArgs)
             throws IllegalAccessException, InstantiationException,
             NoSuchMethodException, InvocationTargetException, NoSuchFieldException {
 
         java.lang.Object ret = instantiate(
-                reference.getClazz(),Reference.unreference(initArgs,factory));
+                reference.getClazz(),initArgs);
 
         // force the key field to the value in the reference
         if (reference.getClazz().getAnnotation(Entity.class)!=null) {

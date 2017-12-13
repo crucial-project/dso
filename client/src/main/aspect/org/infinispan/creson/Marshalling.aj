@@ -1,7 +1,5 @@
 package org.infinispan.creson;
 
-import org.infinispan.creson.object.Reference;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -37,9 +35,6 @@ public aspect Marshalling {
             if (!Modifier.isTransient(field.getModifiers()) &&
                   !Modifier.isStatic(field.getModifiers())){
                Object value = objectInput.readObject();
-               if (value instanceof Reference) {
-                  value = Reference.unreference((Reference) value, factory);
-               }
                field.set(this,value);
             }
          }

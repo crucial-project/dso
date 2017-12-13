@@ -17,8 +17,8 @@ public class CallInvoke extends Call implements Externalizable{
    @Deprecated
    public CallInvoke(){}
 
-   public CallInvoke(UUID callID, String m, Object[] args) {
-      super(callID);
+   public CallInvoke(Reference reference, UUID callID, String m, Object[] args) {
+      super(reference, callID);
       method = m;
       arguments = args;
 

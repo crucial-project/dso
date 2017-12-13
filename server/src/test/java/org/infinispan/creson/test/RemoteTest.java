@@ -109,7 +109,7 @@ public class RemoteTest extends AbstractTest {
 
         assertEquals(manager(0).getTransport().getMembers().size(), NMANAGERS);
 
-        Factory.forCache(container(0).getCache(CRESON_CACHE_NAME));
+        Factory.forCache(container(0).getCache(CRESON_CACHE_NAME), true);
     }
 
     // Helpers

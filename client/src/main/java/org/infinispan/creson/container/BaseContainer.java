@@ -7,8 +7,8 @@ import javassist.util.proxy.ProxyObject;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
-import org.infinispan.creson.Factory;
 import org.infinispan.creson.ReadOnly;
+import org.infinispan.creson.object.BoxedReference;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
 import org.infinispan.creson.object.CallFuture;
@@ -111,7 +111,7 @@ public class BaseContainer extends AbstractContainer {
             if (log.isTraceEnabled())
                 log.trace(" Opening.");
 
-            execute(new CallConstruct(generator.generate(), forceNew, initArgs, readOptimization));
+            execute(new CallConstruct(reference, generator.generate(), forceNew, initArgs, readOptimization));
             isOpen = true;
 
             if (log.isTraceEnabled())
@@ -156,7 +156,7 @@ public class BaseContainer extends AbstractContainer {
         return "Container[" + getReference() + "]";
     }
 
-    private class BaseContainerMethodHandler implements MethodHandler, Serializable {
+    public class BaseContainerMethodHandler implements MethodHandler, Serializable {
 
         BaseContainer container;
 
@@ -193,7 +193,8 @@ public class BaseContainer extends AbstractContainer {
             }
 
             if (m.getName().equals("writeReplace")) {
-                return reference;
+                open();
+                return new BoxedReference(reference);
             }
 
             if (!Reflection.isMethodSupported(reference.getClazz(), m)) {
@@ -224,22 +225,9 @@ public class BaseContainer extends AbstractContainer {
                         + ", reference=" + reference + "[" + ContextManager.getContext() + "]");
             }
 
-            // any arg that is a proxy should be opened and replaced by a reference
-            Object[] newArgs = new Object[args.length];
-            for (int i=0; i<args.length; i++) {
-                if (args[i] instanceof ProxyObject) {
-                    ProxyObject proxyObject = (ProxyObject)args[i];
-                    BaseContainerMethodHandler handler = (BaseContainerMethodHandler)proxyObject.getHandler();
-                    handler.container.open();
-                    newArgs[i] = handler.container.reference;
-                } else {
-                    newArgs[i] = args[i];
-                }
-            }
-            args = newArgs;
-
             java.lang.Object ret = execute(
                     new CallInvoke(
+                            reference,
                             uuid,
                             m.getName(),
                             args)
@@ -250,8 +238,6 @@ public class BaseContainer extends AbstractContainer {
                     container.notifyAll();
                 }
             }
-
-            ret = Reference.unreference(ret, Factory.forCache(cache));
 
             assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Reflection.isCompatible(ret, m.getReturnType())
                     : m.getReturnType() + " => " + ret.getClass() + " [" + reference.getClazz() + "." + m.getName() + "()]";

@@ -13,7 +13,6 @@ import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
 import org.infinispan.creson.Shared;
 import org.infinispan.creson.SimpleObject;
-import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.ConfigurationHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
@@ -100,7 +99,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         // 2 - proxy marshalling
         Marshaller marshaller = new JBossMarshaller();
-        assert marshaller.objectFromByteBuffer((marshaller.objectToByteBuffer(set))) instanceof Reference;
+        assert marshaller.objectFromByteBuffer((marshaller.objectToByteBuffer(set))).equals(set);
 
         factory.close();
 
@@ -211,7 +210,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         Iterator<BasicCacheContainer> it = containers().iterator();
         BasicCacheContainer container1 = it.next();
         BasicCache<Object, Object> cache1 = container1.getCache(CRESON_CACHE_NAME);
-        Factory factory1 = Factory.forCache(cache1, 1);
+        Factory factory1 = Factory.forCache(cache1, 1, false);
 
         HashSet set1, set2;
 

@@ -14,25 +14,24 @@ public class Call implements Externalizable {
 
    private java.util.UUID callerID;
    private java.util.UUID callID;
+   private Reference reference;
 
    @Deprecated
    public Call(){}
 
-   public Call(java.util.UUID callID){
-      this(ContextManager.getThreadID(),callID);
+   public Call(Reference reference, java.util.UUID callID){
+      this(reference, ContextManager.getThreadID(),callID);
    }
 
-   public Call(Call call) {
-      this(call.callerID,call.callID);
+   public Call(Reference reference, Call call) {
+      this(reference, call.callerID,call.callID);
    }
 
-   private Call(java.util.UUID callerID, java.util.UUID callID){
+   private Call(Reference reference, java.util.UUID callerID, java.util.UUID callID){
       this.callerID = callerID;
       this.callID = callID;
+      this.reference = reference;
    }
-
-
-
 
    public java.util.UUID getCallerID(){
       return callerID;
@@ -40,6 +39,10 @@ public class Call implements Externalizable {
 
    public java.util.UUID getCallID(){
       return callID;
+   }
+
+   public Reference getReference(){
+      return reference;
    }
 
    @Override
@@ -64,12 +67,14 @@ public class Call implements Externalizable {
    public void writeExternal(ObjectOutput objectOutput) throws IOException {
       objectOutput.writeObject(callerID);
       objectOutput.writeObject(callID);
+      objectOutput.writeObject(reference);
    }
 
    @Override
    public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
       callerID = (java.util.UUID) objectInput.readObject();
-      callID = (java.util.UUID) objectInput.readObject();
+      callID = (java.util.UUID)  objectInput.readObject();
+      reference = (Reference) objectInput.readObject();
    }
 
 

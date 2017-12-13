@@ -39,15 +39,20 @@ public class Factory {
 
     @Deprecated
     public synchronized static Factory forCache(BasicCache cache) {
-        return Factory.forCache(cache, MAX_CONTAINERS);
+        return Factory.forCache(cache, MAX_CONTAINERS, false);
     }
 
     @Deprecated
-    public synchronized static Factory forCache(BasicCache cache, int maxContainers) {
+    public synchronized static Factory forCache(BasicCache cache, boolean force) {
+        return Factory.forCache(cache, MAX_CONTAINERS, force);
+    }
+
+    @Deprecated
+    public synchronized static Factory forCache(BasicCache cache, int maxContainers, boolean force) {
         if (!factories.containsKey(cache))
             factories.put(cache, new Factory(cache, maxContainers));
 
-        if (singleton == null && cache.getName().equals(CRESON_CACHE_NAME)) {
+        if ((singleton == null | force) && cache.getName().equals(CRESON_CACHE_NAME)) {
             singleton = factories.get(cache);
             log.info("AOF singleton  is " + singleton);
         }
