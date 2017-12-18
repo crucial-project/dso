@@ -80,7 +80,25 @@
             <artifactId>infinispan-core</artifactId>
             <type>test-jar</type>
         </dependency>
-
+		
+		<dependency>
+   			<groupId>org.hibernate</groupId>
+   			<artifactId>hibernate-search-orm</artifactId>
+   			<version>5.0.1.Final</version>
+		</dependency>
+		
+		<dependency>
+			  <groupId>org.hibernate</groupId>
+ 			  <artifactId>hibernate-entitymanager</artifactId>
+ 		 	  <version>4.3.8.Final</version>
+		</dependency>
+		
+		<dependency>
+		   <groupId>org.hibernate</groupId>
+		   <artifactId>hibernate-search-infinispan</artifactId>
+		   <version>5.0.1.Final</version>
+		</dependency>
+		
         <!-- TEST -->
 
         <dependency>
