@@ -65,8 +65,8 @@ public class Reflection {
 
     public static java.lang.Object instantiate(Class clazz, java.lang.Object... initArgs)
             throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        if (log.isTraceEnabled())
-            log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
+//        if (log.isTraceEnabled())
+//            log.trace("new " + clazz.toString() + "(" + Arrays.toString(initArgs) + ")");
         return getConstructor(clazz, initArgs).newInstance(initArgs);
     }
 

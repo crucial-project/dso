@@ -115,7 +115,7 @@ public abstract class AbstractContainer {
 
    protected static void handleFuture(CallFuture future){
       try {
-         assert (future.isDone());
+         assert (future instanceof CallFuture && future.isDone());
          if (!registeredCalls.containsKey(future.getCallID())) {
             log.trace("Future " + future.getCallID() + " ignored");
             return; // duplicate received

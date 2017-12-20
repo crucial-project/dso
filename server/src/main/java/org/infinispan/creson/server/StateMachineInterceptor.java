@@ -12,7 +12,6 @@ import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.creson.utils.Reflection;
-import org.infinispan.distribution.DistributionInfo;
 import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -43,11 +42,6 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
         assert (command.getKey() instanceof Reference) & (command.getValue() instanceof Call);
 
-        if (log.isTraceEnabled()) {
-            DistributionInfo info = dm.getCacheTopology().getDistribution(command.getKey());
-            System.out.println(info.isPrimary() + " " + info.isWriteBackup() + " " + command);
-        }
-
         Call call = (Call) command.getValue();
 
         Reference reference = call.getReference();
@@ -62,8 +56,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         assert (call instanceof CallConstruct) | (entry.getValue()!=null);
 
         if (log.isTraceEnabled())
-            log.trace(" Received [" + call + "] " +
-                    "(completed=" + lastCall.get(reference).equals(call) + ", " + reference + ")");
+            log.trace(" Received [" + call.toString() + "]");
 
         future = new CallFuture(reference ,call);
 
@@ -103,8 +96,6 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                         }
 
                         future.set(response);
-                        if (log.isTraceEnabled())
-                            log.trace(dm.getCacheTopology().getLocalAddress()+"#"+future + " @" + entry.getValue());
 
                     } catch (Throwable e) {
                         future.set(e);
@@ -122,6 +113,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
                         entry.setValue(
                                 Reflection.open(reference, callConstruct.getInitArgs()));
+
                     }
 
                     future.set(null);
@@ -153,6 +145,9 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                 command.getKey(), entry.getValue(),
                 command.getMetadata(), command.getFlagsBitSet());
         invokeNext(ctx, clone);
+
+        if (log.isTraceEnabled())
+            log.trace(" returning " + future.toString());
 
         return future;
     }

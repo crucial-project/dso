@@ -47,7 +47,7 @@ public class Call implements Externalizable {
 
    @Override
    public String toString(){
-      return callerID.toString()+":"+callID.toString();
+      return reference.toString();
    }
 
    @Override

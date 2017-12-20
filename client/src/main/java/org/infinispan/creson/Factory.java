@@ -2,6 +2,7 @@ package org.infinispan.creson;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCache;
@@ -11,7 +12,6 @@ import org.infinispan.creson.container.AbstractContainer;
 import org.infinispan.creson.container.BaseContainer;
 import org.infinispan.creson.object.Reference;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +49,9 @@ public class Factory {
 
     @Deprecated
     public synchronized static Factory forCache(BasicCache cache, int maxContainers, boolean force) {
+        assert !(cache instanceof RemoteCache) ||
+                ((RemoteCache)cache).getRemoteCacheManager().getConfiguration().forceReturnValues();
+
         if (!factories.containsKey(cache))
             factories.put(cache, new Factory(cache, maxContainers));
 
@@ -68,7 +71,8 @@ public class Factory {
         cb.tcpNoDelay(true)
                 .addServer()
                 .host(host)
-                .port(port);
+                .port(port)
+                .forceReturnValues(true);
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());
         return forCache(manager.getCache(CRESON_CACHE_NAME));
     }
@@ -170,10 +174,6 @@ public class Factory {
     @Deprecated
     public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
             throws CacheException {
-
-        if (!(Serializable.class.isAssignableFrom(clazz))) {
-            throw new CacheException(clazz + " should be serializable.");
-        }
 
         Reference reference;
         AbstractContainer container = null;

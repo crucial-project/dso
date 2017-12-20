@@ -282,7 +282,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test
-    public void baseAspectJ() throws Exception {
+    public void baseAspzectJ() throws Exception {
 
         // 1 - constructor
         SimpleObject object = new SimpleObject("aspectj");

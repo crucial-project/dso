@@ -99,7 +99,8 @@ public class Server {
                 replicationFactor,
                 maxEntries,
                 System.getProperty("store-creson-server" + host),
-                false);
+                true);
+        builder.persistence().clearStores().passivation(false);
 
         final EmbeddedCacheManager cm
                 = new DefaultCacheManager(gbuilder.build(), builder.build(), true);

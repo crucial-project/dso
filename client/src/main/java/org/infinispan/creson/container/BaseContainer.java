@@ -4,8 +4,6 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.infinispan.client.hotrod.Flag;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.creson.ReadOnly;
 import org.infinispan.creson.object.BoxedReference;
@@ -94,13 +92,8 @@ public class BaseContainer extends AbstractContainer {
 
     @Override
     public void execute(Reference reference, Call call) {
-        if (cache instanceof RemoteCache) {
-            handleFuture((CallFuture) ((RemoteCache) cache).withFlags(Flag.FORCE_RETURN_VALUE).put(reference, call));
-        } else {
-            handleFuture((CallFuture) cache.put(reference, call));
-        }
+        handleFuture((CallFuture) cache.put(reference, call));
     }
-
 
     @Override
     public synchronized void open()
@@ -109,13 +102,13 @@ public class BaseContainer extends AbstractContainer {
         if (!isOpen) {
 
             if (log.isTraceEnabled())
-                log.trace(" Opening.");
+                log.trace(" Opening - "+this.toString());
 
             execute(new CallConstruct(reference, generator.generate(), forceNew, initArgs, readOptimization));
             isOpen = true;
 
             if (log.isTraceEnabled())
-                log.trace(" Opened.");
+                log.trace(" Opened - "+this.toString());
 
         }
 
@@ -182,9 +175,7 @@ public class BaseContainer extends AbstractContainer {
                 return args[0].equals(proxy);
             }
 
-            if (m.getName().equals("toString")
-                    && (reference.getClazz().getMethod("toString")
-                    .getDeclaringClass().equals(Object.class))){
+            if (m.getName().equals("toString")){ // for debugging purposes
                 return reference.toString();
             }
 
