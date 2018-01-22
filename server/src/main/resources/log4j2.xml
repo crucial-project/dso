@@ -22,9 +22,9 @@
     <Logger name="org.jgroups" level="DEBUG"/>
     <Logger name="org.infinispan.server.hotrod.Decoder2x" level="ERROR"/>
 
-    <Root level="ALL">
-      <AppenderRef ref="STDOUT" level="ALL"/>
-      <AppenderRef ref="File" level="ALL"/>
+    <Root level="INFO">
+      <AppenderRef ref="STDOUT" level="INFO"/>
+      <AppenderRef ref="File" level="INFO"/>
     </Root>
   </Loggers>
 </Configuration>

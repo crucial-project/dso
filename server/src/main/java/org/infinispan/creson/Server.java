@@ -150,6 +150,7 @@ public class Server {
     builder.read(cm.getDefaultCacheConfiguration());
     builder.indexing().index(Index.LOCAL);
     builder.indexing().enable();
+    builder.persistence().clearStores().passivation(false);
 
     StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
     builder.compatibility().enabled(true); // for HotRod

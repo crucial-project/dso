@@ -81,31 +81,31 @@
             <artifactId>infinispan-core</artifactId>
             <type>test-jar</type>
         </dependency>
-	
-	<dependency>
-   	  <groupId>org.hibernate</groupId>
-   	  <artifactId>hibernate-search-orm</artifactId>
-   	  <version>5.0.1.Final</version>
-	</dependency>
-	
-	<dependency>
-	  <groupId>org.hibernate</groupId>
- 	  <artifactId>hibernate-entitymanager</artifactId>
- 	  <version>4.3.8.Final</version>
-	</dependency>
-	
-	<dependency>
-	  <groupId>org.hibernate</groupId>
-	  <artifactId>hibernate-search-infinispan</artifactId>
-	  <version>5.0.1.Final</version>
-	</dependency>
-	
-	<dependency>
-          <groupId>org.infinispan</groupId>
-          <artifactId>infinispan-remote-query-server</artifactId>
-          <version>${project.version}</version>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <version>5.0.1.Final</version>
         </dependency>
-	
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>4.3.8.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-infinispan</artifactId>
+            <version>5.0.1.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- TEST -->
 
         <dependency>
@@ -196,6 +196,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
+                            <includeScope>compile</includeScope>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>
