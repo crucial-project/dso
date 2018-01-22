@@ -2,8 +2,11 @@ package org.infinispan.creson;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.creson.server.StateMachineInterceptor;
 import org.infinispan.creson.utils.ConfigurationHelper;
+import org.infinispan.interceptors.impl.CallInterceptor;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
@@ -13,7 +16,6 @@ import org.infinispan.util.logging.LogFactory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -127,7 +129,6 @@ public class Server {
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     scheduler.schedule((Callable<Void>) () -> {
       while (true) {
-        Thread.sleep(1000);
         File folder = new File(userLib);
         File[] listOfFiles = folder.listFiles();
         for (File file : listOfFiles) {
@@ -135,8 +136,27 @@ public class Server {
             loadLibrary(file);
           }
         }
+        Thread.sleep(1000);
       }
     }, 1, TimeUnit.SECONDS);
+
+    try {
+      Thread.sleep(3000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    builder = new ConfigurationBuilder();
+    builder.read(cm.getDefaultCacheConfiguration());
+    builder.indexing().index(Index.LOCAL);
+    builder.indexing().enable();
+
+    StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
+    builder.compatibility().enabled(true); // for HotRod
+    builder.clustering().stateTransfer().awaitInitialTransfer(true);
+    builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
+    cm.defineConfiguration(CRESON_CACHE_NAME, builder.build());
+    stateMachineInterceptor.setup(Factory.forCache(cm.getCache(CRESON_CACHE_NAME)));
 
     System.out.println("LAUNCHED");
 
