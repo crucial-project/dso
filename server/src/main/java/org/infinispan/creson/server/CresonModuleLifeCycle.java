@@ -31,15 +31,15 @@ public class CresonModuleLifeCycle extends AbstractModuleLifecycle {
     public void cacheManagerStarted(GlobalComponentRegistry gcr) {
         final EmbeddedCacheManager cacheManager = gcr.getComponent(EmbeddedCacheManager.class);
         final InternalCacheRegistry registry= gcr.getComponent(InternalCacheRegistry.class);
-        
         stateMachineInterceptor = new StateMachineInterceptor();
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(cacheManager.getDefaultCacheConfiguration());
-        builder.indexing().index(Index.LOCAL);
+        /*builder.indexing().index(Index.LOCAL);
         for(Class cls : Server.getIndexedClass()) {
-          builder.indexing().addIndexedEntity(cls);
-        }
+            builder.indexing().addIndexedEntity(cls);
+        }*/
+
         builder.compatibility().enabled(true); // for HotRod
         builder.clustering().stateTransfer().awaitInitialTransfer(true);
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);

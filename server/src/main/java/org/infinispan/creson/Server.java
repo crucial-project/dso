@@ -58,9 +58,9 @@ public class Server {
   private String userLib = userLibraries;
 
   private volatile boolean running = false;
-  
+
   private static ArrayList<Class<?>> indexedClasses = new ArrayList<>();
-  
+
   public Server() {
   }
 
@@ -167,16 +167,16 @@ public class Server {
     ArrayList<Class<?>> indexed = new ArrayList<>();
     try {
       jarFile = new JarInputStream(new FileInputStream(jar));
-      while ((jarEntry = jarFile.getNextJarEntry()) != null) { 
+      while ((jarEntry = jarFile.getNextJarEntry()) != null) {
         if (jarEntry.getName().contains("example") && jarEntry.getName().endsWith(".class")) {
           String str = jarEntry.getName().replace('/', '.').substring(0,
             jarEntry.getName().length() - 6);
             Class<?> clazz;
-            try {             
+            try {
               clazz = Class.forName(str);
               if(clazz.isAnnotationPresent(org.hibernate.search.annotations.Indexed.class)) {
                 indexed.add(clazz);
-              } 
+              }
             } catch (Exception e) {
               e.printStackTrace();
             }
@@ -212,7 +212,7 @@ public class Server {
       e.printStackTrace();
     }
   }
-  
+
   public static ArrayList<Class<?>> getIndexedClass(){
     return indexedClasses;
   }
