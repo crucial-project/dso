@@ -6,9 +6,11 @@ import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.creson.server.StateMachineInterceptor;
 import org.infinispan.creson.utils.ConfigurationHelper;
-import org.infinispan.interceptors.impl.CallInterceptor;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
 import org.infinispan.util.logging.Log;
@@ -16,8 +18,6 @@ import org.infinispan.util.logging.LogFactory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -149,36 +149,45 @@ public class Server {
     builder = new ConfigurationBuilder();
     builder.read(cm.getDefaultCacheConfiguration());
     builder.indexing().index(Index.LOCAL);
+    builder.indexing().addIndexedEntity(Room.class);
     builder.indexing().enable();
     builder.persistence().clearStores().passivation(false);
 
     StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
     builder.compatibility().enabled(true); // for HotRod
-    builder.clustering().stateTransfer().awaitInitialTransfer(true);
-    builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
+    builder.clustering().stateTransfer().chunkSize(100);
+    // builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
     cm.defineConfiguration(CRESON_CACHE_NAME, builder.build());
     stateMachineInterceptor.setup(Factory.forCache(cm.getCache(CRESON_CACHE_NAME)));
 
-    System.out.println("LAUNCHED");
+    cm.getCache(CRESON_CACHE_NAME).put('a', new Room(123));
+    QueryFactory factory = Search.getQueryFactory(cm.getCache(CRESON_CACHE_NAME));
+    Query q = factory.from(Room.class).build();
+    System.out.println(q.list());
 
-    SignalHandler sh = s -> {
-      System.out.println("CLOSING");
-      try {
-        scheduler.shutdown();
-        Factory factory = Factory.forCache(cm.getCache(CRESON_CACHE_NAME));
-        if (factory != null)
-          factory.close();
-        server.stop();
-        cm.stop();
-        System.exit(0);
-      } catch (Throwable t) {
-        System.exit(-1);
-      }
-    };
-    Signal.handle(new Signal("INT"), sh);
-    Signal.handle(new Signal("TERM"), sh);
+//
+//    System.out.println("LAUNCHED");
+//
+//    SignalHandler sh = s -> {
+//      System.out.println("CLOSING");
+//      try {
+//        scheduler.shutdown();
+//        Factory factory = Factory.forCache(cm.getCache(CRESON_CACHE_NAME));
+//        if (factory != null)
+//          factory.close();
+//        server.stop();
+//        cm.stop();
+//        System.exit(0);
+//      } catch (Throwable t) {
+//        System.exit(-1);
+//      }
+//    };
+//    Signal.handle(new Signal("INT"), sh);
+//    Signal.handle(new Signal("TERM"), sh);
+//
+//    Thread.currentThread().interrupt();
 
-    Thread.currentThread().interrupt();
+    System.exit(0);
 
   }
 
