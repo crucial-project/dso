@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,8 +57,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int NCALLS = 5000;
     protected static final long MAX_ENTRIES = Integer.MAX_VALUE;
-    protected static final int REPLICATION_FACTOR = 2;
-    protected static final int NMANAGERS = 3;
+    protected static final int REPLICATION_FACTOR = 1;
+    protected static final int NMANAGERS = 1;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
 
     protected ConfigurationBuilder buildConfiguration() {
@@ -401,6 +402,47 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         assert total == (NCALLS) : "obtained = " + total + "; expected = " + (NCALLS);
 
+    }
+
+    @Shared  MyMap<Integer,Byte[]> map;
+
+    static class MyMap<K,V> extends HashMap<K,V>{
+
+        @Override
+        public V put (K k, V v) {
+            super.put(k,v);
+            return null;
+        }
+
+    }
+
+    @Test
+    public void memoryUsage(){
+        map = new MyMap<>();
+        final int threads = 4;
+        final int operations = 10;
+
+        List<Future<Void>> futures = new ArrayList<>();
+        ExecutorService service = Executors.newFixedThreadPool(threads);
+        int content = 10000000;
+        for (int i=0; i<=threads; i++) {
+            Future<Void> future = service.submit(() -> {
+                        for (int j= 0; j < operations; j++) {
+                            int k = j+threads*1000;
+                            map.put(k, new Byte[content]);
+                            System.out.println(content/1000000 +"MB -> "+Runtime.getRuntime().totalMemory()/1000000+"MB");
+                        }
+                        return null;
+            });
+            futures.add(future);
+        }
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     //

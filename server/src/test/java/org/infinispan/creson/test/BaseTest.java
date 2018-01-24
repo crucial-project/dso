@@ -15,7 +15,7 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 /**
  * @author Pierre Sutra
  */
-@org.testng.annotations.Test(testName = "BaseTest", groups = {"unit"}, enabled = false)
+@org.testng.annotations.Test(testName = "BaseTest", groups = {"unit"})
 public class BaseTest extends AbstractTest {
 
     private static List<Cache<Object, Object>> caches = new ArrayList<>();

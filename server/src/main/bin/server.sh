@@ -3,6 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CLASSPATH="${DIR}/*:${DIR}/lib/*"
 IP="0.0.0.0"
+JVM="-XX:+UseConcMarkSweepGC -Xms64m -Xmx1024m -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configurationFile=${DIR}/log4j2.xml"
 EXTRA="-rf 1"
 
 if [ "$1" == "-ec2" ];
@@ -13,4 +14,4 @@ then
     EXTRA="-proxy ${PIP}:11222 -ec2 -rf 2"
 fi
 
-java -XX:+UseConcMarkSweepGC -Xms64m -Xmx2048m -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configurationFile=${DIR}/log4j2.xml -cp ${CLASSPATH} org.infinispan.creson.Server -server ${IP}:11222 ${EXTRA}
+java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:11222 ${EXTRA}

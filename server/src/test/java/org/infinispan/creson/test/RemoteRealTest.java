@@ -66,7 +66,7 @@ public class RemoteRealTest extends AbstractTest {
     }
 
     protected String[] servers() {
-        return new String[]{"localhost:11222", "localhost:11223"};
+        return new String[]{"localhost:11222"};
     }
 
 }

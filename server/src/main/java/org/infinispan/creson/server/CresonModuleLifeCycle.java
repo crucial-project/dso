@@ -38,13 +38,14 @@ public class CresonModuleLifeCycle extends AbstractModuleLifecycle {
         builder.clustering().stateTransfer().awaitInitialTransfer(true);
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
 
+        EnumSet<InternalCacheRegistry.Flag> flags = EnumSet.of(
+                InternalCacheRegistry.Flag.EXCLUSIVE,
+                InternalCacheRegistry.Flag.USER);
+
         registry.registerInternalCache(
                 CRESON_CACHE_NAME,
                 builder.build(),
-                EnumSet.of(
-                        InternalCacheRegistry.Flag.EXCLUSIVE,
-                        InternalCacheRegistry.Flag.PERSISTENT,
-                        InternalCacheRegistry.Flag.USER));
+                flags);
 
     }
 
