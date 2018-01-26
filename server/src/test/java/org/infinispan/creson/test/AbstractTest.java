@@ -427,12 +427,13 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         int content = 10000000;
         for (int i=0; i<=threads; i++) {
             Future<Void> future = service.submit(() -> {
-                        for (int j= 0; j < operations; j++) {
-                            int k = j+threads*1000;
-                            map.put(k, new Byte[content]);
-                            System.out.println(content/1000000 +"MB -> "+Runtime.getRuntime().totalMemory()/1000000+"MB");
-                        }
-                        return null;
+                Random random = new Random(System.nanoTime());
+                for (int j= 0; j < operations; j++) {
+                    int k = random.nextInt();
+                    map.put(k, new Byte[content]);
+                    System.out.println(content/1000000 +"MB -> "+Runtime.getRuntime().totalMemory()/1000000+"MB");
+                }
+                return null;
             });
             futures.add(future);
         }
