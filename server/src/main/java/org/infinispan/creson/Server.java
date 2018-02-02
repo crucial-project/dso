@@ -101,6 +101,8 @@ public class Server {
                 System.getProperty("store-creson-server" + host),
                 true);
         builder.persistence().clearStores().passivation(false);
+        builder.expiration().lifespan(-1);
+        builder.memory().size(-1);
 
         final EmbeddedCacheManager cm
                 = new DefaultCacheManager(gbuilder.build(), builder.build(), true);

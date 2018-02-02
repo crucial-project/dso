@@ -56,17 +56,21 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int NCALLS = 5000;
-    protected static final long MAX_ENTRIES = Integer.MAX_VALUE;
+    protected static final long MAX_ENTRIES = -1;
     protected static final int REPLICATION_FACTOR = 1;
-    protected static final int NMANAGERS = 1;
+    protected static final int NMANAGERS = 3;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
 
     protected ConfigurationBuilder buildConfiguration() {
-        return ConfigurationHelper.buildConfiguration(
+        ConfigurationBuilder ret = ConfigurationHelper.buildConfiguration(
                 CACHE_MODE,
                 REPLICATION_FACTOR,
                 MAX_ENTRIES,
-                PERSISTENT_STORAGE_DIR + "/" + containers().size());
+                PERSISTENT_STORAGE_DIR + "/" + containers().size(),
+                true);
+        ret.expiration().lifespan(-1);
+        ret.memory().size(-1);
+        return ret;
     }
 
     @Test(enabled = false)
@@ -404,7 +408,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Shared  MyMap<Integer,Byte[]> map;
+    @Shared MyMap<Integer, byte[]> map;
 
     static class MyMap<K,V> extends HashMap<K,V>{
 
@@ -419,19 +423,19 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     @Test
     public void memoryUsage(){
         map = new MyMap<>();
-        final int threads = 4;
-        final int operations = 10;
+        final int threads = 1;
+        final int operations = 15;
 
         List<Future<Void>> futures = new ArrayList<>();
         ExecutorService service = Executors.newFixedThreadPool(threads);
         int content = 10000000;
-        for (int i=0; i<=threads; i++) {
+        for (int i=0; i < threads; i++) {
             Future<Void> future = service.submit(() -> {
                 Random random = new Random(System.nanoTime());
                 for (int j= 0; j < operations; j++) {
                     int k = random.nextInt();
-                    map.put(k, new Byte[content]);
-                    System.out.println(content/1000000 +"MB -> "+Runtime.getRuntime().totalMemory()/1000000+"MB");
+                    map.put(k, new byte[content]);
+                    System.out.println(j + ":" + content/1000000 +"MB -> "+Runtime.getRuntime().totalMemory()/1000000+"MB");
                 }
                 return null;
             });
@@ -444,6 +448,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
                 e.printStackTrace();
             }
         }
+
     }
 
     //

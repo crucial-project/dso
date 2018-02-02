@@ -23,6 +23,7 @@
         <version.javaee-api>7.0</version.javaee-api>
         <version.aspectjrt>1.8.9</version.aspectjrt>
         <version.args4j>2.32</version.args4j>
+        <log4j.configurationFile>log4j2.xml</log4j.configurationFile>
     </properties>
 
     <developers>

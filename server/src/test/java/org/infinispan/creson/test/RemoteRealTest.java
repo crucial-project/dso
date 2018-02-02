@@ -14,7 +14,7 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "RemoteRealTest", groups = {"unit"})
+@Test(testName = "RemoteRealTest", groups = {"unit"}, enabled = false)
 public class RemoteRealTest extends AbstractTest {
 
     private static List<BasicCacheContainer> basicCacheContainers = new ArrayList<>();
@@ -43,6 +43,7 @@ public class RemoteRealTest extends AbstractTest {
     protected void createCacheManagers() throws Throwable {
 
         for (String server : servers()) {
+            System.out.println("adding "+server);
             String host = server.split(":")[0];
             int port = Integer.valueOf(server.split(":")[1]);
             org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb

@@ -37,6 +37,9 @@ In the example above, this means that if two heroes stand in the same rooom, onl
 More precisely, the synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
 In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
 
+Notice that the creation of an Creson object is defered.
+In detail, when `new` is encountered, Creson actually defers the creation of the object at the server side until one of its methods is called.
+
 ## Usage
 
 Creson relies on a client-server architecture.
