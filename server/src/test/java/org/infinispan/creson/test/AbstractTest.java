@@ -410,7 +410,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     @Shared MyMap<Integer, byte[]> map;
 
-    static class MyMap<K,V> extends HashMap<K,V>{
+    static class MyMap<K,V> extends HashMap<K,V> {
 
         @Override
         public V put (K k, V v) {
