@@ -150,7 +150,7 @@
             <activation><activeByDefault>true</activeByDefault></activation>
             <properties>
                 <defaultTestGroup>creson</defaultTestGroup>
-                <defaultExcludedTestGroup>unstable,extra</defaultExcludedTestGroup>
+                <defaultExcludedTestGroup>unstable,extra,stress</defaultExcludedTestGroup>
                 <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
             </properties>
         </profile>
