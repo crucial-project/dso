@@ -1,11 +1,13 @@
 package org.infinispan.creson;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
+import org.infinispan.test.AbstractCacheTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.kohsuke.args4j.CmdLineException;
@@ -93,8 +95,11 @@ public class Server {
         if (useEC2)
             gbuilder.transport().addProperty("configurationFile", "jgroups-creson-ec2.xml");
 
+        ConfigurationBuilder cBuilder
+                = AbstractCacheTest.getDefaultClusteredCacheConfig(CacheMode.DIST_ASYNC, false);
+
         final EmbeddedCacheManager cm
-                = new DefaultCacheManager(gbuilder.build(),true);
+                = new DefaultCacheManager(gbuilder.build(), cBuilder.build(), true);
 
         installCreson(cm, CacheMode.DIST_ASYNC, replicationFactor, maxEntries, System.getProperty("store-creson-server" + host), true, false);
 
