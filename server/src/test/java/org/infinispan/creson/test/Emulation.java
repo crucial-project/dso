@@ -4,16 +4,17 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.creson.utils.ConfigurationHelper;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.infinispan.test.MultipleCacheManagersTest;
+import org.infinispan.test.fwk.TransportFlags;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
+import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
 
 public class Emulation extends MultipleCacheManagersTest {
 
@@ -29,19 +30,21 @@ public class Emulation extends MultipleCacheManagersTest {
 
     private static List<HotRodServer> servers = new ArrayList<>();
 
-    private ConfigurationBuilder buildConfiguration() {
-        return ConfigurationHelper.buildConfiguration(
-                CACHE_MODE,
-                REPLICATION_FACTOR,
-                -1, // disable data persistence
-                PERSISTENT_STORAGE_DIR + "/" + this.cacheManagers.size());
-    }
-
     private boolean addContainer() {
         int index = servers.size();
 
         // embedded cache manager
-        addClusterEnabledCacheManager(buildConfiguration()).getCache(CRESON_CACHE_NAME);
+        TransportFlags flags = new TransportFlags();
+        flags.withFD(true).withMerge(true);
+        EmbeddedCacheManager cm = addClusterEnabledCacheManager(flags);
+        installCreson(
+                cm,
+                CACHE_MODE,
+                REPLICATION_FACTOR,
+                0,
+                PERSISTENT_STORAGE_DIR + "/" + index,
+                true,
+                false);
         waitForClusterToForm(CRESON_CACHE_NAME);
 
         // hotrod server

@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
+import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
 
 /**
  * @author Pierre Sutra
@@ -35,7 +36,14 @@ public abstract class BaseTest extends AbstractTest{
     public synchronized boolean addContainer() {
         TransportFlags flags = new TransportFlags();
         flags.withFD(true).withMerge(true);
-        EmbeddedCacheManager cm = addClusterEnabledCacheManager(buildConfiguration(), flags);
+        EmbeddedCacheManager cm = addClusterEnabledCacheManager(flags);
+        installCreson(
+                cm,
+                CACHE_MODE,
+                REPLICATION_FACTOR, MAX_ENTRIES,
+                PERSISTENT_STORAGE_DIR + "/" + containers().size(),
+                true,
+                false);
         waitForClusterToForm(CRESON_CACHE_NAME);
         Cache cache = cm.getCache(CRESON_CACHE_NAME);
         caches.add(cache);

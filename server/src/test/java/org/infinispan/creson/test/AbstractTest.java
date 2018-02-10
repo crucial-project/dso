@@ -6,12 +6,10 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
 import org.infinispan.creson.Shared;
 import org.infinispan.creson.SimpleObject;
-import org.infinispan.creson.utils.ConfigurationHelper;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -46,21 +44,9 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int NCALLS = 5000;
     protected static final long MAX_ENTRIES = -1;
-    protected static final int REPLICATION_FACTOR = 2;
+    protected static final int REPLICATION_FACTOR = 1;
     protected static final int NMANAGERS = 3;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
-
-    protected ConfigurationBuilder buildConfiguration() {
-        ConfigurationBuilder ret = ConfigurationHelper.buildConfiguration(
-                CACHE_MODE,
-                REPLICATION_FACTOR,
-                MAX_ENTRIES,
-                PERSISTENT_STORAGE_DIR + "/" + containers().size(),
-                true);
-        ret.expiration().lifespan(-1);
-        ret.memory().size(-1);
-        return ret;
-    }
 
     @Test(groups = {"creson"})
     public void baseUsage() throws Exception {

@@ -7,14 +7,17 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.creson.Factory;
 import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
+import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
 import static org.infinispan.test.TestingUtil.blockUntilCacheStatusAchieved;
 import static org.testng.Assert.assertEquals;
 
@@ -22,6 +25,7 @@ import static org.testng.Assert.assertEquals;
  * @author Pierre Sutra
  */
 
+@Test(testName = "RemoteTest")
 public class RemoteTest extends AbstractTest {
 
     private static List<HotRodServer> servers = new ArrayList<>();
@@ -43,7 +47,14 @@ public class RemoteTest extends AbstractTest {
         int index = servers.size();
 
         // embedded cache manager
-        addClusterEnabledCacheManager(buildConfiguration()).getCache(CRESON_CACHE_NAME);
+        EmbeddedCacheManager cm = addClusterEnabledCacheManager();
+        installCreson(
+                cm,
+                CACHE_MODE,
+                REPLICATION_FACTOR, MAX_ENTRIES,
+                PERSISTENT_STORAGE_DIR + "/" + containers().size(),
+                true,
+                false);
         waitForClusterToForm(CRESON_CACHE_NAME);
 
         // hotrod server

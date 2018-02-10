@@ -144,15 +144,27 @@
     </dependencyManagement>
 
     <profiles>
+
         <profile>
             <id>creson</id>
             <activation><activeByDefault>true</activeByDefault></activation>
             <properties>
                 <defaultTestGroup>creson</defaultTestGroup>
-                <defaultExcludedTestGroup>unstable,stress,extra</defaultExcludedTestGroup>
+                <defaultExcludedTestGroup>unstable,extra</defaultExcludedTestGroup>
                 <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
             </properties>
         </profile>
+
+        <profile>
+            <id>creson-stress</id>
+            <activation><activeByDefault>false</activeByDefault></activation>
+            <properties>
+                <defaultTestGroup>creson,stress</defaultTestGroup>
+                <defaultExcludedTestGroup>unstable,extra</defaultExcludedTestGroup>
+                <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
+            </properties>
+        </profile>
+
     </profiles>
 
 </project>

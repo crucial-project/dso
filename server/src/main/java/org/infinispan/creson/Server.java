@@ -1,9 +1,7 @@
 package org.infinispan.creson;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.creson.utils.ConfigurationHelper;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
@@ -23,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
+import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
 
 /**
  * @author Pierre Sutra
@@ -94,18 +93,10 @@ public class Server {
         if (useEC2)
             gbuilder.transport().addProperty("configurationFile", "jgroups-creson-ec2.xml");
 
-        ConfigurationBuilder builder = ConfigurationHelper.buildConfiguration(
-                CacheMode.DIST_ASYNC,
-                replicationFactor,
-                maxEntries,
-                System.getProperty("store-creson-server" + host),
-                true);
-        builder.persistence().clearStores().passivation(false);
-        builder.expiration().lifespan(-1);
-        builder.memory().size(-1);
-
         final EmbeddedCacheManager cm
-                = new DefaultCacheManager(gbuilder.build(), builder.build(), true);
+                = new DefaultCacheManager(gbuilder.build(),true);
+
+        installCreson(cm, CacheMode.DIST_ASYNC, replicationFactor, maxEntries, System.getProperty("store-creson-server" + host), true, false);
 
         HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();
         hbuilder.topologyStateTransfer(true);
