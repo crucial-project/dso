@@ -9,7 +9,6 @@ import org.infinispan.creson.Factory;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
-import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +21,7 @@ import static org.testng.Assert.assertEquals;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "RemoteTest", groups = {"unit"})
+
 public class RemoteTest extends AbstractTest {
 
     private static List<HotRodServer> servers = new ArrayList<>();

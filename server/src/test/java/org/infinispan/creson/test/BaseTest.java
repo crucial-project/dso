@@ -15,19 +15,20 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 /**
  * @author Pierre Sutra
  */
-@org.testng.annotations.Test(testName = "BaseTest", groups = {"unit"}, enabled = false)
-public class BaseTest extends AbstractTest {
+
+public abstract class BaseTest extends AbstractTest{
 
     private static List<Cache<Object, Object>> caches = new ArrayList<>();
+    private static List<BasicCacheContainer> containers = new ArrayList<>();
 
     @Override
     public BasicCacheContainer container(int i) {
-        return manager(i);
+        return containers.get(i);
     }
 
     @Override
     public Collection<BasicCacheContainer> containers() {
-        return (Collection) getCacheManagers();
+        return containers;
     }
 
     @Override
@@ -57,10 +58,4 @@ public class BaseTest extends AbstractTest {
         return true;
     }
 
-    @Override
-    protected void createCacheManagers() throws Throwable {
-        for (int i = 0; i < NMANAGERS; i++) {
-            addContainer();
-        }
-    }
 }

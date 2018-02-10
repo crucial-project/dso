@@ -31,12 +31,11 @@ import static org.testng.Assert.assertTrue;
  * @author Pierre Sutra
  */
 
-@Test(testName = "ISPNTest")
-public class ISPNTest extends BaseTest {
+public abstract class ISPNTest extends BaseTest {
 
    protected static ConcurrentMap<Integer,Integer> added = new ConcurrentHashMap<>();
 
-   @Test
+   @Test(groups = {"stress"})
    public void testEventOrdering() throws ExecutionException, InterruptedException {
 
       List<ClusterListener> listeners = new ArrayList<>();
@@ -67,7 +66,7 @@ public class ISPNTest extends BaseTest {
 
    }
 
-   @Test
+   @Test(groups = {"stress"})
    public void testElasticity() throws ExecutionException, InterruptedException {
 
       List<Future> futures = new ArrayList<>();
@@ -100,6 +99,23 @@ public class ISPNTest extends BaseTest {
       }
 
    }
+
+    @Test(groups = {"stress"})
+   public void atomicity() throws Exception {
+
+      BasicCache cache = container(0).getCache();
+
+      // 1 - validate cache atomicity
+      Random rand = new Random();
+      for (int i = 0; i < 1000; i++) {
+         int k = rand.nextInt(10);
+         int v = rand.nextInt();
+         cache.put(k, v);
+         assert cache.get(k).equals(v);
+      }
+
+   }
+
 
    //
    // Helpers

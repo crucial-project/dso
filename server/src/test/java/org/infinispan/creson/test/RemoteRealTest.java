@@ -3,7 +3,6 @@ package org.infinispan.creson.test;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.creson.Factory;
-import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,8 +13,8 @@ import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 /**
  * @author Pierre Sutra
  */
-@Test(testName = "RemoteRealTest", groups = {"unit"}, enabled = false)
-public class RemoteRealTest extends AbstractTest {
+
+public abstract class RemoteRealTest extends AbstractTest {
 
     private static List<BasicCacheContainer> basicCacheContainers = new ArrayList<>();
 

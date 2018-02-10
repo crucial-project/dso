@@ -1,8 +1,6 @@
 package org.infinispan.creson.test;
 
 import javassist.util.proxy.Proxy;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
@@ -18,8 +16,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
@@ -45,19 +41,12 @@ import static org.testng.Assert.assertTrue;
  * @author Pierre Sutra
  */
 
-@Test(testName = "AbstractTest", groups = "unit")
 public abstract class AbstractTest extends MultipleCacheManagersTest {
-
-    protected static Log log = LogFactory.getLog(AbstractTest.class);
-
-    static {
-        Configurator.setLevel(System.getProperty("log4j.logger"), Level.ERROR);
-    }
 
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int NCALLS = 5000;
     protected static final long MAX_ENTRIES = -1;
-    protected static final int REPLICATION_FACTOR = 1;
+    protected static final int REPLICATION_FACTOR = 2;
     protected static final int NMANAGERS = 3;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
 
@@ -73,23 +62,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         return ret;
     }
 
-    @Test(enabled = false)
-    public void baseProperties() throws Exception {
-
-        BasicCache cache = container(0).getCache();
-
-        // 1 - validate cache atomicity
-        Random rand = new Random();
-        for (int i = 0; i < 1000; i++) {
-            int k = rand.nextInt(10);
-            int v = rand.nextInt();
-            cache.put(k, v);
-            assert cache.get(k).equals(v);
-        }
-
-    }
-
-    @Test
+    @Test(groups = {"creson"})
     public void baseUsage() throws Exception {
 
         BasicCacheContainer cacheManager = containers().iterator().next();
@@ -110,7 +83,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test(enabled = true)
+    @Test(groups = {"creson", "stress"})
     public void basePerformance() throws Exception {
 
         BasicCacheContainer cacheManager = containers().iterator().next();
@@ -130,7 +103,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson"})
     public void persistence() throws Exception {
 
         assertTrue(containers().size() >= 2);
@@ -182,7 +155,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson"})
     public void baseReadOptimization() throws Exception {
         SimpleObject object = new SimpleObject("baseReadOptimization");
         object.setField("something");
@@ -190,7 +163,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert field.equals("something");
     }
 
-    @Test
+    @Test(groups = {"creson", "stress"})
     public void advancedReadOptimization() throws Exception {
 
         SimpleObject object = new SimpleObject("performance");
@@ -209,7 +182,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson"})
     public void baseCacheTest() throws Exception {
 
         Iterator<BasicCacheContainer> it = containers().iterator();
@@ -234,7 +207,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson", "stress"})
     public void concurrentUpdate() throws Exception {
 
         ExecutorService service = Executors.newCachedThreadPool();
@@ -258,7 +231,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson"})
     public void multipleCreation() throws Exception {
 
         assertTrue(containers().size() >= 2);
@@ -286,8 +259,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
-    public void baseAspzectJ() throws Exception {
+    @Test(groups = {"creson"})
+    public void baseAspectJ() throws Exception {
 
         // 1 - constructor
         SimpleObject object = new SimpleObject("aspectj");
@@ -306,7 +279,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson"})
     public void baseComposition() throws Exception {
         assert ShardedObject.class.isAssignableFrom(ShardedObject.class);
         ShardedObject object = new ShardedObject();
@@ -328,7 +301,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson"})
     public void advancedComposition() throws Exception {
         ShardedObject object1 = new ShardedObject();
         ShardedObject object2 = new ShardedObject(object1);
@@ -346,8 +319,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     @Shared List<SimpleObject> l1;
 
-    @Test
-    void baseAnnotation() throws Exception{
+    @Test(groups = {"creson"})
+    public void baseAnnotation() throws Exception{
         l1 = new ArrayList<>();
         SimpleObject object1 = new SimpleObject();
         l1.add(object1);
@@ -357,7 +330,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert l1.size() == 1;
     }
 
-    @Test(enabled = false)
+    @Test(groups = {"creson", "stress"})
     public void baseElasticity() throws Exception {
 
         advancedComposition();
@@ -373,7 +346,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         advancedComposition();
     }
 
-    @Test(enabled = false)
+    @Test(groups = {"creson", "stress"})
     public void advancedElasticity() throws Exception {
 
         ExecutorService service = Executors.newCachedThreadPool();
@@ -420,7 +393,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Test
+    @Test(groups = {"creson", "stress"})
     public void memoryUsage(){
         map = new MyMap<>();
         final int threads = 1;
