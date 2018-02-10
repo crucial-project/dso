@@ -37,7 +37,7 @@ public class ConfigurationHelper {
         // clustering
         builder.clustering()
                 .stateTransfer().fetchInMemoryState(true)
-                .stateTransfer().chunkSize(Integer.MAX_VALUE) // FIXME necessary for elasticity.
+                .stateTransfer().chunkSize(100) // FIXME elasticity vs query result size
                 .awaitInitialTransfer(true)
                 .hash().numOwners(replicationFactor);
 
