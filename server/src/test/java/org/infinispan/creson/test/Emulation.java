@@ -41,7 +41,7 @@ public class Emulation extends MultipleCacheManagersTest {
                 cm,
                 CACHE_MODE,
                 REPLICATION_FACTOR,
-                0,
+                -1,
                 PERSISTENT_STORAGE_DIR + "/" + index,
                 true,
                 false);
@@ -73,4 +73,5 @@ public class Emulation extends MultipleCacheManagersTest {
             System.out.println("Node " + remoteCacheManagers.get(i)+ " added.");
         }
     }
+
 }
