@@ -24,7 +24,7 @@ public class Benchmark {
    @Option(name = "-operations", required = true, usage = "# operations")
    int T;
 
-   @Option(name = "-server", required = false, usage = "connection string to server")
+   @Option(name = "-server", usage = "connection string to server")
    String server = "127.0.0.1:11222";
 
    public static void main(String args[]) {
@@ -37,7 +37,7 @@ public class Benchmark {
       CmdLineParser parser = new CmdLineParser(this);
       parser.setUsageWidth(80);
       try {
-         if (args.length < 6)
+         if (args.length < 4)
             throw new CmdLineException(parser, "Not enough arguments are given.");
          parser.parseArgument(args);
       } catch (CmdLineException e) {

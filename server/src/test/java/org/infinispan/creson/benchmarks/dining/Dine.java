@@ -32,7 +32,7 @@ public class Dine {
         List<Thread> threads = new ArrayList<>();
 
         for (int i = 0; i < philosophers.length; i++) {
-            Log.msg("Thred " + i);
+            Log.msg("Thread " + i);
             Thread t = new Thread(philosophers[i]);
             threads.add(t);
             t.start();

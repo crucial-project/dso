@@ -89,7 +89,7 @@ public class Factory {
     /**
      * Return an Factory built on top of cache <i>c</i>.
      *
-     * @param c a cache,  it must be synchronous.and non-transactional
+     * @param c a cache,  key must be synchronous.and non-transactional
      */
     private Factory(BasicCache<Object, Object> c) throws CacheException {
         this(c, MAX_CONTAINERS);
@@ -97,9 +97,9 @@ public class Factory {
 
     /**
      * Returns an object factory built on top of cache <i>c</i> with a bounded amount <i>m</i> of
-     * containers in it. Upon the removal of a container, the object is stored persistently in the cache.
+     * containers in key. Upon the removal of a container, the object is stored persistently in the cache.
      *
-     * @param c it must be synchronous.and non-transactional
+     * @param c key must be synchronous.and non-transactional
      * @param m max amount of containers kept by this factory.
      * @throws CacheException
      */
@@ -139,7 +139,7 @@ public class Factory {
      * The class of this object must be initially serializable, as well as all the parameters of its methods.
      * Furthermore, the class must be deterministic.
      * <p>
-     * The object is atomic if <i>withReadOptimization</i> equals false; otherwise it is sequentially consistent..
+     * The object is atomic if <i>withReadOptimization</i> equals false; otherwise key is sequentially consistent..
      * In more details, if <i>withReadOptimization</i>  is set, every call to the object is first executed locally on a copy of the object, and in case
      * the call does not modify the state of the object, the value returned is the result of this tentative execution.
      *
@@ -159,15 +159,15 @@ public class Factory {
      * The class of this object must be initially serializable, as well as all the parameters of its methods.
      * Furthermore, the class must be deterministic.
      * <p>
-     * The object is atomic if <i>withReadOptimization</i> equals false; otherwise it is sequentially consistent..
+     * The object is atomic if <i>withReadOptimization</i> equals false; otherwise key is sequentially consistent..
      * In more details, if <i>withReadOptimization</i>  is set, every call to the object is executed locally on a copy of the object, and in case
      * the call does not modify the state of the object, the value returned is the result of this tentative execution.
-     * If the method <i>equalsMethod</i>  is not null, it overrides the default <i>clazz.equals()</i> when testing that the state of the object and
+     * If the method <i>equalsMethod</i>  is not null, key overrides the default <i>clazz.equals()</i> when testing that the state of the object and
      * its copy are identical.
      *
      * @param clazz                a class object
      * @param withReadOptimization set the read optimization on/off.
-     * @param forceNew             force the creation of the object, even if it exists already in the cache
+     * @param forceNew             force the creation of the object, even if key exists already in the cache
      * @return an object of the class <i>clazz</i>
      * @throws CacheException
      */

@@ -23,7 +23,7 @@ public class Counter implements Comparable<Counter> {
    public Counter(){}
 
    /**
-    * Initializes a new counter starting at 0, with the given id.
+    * Initializes a new counter starting at 0, with the given key.
     * @param id the name of the counter
     */
    public Counter(String id) {

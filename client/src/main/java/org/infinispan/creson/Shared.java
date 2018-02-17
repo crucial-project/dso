@@ -10,5 +10,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Shared {
+    String DEFAULT_KEY = "__none";
+    String SEPARATOR = "#";
+    boolean readOptimization() default true;
     boolean forceNew() default false;
+    String key() default DEFAULT_KEY;
 }

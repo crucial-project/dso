@@ -17,7 +17,6 @@ import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
 import java.io.File;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,11 +39,14 @@ public class Server {
     @Option(name = "-proxy", usage = "proxy server as seen by clients")
     private String proxyServer = null;
 
+    @Option(name = "-passivation", usage = "store data on disk")
+    private boolean passivation = false;
+
     @Option(name = "-rf", usage = "replication factor")
     private int replicationFactor = 1;
 
     @Option(name = "-me", usage = "max #entries in the object cache (implies -p)")
-    private long maxEntries = Long.MAX_VALUE;
+    private long maxEntries = -1;
 
     @Option(name = "-ec2", usage = "use AWS EC2 jgroups configuration")
     private boolean useEC2 = false;
@@ -83,6 +85,25 @@ public class Server {
             return;
         }
 
+        Runnable runnable = (Runnable) () -> {
+            File folder = new File(userLib);
+            File[] listOfFiles = folder.listFiles();
+            for (File file : listOfFiles) {
+                if (file.isFile() && file.getName().matches(".*\\.jar")) {
+                    loadLibrary(file);
+                }
+            }
+        };
+
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            // ignore
+        }
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(runnable,3, 3, TimeUnit.SECONDS);
+
         String host = server.split(":")[0];
         int port = Integer.valueOf(
                 server.split(":").length == 2
@@ -101,7 +122,14 @@ public class Server {
         final EmbeddedCacheManager cm
                 = new DefaultCacheManager(gbuilder.build(), cBuilder.build(), true);
 
-        installCreson(cm, CacheMode.DIST_ASYNC, replicationFactor, maxEntries, System.getProperty("store-creson-server" + host), true, false);
+        installCreson(cm,
+                CacheMode.DIST_ASYNC,
+                replicationFactor,
+                maxEntries,
+                passivation,
+                System.getProperty("store-creson-server" + host),
+                true,
+                false);
 
         HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();
         hbuilder.topologyStateTransfer(true);
@@ -122,20 +150,6 @@ public class Server {
 
         final HotRodServer server = new HotRodServer();
         server.start(hbuilder.build(), cm);
-
-        ScheduledExecutorService scheduler =
-                Executors.newScheduledThreadPool(1);
-        scheduler.schedule((Callable<Void>) () -> {
-            while(true) {
-                Thread.sleep(1000);
-                File folder = new File(userLib);
-                File[] listOfFiles = folder.listFiles();
-                for (File file : listOfFiles) {
-                    if (file.isFile() && file.getName().matches(".*\\.jar")) {
-                        loadLibrary(file);
-                    }
-                }
-            }},1, TimeUnit.SECONDS);
 
         System.out.println("LAUNCHED");
 

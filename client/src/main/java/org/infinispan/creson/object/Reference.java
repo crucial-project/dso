@@ -1,5 +1,7 @@
 package org.infinispan.creson.object;
 
+import org.infinispan.creson.Shared;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -10,7 +12,6 @@ import java.io.ObjectOutput;
  */
 public class Reference<T> implements Externalizable {
 
-    public static String SEPARATOR = "#";
     private Class<T> clazz;
     private Object key;
 
@@ -48,7 +49,7 @@ public class Reference<T> implements Externalizable {
 
     @Override
     public String toString() {
-        return  getKey().toString() + SEPARATOR + getClazz().getCanonicalName();
+        return  getKey().toString() + Shared.SEPARATOR + getClazz().getCanonicalName();
     }
 
     public Object getKey() {
