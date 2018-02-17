@@ -22,14 +22,17 @@ public class ConfigurationHelper {
             CacheMode mode,
             int replicationFactor,
             long maxEntries,
+            boolean withPassivation,
             String storagePath,
-            boolean purgeOnStartup,
+            boolean purge,
             boolean withIndexing) {
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering().cacheMode(mode);
         builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
         builder.compatibility().enabled(true); // for HotRod
+        builder.expiration().lifespan(-1);
+        builder.memory().size(maxEntries);
 
         StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
@@ -49,22 +52,13 @@ public class ConfigurationHelper {
         }
 
         // persistence
-        if (maxEntries >= 0) {
-
-            builder.memory().size(maxEntries);
+        if (withPassivation) {
             SingleFileStoreConfigurationBuilder storeConfigurationBuilder
                     = builder.persistence().addSingleFileStore();
             storeConfigurationBuilder.location(storagePath);
-            storeConfigurationBuilder.purgeOnStartup(purgeOnStartup);
-            storeConfigurationBuilder.fetchPersistentState(false);
-            storeConfigurationBuilder.persistence().passivation(true);
-
-        } else {
-
-            builder.expiration().lifespan(-1);
-            builder.memory().size(-1);
-            builder.persistence().clearStores().passivation(false);
-
+            storeConfigurationBuilder.persistence().passivation(true); // no write-through
+            storeConfigurationBuilder.fetchPersistentState(true);
+            storeConfigurationBuilder.purgeOnStartup(purge);
         }
 
         // installation

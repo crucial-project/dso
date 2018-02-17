@@ -9,7 +9,7 @@ import org.infinispan.creson.utils.ContextManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import static org.infinispan.creson.object.Reference.SEPARATOR;
+import static org.infinispan.creson.Shared.SEPARATOR;
 
 /**
  * @author Pierre Sutra
@@ -41,13 +41,21 @@ public class Distribution {
    public void distributionAdviceField(ProceedingJoinPoint pjp) throws Throwable{
       Factory factory = Factory.getSingleton();
       String fieldName = pjp.getStaticPart().getSignature().getName();
-      String parentReferenceName = (ContextManager.getContext()!=null) ?
+      Class fieldClass = pjp.getArgs()[0].getClass();
+      String parentClassOrReference = (ContextManager.getContext()!=null) ?
               ContextManager.getContext().getReference().toString() :
               pjp.getThis().getClass().getCanonicalName();
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getDeclaredField(fieldName);
       if (!Modifier.isStatic(field.getModifiers())) {
+         String key = (!field.getAnnotation(Shared.class).key().equals(Shared.DEFAULT_KEY)) ?
+                 field.getAnnotation(Shared.class).key() : fieldName;
+         key += SEPARATOR + parentClassOrReference;
          field.setAccessible(true);
-         field.set(pjp.getTarget(), factory.getInstanceOf(pjp.getArgs()[0].getClass(), fieldName+ SEPARATOR + parentReferenceName, false, field.getAnnotation(Shared.class).forceNew()));
+         field.set(pjp.getTarget(), factory.getInstanceOf(
+                 fieldClass,
+                 key,
+                 field.getAnnotation(Shared.class).readOptimization(),
+                 field.getAnnotation(Shared.class).forceNew()));
          return;
       }
       throw new IllegalStateException("Field "+fieldName+" should not be static.");

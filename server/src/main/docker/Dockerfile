@@ -4,11 +4,7 @@ MAINTAINER otrack
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    tar \
-    git \
-    maven \
-    build-essential
+RUN apt-get update && apt-get install -y tar git maven build-essential
 
 ADD https://api.github.com/repos/otrack/infinispan-creson/git/refs/heads/master creson-version.json
 RUN git clone https://github.com/otrack/infinispan-creson
@@ -23,4 +19,4 @@ ENV USERLIBS="/app/userlibs"
 ENV RF="1"
 ENV EXTRA=""
 
-CMD java ${JVMPERF} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configuration=log4j2.xml -cp ${CLASSPATH} org.infinispan.creson.Server -server ${SERVER} -userLibs ${USERLIBS} -rf 1 ${EXTRA}
+CMD java ${JVMPERF} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configuration=log4j2.xml -cp ${CLASSPATH} org.infinispan.creson.Server -server ${SERVER} -rf ${RF} -userLibs ${USERLIBS} ${EXTRA}

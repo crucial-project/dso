@@ -20,6 +20,7 @@ public class Emulation extends MultipleCacheManagersTest {
 
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int REPLICATION_FACTOR = 1;
+    protected static final boolean PASSIVATION = false;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/creson-storage";
 
     private static List<BasicCacheContainer> remoteCacheManagers = new ArrayList<>();
@@ -42,6 +43,7 @@ public class Emulation extends MultipleCacheManagersTest {
                 CACHE_MODE,
                 REPLICATION_FACTOR,
                 -1,
+                PASSIVATION,
                 PERSISTENT_STORAGE_DIR + "/" + index,
                 true,
                 false);

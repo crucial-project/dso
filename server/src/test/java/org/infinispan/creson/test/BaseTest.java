@@ -41,6 +41,7 @@ public abstract class BaseTest extends AbstractTest{
                 cm,
                 CACHE_MODE,
                 REPLICATION_FACTOR, MAX_ENTRIES,
+                PASSIVATION,
                 PERSISTENT_STORAGE_DIR + "/" + containers().size(),
                 true,
                 false);

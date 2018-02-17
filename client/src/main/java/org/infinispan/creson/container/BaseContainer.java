@@ -71,7 +71,7 @@ public class BaseContainer extends AbstractContainer {
             if (clazz.getPackage().getName().startsWith("java.util.concurrent"))
                 throw new ClassFormatError("Not supported");
             if (field == null)
-                throw new ClassFormatError("Missing id field");
+                throw new ClassFormatError("Missing key field");
             if (key == null) {
                 field.setAccessible(true);
                 key = field.get(proxy);
