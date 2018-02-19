@@ -48,8 +48,8 @@ public class Distribution {
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getDeclaredField(fieldName);
       if (!Modifier.isStatic(field.getModifiers())) {
          String key = (!field.getAnnotation(Shared.class).key().equals(Shared.DEFAULT_KEY)) ?
-                 field.getAnnotation(Shared.class).key() : fieldName;
-         key += SEPARATOR + parentClassOrReference;
+                 field.getAnnotation(Shared.class).key()
+                 : fieldName + SEPARATOR + parentClassOrReference;
          field.setAccessible(true);
          field.set(pjp.getTarget(), factory.getInstanceOf(
                  fieldClass,
