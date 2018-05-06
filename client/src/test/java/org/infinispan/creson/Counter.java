@@ -1,4 +1,4 @@
-package org.infinispan.creson.concurrent;
+package org.infinispan.creson;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

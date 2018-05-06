@@ -1,5 +1,7 @@
 package org.infinispan.creson.test;
 
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.Proxy;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
@@ -10,6 +12,9 @@ import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
 import org.infinispan.creson.Shared;
 import org.infinispan.creson.SimpleObject;
+import org.infinispan.creson.Counter;
+import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -408,6 +413,27 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
                 e.printStackTrace();
             }
         }
+
+    }
+
+    @Test(groups = {"creson"})
+    public void idempotence() throws IllegalAccessException {
+
+        Counter counter = new Counter("idempotence");
+
+        Reference<Counter> reference = Reference.of(counter);
+        RandomBasedGenerator generator = Generators.randomBasedGenerator(new Random(42));
+        ContextManager.setContext(generator,reference,Factory.forCache(cache(0)));
+
+        counter.increment();
+
+        reference = Reference.of(counter);
+        generator = Generators.randomBasedGenerator(new Random(42));
+        ContextManager.setContext(generator,reference,Factory.forCache(cache(0)));
+
+        counter.increment();
+
+        assert counter.tally() == 1;
 
     }
 

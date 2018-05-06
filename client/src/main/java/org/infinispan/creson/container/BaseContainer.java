@@ -61,7 +61,7 @@ public class BaseContainer extends AbstractContainer {
         // build reference and set key
         if (clazz.getAnnotation(Entity.class) != null) {
             java.lang.reflect.Field field = null;
-            for (java.lang.reflect.Field f : clazz.getDeclaredFields()) {
+            for (java.lang.reflect.Field f : Reflection.getAllFields(clazz)) {
                 f.setAccessible(true);
                 if (f.getAnnotation(Id.class) != null) {
                     field = f;

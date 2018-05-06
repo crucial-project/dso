@@ -1,11 +1,14 @@
 package org.infinispan.creson.object;
 
 import org.infinispan.creson.Shared;
+import org.infinispan.creson.utils.Reflection;
 
+import javax.persistence.Id;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.reflect.Field;
 
 /**
  * @author Pierre Sutra
@@ -15,8 +18,30 @@ public class Reference<T> implements Externalizable {
     private Class<T> clazz;
     private Object key;
 
+    public static <T> Reference<T> of(T object) throws IllegalAccessException {
+        Class<T> clazz = (Class<T>) object.getClass();
+        Field field = null;
+        for (java.lang.reflect.Field f : Reflection.getAllFields(clazz)) {
+            f.setAccessible(true);
+            if (f.getAnnotation(Id.class) != null) {
+                field = f;
+                break;
+            }
+        }
+
+        if (field == null)
+            throw new ClassFormatError("Missing key in "+clazz+" (fields= "
+                    + Reflection.getAllFields(clazz)+")");
+
+        field.setAccessible(true);
+
+        return new Reference<>(clazz,field.get(object));
+
+    }
+
     // Object fields
 
+    @Deprecated
     public Reference() {
     }
 
