@@ -7,9 +7,10 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
-import org.infinispan.creson.object.CallFuture;
+import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.creson.utils.Reflection;
 import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
@@ -17,6 +18,7 @@ import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,10 +29,9 @@ import static org.infinispan.creson.utils.Reflection.hasReadOnlyMethods;
 
 public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
-    // Class fields & methods
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
-    private ConcurrentMap<Reference, CallFuture> lastCall = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID,CallResponse> lastCall = new ConcurrentHashMap<>(); // key == callerID
     private Factory factory;
 
     @Override
@@ -48,33 +49,43 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         if (log.isTraceEnabled())
             log.trace(" Accessing " + reference);
 
-        CallFuture future;
+        CallResponse future;
 
         // FIXME elasticity
 
         CacheEntry<Reference, Object> entry = ctx.lookupEntry(reference);
         assert (call instanceof CallConstruct) | (entry.getValue()!=null);
 
-        if (log.isTraceEnabled())
+        if (log.isTraceEnabled()) {
             log.trace(" Received [" + call.toString() + "]");
+            log.trace(" With ID " + call.getCallID() + "]");
+            log.trace(" By " + call.getCallerID() + "]");
+        }
 
-        future = new CallFuture(reference ,call);
 
-        if (lastCall.containsKey(reference)
-                && lastCall.get(reference).equals(future)) {
+        future = new CallResponse(reference ,call);
+
+        if (log.isTraceEnabled()) {
+            log.trace(" lastCall="+lastCall);
+        }
+
+        if (lastCall.containsKey(call.getCallerID())
+                && lastCall.get(call.getCallerID()).getCallID().equals(call.getCallID())) {
 
             // call already completed
-            future = lastCall.get(reference);
+            future = lastCall.get(call.getCallerID());
 
         } else {
 
             try {
 
-                RandomBasedGenerator generator = new RandomBasedGenerator(
-                        new Random(call.getCallID().getLeastSignificantBits()
-                                + call.getCallID().getMostSignificantBits()));
-
-                ContextManager.setContext(generator,reference, factory);
+                ContextManager.set(
+                        new Context(
+                                call.getCallerID(),
+                                new RandomBasedGenerator(
+                                        new Random(call.getCallID().getLeastSignificantBits()
+                                                + call.getCallID().getMostSignificantBits())),
+                                factory));
 
                 if (call instanceof CallInvoke) {
 
@@ -122,8 +133,6 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
             } catch (Exception e) {
                 throw e;
-            } finally {
-                ContextManager.unsetContext();
             }
 
         } // end compute return value
@@ -132,7 +141,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         assert future.isDone();
 
         // save return value
-        lastCall.put(reference, future);
+        lastCall.put(call.getCallerID(), future);
 
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array

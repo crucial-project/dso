@@ -15,12 +15,12 @@ import java.lang.reflect.Field;
  */
 public class Reference<T> implements Externalizable {
 
-    private Class<T> clazz;
-    private Object key;
+    // Class methods
 
-    public static <T> Reference<T> of(T object) throws IllegalAccessException {
-        Class<T> clazz = (Class<T>) object.getClass();
+    @Deprecated
+    public static Field getIDField(Class<?> clazz) {
         Field field = null;
+
         for (java.lang.reflect.Field f : Reflection.getAllFields(clazz)) {
             f.setAccessible(true);
             if (f.getAnnotation(Id.class) != null) {
@@ -29,17 +29,29 @@ public class Reference<T> implements Externalizable {
             }
         }
 
+        return field;
+    }
+
+
+    public static boolean isReferencable(Class<?> clazz) {
+        return getIDField(clazz) != null;
+    }
+
+    public static <T> Reference<T> of(T object) throws IllegalAccessException {
+        Class<T> clazz = (Class<T>) object.getClass();
+        Field field = getIDField(clazz);
         if (field == null)
             throw new ClassFormatError("Missing key in "+clazz+" (fields= "
                     + Reflection.getAllFields(clazz)+")");
-
         field.setAccessible(true);
-
         return new Reference<>(clazz,field.get(object));
 
     }
 
-    // Object fields
+    // Object fields & methods
+
+    private Class<T> clazz;
+    private Object key;
 
     @Deprecated
     public Reference() {

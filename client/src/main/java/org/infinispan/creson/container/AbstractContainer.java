@@ -1,14 +1,12 @@
 package org.infinispan.creson.container;
 
 import javassist.util.proxy.MethodFilter;
+import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.creson.object.Call;
-import org.infinispan.creson.object.CallFuture;
+import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.Reference;
-import org.infinispan.commons.logging.Log;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,17 +25,11 @@ import static org.infinispan.creson.utils.Reflection.hasReadOnlyMethods;
  */
 public abstract class AbstractContainer {
 
-   // class fields
    public static final int TTIMEOUT_TIME = 1000;
    public static final int MAX_ATTEMPTS = 3;
-   protected static final Map<UUID, CallFuture> registeredCalls = new ConcurrentHashMap<>();
-   protected static final Log log = LogFactory.getLog(BaseContainer.class);
-   protected static final MethodFilter methodFilter = new MethodFilter() {
-      @Override
-      public boolean isHandled(Method m) {
-         return !m.getName().equals("finalize");
-      }
-   };
+   protected static final Map<UUID, CallResponse> registeredCalls = new ConcurrentHashMap<>();
+   protected static final Log log = LogFactory.getLog(AbstractContainer.class);
+   protected static final MethodFilter methodFilter = m -> !m.getName().equals("finalize");
 
    protected boolean readOptimization;
    protected Object proxy;
@@ -61,13 +53,7 @@ public abstract class AbstractContainer {
 
    public abstract Reference getReference();
 
-   public abstract void open()
-         throws InterruptedException, ExecutionException, TimeoutException, IOException;
-
-   public abstract void close()
-         throws InterruptedException, ExecutionException, TimeoutException, IOException;
-
-   public abstract void execute(Reference reference, Call call);
+   public abstract void doExecute(Call call);
 
    protected Object execute(Call call)
          throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
@@ -75,7 +61,7 @@ public abstract class AbstractContainer {
       if (log.isTraceEnabled())
          log.trace(this + " Executing "+call);
 
-      CallFuture future = new CallFuture(getReference(), call);
+      CallResponse future = new CallResponse(getReference(), call);
 
       registeredCalls.put(call.getCallID(), future);
 
@@ -84,7 +70,7 @@ public abstract class AbstractContainer {
       while(!future.isDone()) {
          try {
             attempts++;
-            execute(getReference(), call);
+            doExecute(call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
             if (ret instanceof Throwable)
                throw new ExecutionException((Throwable) ret);
@@ -113,14 +99,14 @@ public abstract class AbstractContainer {
    }
 
 
-   protected static void handleFuture(CallFuture future){
+   protected static void handleFuture(CallResponse future){
       try {
-         assert (future instanceof CallFuture && future.isDone());
+         assert (future instanceof CallResponse && future.isDone());
          if (!registeredCalls.containsKey(future.getCallID())) {
             log.trace("Future " + future.getCallID() + " ignored");
             return; // duplicate received
          }
-         CallFuture clientFuture = registeredCalls.get(future.getCallID());
+         CallResponse clientFuture = registeredCalls.get(future.getCallID());
          assert (clientFuture!=null);
          registeredCalls.remove(future.getCallID());
          clientFuture.setState(future.getState());

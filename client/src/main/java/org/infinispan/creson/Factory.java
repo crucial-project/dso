@@ -233,13 +233,6 @@ public class Factory {
 
         registeredContainers.remove(reference);
 
-        try {
-            container.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new CacheException("Error while closing  " + container);
-        }
-
     }
 
     public void close() {

@@ -20,7 +20,7 @@ public class Call implements Externalizable {
    public Call(){}
 
    public Call(Reference reference, java.util.UUID callID){
-      this(reference, ContextManager.getThreadID(),callID);
+      this(reference, ContextManager.get().getCallerID(),callID);
    }
 
    public Call(Reference reference, Call call) {

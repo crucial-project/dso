@@ -8,12 +8,13 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.creson.Counter;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
 import org.infinispan.creson.Shared;
 import org.infinispan.creson.SimpleObject;
-import org.infinispan.creson.Counter;
-import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.ID;
+import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
@@ -421,16 +422,12 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         Counter counter = new Counter("idempotence");
 
-        Reference<Counter> reference = Reference.of(counter);
         RandomBasedGenerator generator = Generators.randomBasedGenerator(new Random(42));
-        ContextManager.setContext(generator,reference,Factory.forCache(cache(0)));
-
+        ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
         counter.increment();
 
-        reference = Reference.of(counter);
         generator = Generators.randomBasedGenerator(new Random(42));
-        ContextManager.setContext(generator,reference,Factory.forCache(cache(0)));
-
+        ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
         counter.increment();
 
         assert counter.tally() == 1;

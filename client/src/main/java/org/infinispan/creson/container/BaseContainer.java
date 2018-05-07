@@ -1,6 +1,5 @@
 package org.infinispan.creson.container;
 
-import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
@@ -9,155 +8,39 @@ import org.infinispan.creson.ReadOnly;
 import org.infinispan.creson.object.BoxedReference;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
-import org.infinispan.creson.object.CallFuture;
+import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.CallInvoke;
 import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
+import org.infinispan.creson.utils.ID;
 import org.infinispan.creson.utils.Reflection;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Pierre Sutra
  */
 public class BaseContainer extends AbstractContainer {
 
-    // object's fields
-    private AtomicInteger pendingCalls;
     private boolean isOpen;
     private Reference reference;
-    private RandomBasedGenerator generator;
     private BasicCache<Reference, Call> cache;
 
-    public BaseContainer(BasicCache c, Class clazz, java.lang.Object key, final boolean readOptimization,
-                         final boolean forceNew, final java.lang.Object... initArgs)
-            throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException,
-            InterruptedException, ExecutionException, NoSuchMethodException, InvocationTargetException,
-            java.util.concurrent.TimeoutException, NoSuchFieldException {
+    public BaseContainer(BasicCache cache, Class clazz, java.lang.Object key, boolean readOptimization,
+                         boolean forceNew, java.lang.Object... initArgs)
+            throws IllegalAccessException, InstantiationException,
+            NoSuchMethodException, InvocationTargetException {
 
         super(clazz, readOptimization, forceNew, initArgs);
-        this.pendingCalls = new AtomicInteger();
         this.isOpen = false;
 
         // build the proxy
-        MethodHandler handler = new BaseContainerMethodHandler(this);
-        ProxyFactory fact = new ProxyFactory();
-        fact.setSuperclass(clazz);
-        fact.setFilter(methodFilter);
-        fact.setInterfaces(new Class[]{WriteReplace.class});
-        fact.setUseWriteReplace(false);
-        this.proxy = Reflection.instantiate(fact.createClass(), initArgs);
-        ((ProxyObject) proxy).setHandler(handler);
-
-        // build reference and set key
-        if (clazz.getAnnotation(Entity.class) != null) {
-            java.lang.reflect.Field field = null;
-            for (java.lang.reflect.Field f : Reflection.getAllFields(clazz)) {
-                f.setAccessible(true);
-                if (f.getAnnotation(Id.class) != null) {
-                    field = f;
-                    break;
-                }
-            }
-            if (clazz.getPackage().getName().startsWith("java.util.concurrent"))
-                throw new ClassFormatError("Not supported");
-            if (field == null)
-                throw new ClassFormatError("Missing key field");
-            if (key == null) {
-                field.setAccessible(true);
-                key = field.get(proxy);
-                assert key != null : " field " + field.getName() + " is null for " + clazz;
-            } else {
-                field.set(proxy, key);
-            }
-
-        }
-        assert key != null;
-        this.reference = new Reference(clazz, key);
-        this.cache = c;
-
-        // build generator
-        generator = new RandomBasedGenerator(new Random(System.nanoTime()));
-    }
-
-
-    @Override
-    public void execute(Reference reference, Call call) {
-        handleFuture((CallFuture) cache.put(reference, call));
-    }
-
-    @Override
-    public synchronized void open()
-            throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
-
-        if (!isOpen) {
-
-            if (log.isTraceEnabled())
-                log.trace(" Opening - "+this.toString());
-
-            execute(new CallConstruct(reference, generator.generate(), forceNew, initArgs, readOptimization));
-            isOpen = true;
-
-            if (log.isTraceEnabled())
-                log.trace(" Opened - "+this.toString());
-
-        }
-
-    }
-
-    @Override
-    public synchronized void close()
-            throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
-
-        if (log.isTraceEnabled())
-            log.trace(" Closing.");
-
-        while (pendingCalls.get() != 0) {
-            this.wait();
-        }
-
-        if (isOpen) {
-
-            isOpen = false;
-            forceNew = false;
-
-        }
-
-        if (log.isTraceEnabled())
-            log.trace(" Closed.");
-
-    }
-
-    @Override
-    public Reference getReference() {
-        return this.reference;
-    }
-
-    ;
-
-    @Override
-    public String toString() {
-        return "Container[" + getReference() + "]";
-    }
-
-    public class BaseContainerMethodHandler implements MethodHandler, Serializable {
-
-        BaseContainer container;
-
-        public BaseContainerMethodHandler(BaseContainer container) {
-            this.container = container;
-        }
-
-        public java.lang.Object invoke(java.lang.Object self, Method m, Method proceed, java.lang.Object[] args) throws Throwable {
+        MethodHandler handler = (self, m, proceed, args) -> {
 
             if (log.isTraceEnabled())
                 log.trace("Calling " + reference.getClazz() + "." + m.getName() + "(" + Arrays.toString(args) + ")");
@@ -192,7 +75,7 @@ public class BaseContainer extends AbstractContainer {
                 throw new IllegalArgumentException("Unsupported method " + m.getName() + " in " + reference.getClazz());
             }
 
-            if (readOptimization
+            if (this.readOptimization
                     && state != null
                     && (m.isAnnotationPresent(ReadOnly.class))) {
                 if (log.isTraceEnabled()) log.trace("local call: " + m.getName());
@@ -204,19 +87,18 @@ public class BaseContainer extends AbstractContainer {
                             + "isAnnotationPresent=" + new Boolean(m.isAnnotationPresent(ReadOnly.class)));
             }
 
-            pendingCalls.incrementAndGet();
+
+            Context context = ContextManager.get();
 
             open();
 
-            // retrieve generator from context (if any)
-            java.util.UUID uuid = (ContextManager.getContext()== null)
-                    ? generator.generate() : ContextManager.getContext().getGenerator().generate();
+            UUID uuid = context.getGenerator().generate();
+
             if (log.isTraceEnabled()) {
-                log.trace("generated " + uuid + " m=" + m.getName()
-                        + ", reference=" + reference + "[" + ContextManager.getContext() + "]");
+                log.trace("generated " + uuid + " m=" + m.getName() + "[" + context + "]");
             }
 
-            java.lang.Object ret = execute(
+            Object ret = execute(
                     new CallInvoke(
                             reference,
                             uuid,
@@ -224,22 +106,81 @@ public class BaseContainer extends AbstractContainer {
                             args)
             );
 
-            if (pendingCalls.decrementAndGet() == 0) {
-                synchronized (container) {
-                    container.notifyAll();
-                }
-            }
-
             assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Reflection.isCompatible(ret, m.getReturnType())
                     : m.getReturnType() + " => " + ret.getClass() + " [" + reference.getClazz() + "." + m.getName() + "()]";
 
             return ret;
 
+        };
+
+        ProxyFactory fact = new ProxyFactory();
+        fact.setSuperclass(clazz);
+        fact.setFilter(methodFilter);
+        fact.setInterfaces(new Class[]{WriteReplace.class});
+        fact.setUseWriteReplace(false);
+        this.proxy = Reflection.instantiate(fact.createClass(), initArgs);
+        ((ProxyObject) proxy).setHandler(handler);
+
+        // build reference and set key
+
+        // FIXME deprecated (linked to @Entity)
+        if (clazz.getAnnotation(Entity.class) != null) {
+            java.lang.reflect.Field field = Reference.getIDField(clazz);
+            if (clazz.getPackage().getName().startsWith("java.util.concurrent"))
+                throw new ClassFormatError("Not supported");
+            if (field == null)
+                throw new ClassFormatError("Missing key field");
+            if (key == null) {
+                field.setAccessible(true);
+                key = field.get(proxy);
+                assert key != null : " field " + field.getName() + " is null for " + clazz;
+            } else {
+                field.set(proxy, key);
+            }
+
         }
 
-        @Override
-        public String toString() {
-            return "MethodHandler [" + getReference() + "]";
+        assert key != null;
+        this.reference = new Reference(clazz, key);
+        this.cache = cache;
+    }
+
+
+    @Override
+    public void doExecute(Call call) {
+        handleFuture((CallResponse) cache.put(reference, call));
+    }
+
+    @Override
+    public Reference getReference() {
+        return this.reference;
+    }
+
+    @Override
+    public String toString() {
+        return "Container[" + getReference() + "]";
+    }
+
+    // internals
+
+    private synchronized void open()
+            throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
+
+        if (!isOpen) {
+
+            if (log.isTraceEnabled())
+                log.trace(" Opening - "+this.toString());
+
+            CallConstruct construct = new CallConstruct(reference,
+                    ID.generator().generate(), forceNew, initArgs, readOptimization);
+
+            execute(construct);
+
+            isOpen = true;
+
+            if (log.isTraceEnabled())
+                log.trace(" Opened - "+this.toString());
+
         }
 
     }

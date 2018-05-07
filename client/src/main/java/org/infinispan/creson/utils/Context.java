@@ -2,36 +2,35 @@ package org.infinispan.creson.utils;
 
 import com.fasterxml.uuid.NoArgGenerator;
 import org.infinispan.creson.Factory;
-import org.infinispan.creson.object.Reference;
+
+import java.util.UUID;
 
 public class Context {
 
-   private NoArgGenerator generator;
-   private Reference reference;
-   private Factory factory;
+   private final UUID callerID;
+   private final NoArgGenerator generator;
+   private final Factory factory;
 
-   public Context(NoArgGenerator generator, Reference reference, Factory factory) {
+   public Context(UUID callerID, NoArgGenerator generator, Factory factory) {
+      this.callerID = callerID;
       this.generator = generator;
-      this.reference = reference;
       this.factory = factory;
-   }
 
-   public NoArgGenerator getGenerator() {
-      return generator;
-   }
-
-   public Reference getReference() {
-      return reference;
    }
 
    public Factory getFactory() {
       return factory;
    }
 
+   public UUID getCallerID(){ return callerID;}
+
+   public NoArgGenerator getGenerator() {
+      return generator;
+   }
+
    @Override
    public String toString() {
-      return "Context{" +
-              ", reference=" + reference +
-              '}';
+      return "Context{" + callerID + ", generator="+generator+'}';
    }
+
 }

@@ -1,6 +1,5 @@
 package org.infinispan.creson.object;
 
-import org.infinispan.creson.Factory;
 import org.infinispan.creson.utils.ContextManager;
 
 import java.io.Externalizable;
@@ -30,8 +29,7 @@ public class BoxedReference implements Externalizable{
     }
 
     public Object readResolve() throws ObjectStreamException {
-        Factory factory = (ContextManager.getContext()==null) ? Factory.getSingleton() : ContextManager.getContext().getFactory();
-        return factory.getInstanceOf(reference);
+        return ContextManager.get().getFactory().getInstanceOf(reference);
     }
 
 }

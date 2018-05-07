@@ -1,8 +1,5 @@
 package org.infinispan.creson.object;
 
-import org.infinispan.commons.logging.Log;
-import org.infinispan.commons.logging.LogFactory;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -14,20 +11,21 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * @author Pierre Sutra
+ *
+ * The ID of a response is the one of the call it is answering.
+ *
  */
-public class CallFuture extends Call implements Future<Object> {
-
-    private static Log log = LogFactory.getLog(CallFuture.class);
+public class CallResponse extends Call implements Future<Object> {
 
     private Object ret;
     private Object state;
     private int status; // 0 => init, 1 => done, -1 => cancelled
 
     @Deprecated
-    public CallFuture() {
+    public CallResponse() {
     }
 
-    public CallFuture(Reference reference, Call call) {
+    public CallResponse(Reference reference, Call call) {
         super(reference, call);
         this.ret = null;
         this.status = 0;
@@ -101,7 +99,7 @@ public class CallFuture extends Call implements Future<Object> {
 
     @Override
     public String toString() {
-        return super.toString()+"-RESP-" + ret + "]";
+        return super.toString()+"-RESP-("+getCallID()+")" + ret + "]";
     }
 
     @Override

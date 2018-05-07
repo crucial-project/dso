@@ -4,7 +4,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.infinispan.creson.utils.ContextManager;
+import org.infinispan.creson.object.Reference;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -42,9 +42,12 @@ public class Distribution {
       Factory factory = Factory.getSingleton();
       String fieldName = pjp.getStaticPart().getSignature().getName();
       Class fieldClass = pjp.getArgs()[0].getClass();
-      String parentClassOrReference = (ContextManager.getContext()!=null) ?
-              ContextManager.getContext().getReference().toString() :
-              pjp.getThis().getClass().getCanonicalName();
+
+      // parent class name or key if referencable?
+      String parentClassOrReference =
+              Reference.isReferencable(pjp.getThis().getClass()) ?
+                      Reference.of(pjp.getThis()).toString() : pjp.getThis().getClass().getCanonicalName();
+
       Field field = pjp.getStaticPart().getSignature().getDeclaringType().getDeclaredField(fieldName);
       if (!Modifier.isStatic(field.getModifiers())) {
          String key = (!field.getAnnotation(Shared.class).key().equals(Shared.DEFAULT_KEY)) ?
