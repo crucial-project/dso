@@ -7,8 +7,8 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
-import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.CallInvoke;
+import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
@@ -17,6 +17,8 @@ import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +33,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
-    private ConcurrentMap<UUID,CallResponse> lastCall = new ConcurrentHashMap<>(); // key == callerID
+    private ConcurrentMap<UUID,Map<Reference,CallResponse>> lastCall = new ConcurrentHashMap<>(); // key == callerID
     private Factory factory;
 
     @Override
@@ -70,10 +72,11 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         }
 
         if (lastCall.containsKey(call.getCallerID())
-                && lastCall.get(call.getCallerID()).getCallID().equals(call.getCallID())) {
+                && lastCall.get(call.getCallerID()).containsKey(reference)
+                && lastCall.get(call.getCallerID()).get(reference).getCallID().equals(call.getCallID())) {
 
             // call already completed
-            future = lastCall.get(call.getCallerID());
+            future = lastCall.get(call.getCallerID()).get(reference);
 
         } else {
 
@@ -141,7 +144,10 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         assert future.isDone();
 
         // save return value
-        lastCall.put(call.getCallerID(), future);
+        if (!lastCall.containsKey(call.getCallerID())) {
+            lastCall.putIfAbsent(call.getCallerID(), new HashMap<>());
+        }
+        lastCall.get(call.getCallerID()).put(reference,future);
 
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
