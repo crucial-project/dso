@@ -1,12 +1,17 @@
 package org.infinispan.creson.utils;
 
+import org.infinispan.commands.VisitableCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
+import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.server.StateMachineInterceptor;
+import org.infinispan.interceptors.AsyncInterceptor;
+import org.infinispan.interceptors.BaseAsyncInterceptor;
 import org.infinispan.interceptors.impl.CallInterceptor;
+import org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
 
@@ -34,8 +39,20 @@ public class ConfigurationHelper {
         builder.expiration().lifespan(-1);
         builder.memory().size(maxEntries);
 
+        // SMR interceptor
         StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
+
+        // FIXME skip lock interceptor properly
+        AsyncInterceptor after = new BaseAsyncInterceptor() {
+            @Override
+            public Object visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
+                return invokeNext(ctx,command);
+            }
+        };
+        SkipInterceptor before = new SkipInterceptor(after);
+        builder.customInterceptors().addInterceptor().before(NonTransactionalLockingInterceptor.class).interceptor(before);
+        builder.customInterceptors().addInterceptor().after(NonTransactionalLockingInterceptor.class).interceptor(after);
 
         // clustering
         builder.clustering()
@@ -66,6 +83,20 @@ public class ConfigurationHelper {
         stateMachineInterceptor.setup(Factory.
                 forCache(manager.getCache(CRESON_CACHE_NAME)));
 
+    }
+
+    public static class SkipInterceptor extends BaseAsyncInterceptor{
+
+        AsyncInterceptor forward;
+
+        public SkipInterceptor(AsyncInterceptor interceptor) {
+            this.forward = interceptor;
+        }
+
+        @Override
+        public Object visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
+            return forward.visitCommand(ctx,command);
+        }
     }
 
 }

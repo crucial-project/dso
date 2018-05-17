@@ -89,19 +89,30 @@ public class Reflection {
 
     // methods
 
-    public static java.lang.Object callObject(java.lang.Object obj, String method, java.lang.Object[] args)
-            throws InvocationTargetException, IllegalAccessException {
+    public static Method findMethod(java.lang.Object obj, String method, java.lang.Object[] args)
+            throws IllegalAccessException {
         for (Method m : obj.getClass().getMethods()) { // only public methods (inherited and not)
             m.setAccessible(true);
             if (method.equals(m.getName())) {
                 if (m.getParameterTypes().length == args.length) {
                     if (isCompatible(m, args))
-                            return m.invoke(obj, args);
+                        return m;
                 }
             }
         }
         throw new IllegalStateException("Method " + method + " not found.");
     }
+
+    public static java.lang.Object callObject(java.lang.Object obj, String method, java.lang.Object[] args)
+            throws InvocationTargetException, IllegalAccessException {
+        return findMethod(obj,method,args).invoke(obj, args);
+    }
+
+    public static boolean isMethodSynchronized(java.lang.Object obj, String method, java.lang.Object[] args)
+            throws IllegalAccessException {
+        return (findMethod(obj,method,args).getModifiers() & Modifier.SYNCHRONIZED) == Modifier.SYNCHRONIZED;
+    }
+
 
     public static boolean hasReadOnlyMethods(Class clazz) {
         for (Method m : clazz.getMethods()) {
