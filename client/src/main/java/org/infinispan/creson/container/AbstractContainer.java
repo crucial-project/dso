@@ -84,6 +84,7 @@ public abstract class AbstractContainer {
             Thread.sleep(TTIMEOUT_TIME);
          }
          if (ret instanceof Throwable)
+            throw ((Throwable) ret).getCause();
 
       }
 
