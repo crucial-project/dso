@@ -164,7 +164,7 @@ public class BaseContainer extends AbstractContainer {
     // internals
 
     private synchronized void open()
-            throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
+            throws Throwable {
 
         if (!isOpen) {
 
