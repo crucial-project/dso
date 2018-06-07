@@ -1,14 +1,15 @@
 package org.infinispan.creson.utils;
 
+import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.context.InvocationContext;
+import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.server.StateMachineInterceptor;
-import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.BaseAsyncInterceptor;
 import org.infinispan.interceptors.impl.CallInterceptor;
 import org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor;
@@ -42,17 +43,8 @@ public class ConfigurationHelper {
         // SMR interceptor
         StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
-
-        // FIXME skip lock interceptor properly
-        AsyncInterceptor after = new BaseAsyncInterceptor() {
-            @Override
-            public Object visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
-                return invokeNext(ctx,command);
-            }
-        };
-        SkipInterceptor before = new SkipInterceptor(after);
-        builder.customInterceptors().addInterceptor().before(NonTransactionalLockingInterceptor.class).interceptor(before);
-        builder.customInterceptors().addInterceptor().after(NonTransactionalLockingInterceptor.class).interceptor(after);
+        builder.customInterceptors().addInterceptor().before(NonTransactionalLockingInterceptor.class).
+                interceptor(new ForceSkipLockInterceptor());
 
         // clustering
         builder.clustering()
@@ -85,17 +77,12 @@ public class ConfigurationHelper {
 
     }
 
-    public static class SkipInterceptor extends BaseAsyncInterceptor{
-
-        AsyncInterceptor forward;
-
-        public SkipInterceptor(AsyncInterceptor interceptor) {
-            this.forward = interceptor;
-        }
+    public static class ForceSkipLockInterceptor extends BaseAsyncInterceptor{
 
         @Override
         public Object visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
-            return forward.visitCommand(ctx,command);
+            ((FlagAffectedCommand) command).setFlagsBitSet(FlagBitSets.SKIP_LOCKING);
+            return invokeNext(ctx, command);
         }
     }
 

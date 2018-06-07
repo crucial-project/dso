@@ -8,6 +8,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.infinispan.test.MultipleCacheManagersTest;
+import org.infinispan.test.fwk.CleanupAfterTest;
 import org.infinispan.test.fwk.TransportFlags;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
 
+@CleanupAfterTest
 public class Emulation extends MultipleCacheManagersTest {
 
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
@@ -26,7 +28,7 @@ public class Emulation extends MultipleCacheManagersTest {
     private static List<BasicCacheContainer> remoteCacheManagers = new ArrayList<>();
 
     protected int numberOfCaches(){
-        return 1;
+        return 3;
     }
 
     private static List<HotRodServer> servers = new ArrayList<>();
@@ -37,7 +39,7 @@ public class Emulation extends MultipleCacheManagersTest {
         // embedded cache manager
         TransportFlags flags = new TransportFlags();
         flags.withFD(true).withMerge(true);
-        EmbeddedCacheManager cm = addClusterEnabledCacheManager(flags);
+        EmbeddedCacheManager cm = addClusterEnabledCacheManager();
         installCreson(
                 cm,
                 CACHE_MODE,
@@ -68,10 +70,9 @@ public class Emulation extends MultipleCacheManagersTest {
     }
 
     @Override
-    protected void createCacheManagers() throws Throwable {
+    protected void createCacheManagers() {
         for (int i = 0; i< numberOfCaches(); i++) {
             addContainer();
-            waitForClusterToForm();
             System.out.println("Node " + remoteCacheManagers.get(i)+ " added.");
         }
     }

@@ -3,13 +3,12 @@ package org.infinispan.creson.test;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.creson.Factory;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
+import org.infinispan.test.fwk.TransportFlags;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ public class RemoteTest extends AbstractTest {
 
     private static List<HotRodServer> servers = new ArrayList<>();
     private static List<BasicCacheContainer> remoteCacheManagers = new ArrayList<>();
-    private static ConfigurationBuilder defaultBuilder;
 
     @Override
     public BasicCacheContainer container(int i) {
@@ -47,13 +45,16 @@ public class RemoteTest extends AbstractTest {
         int index = servers.size();
 
         // embedded cache manager
-        EmbeddedCacheManager cm = addClusterEnabledCacheManager();
+        TransportFlags flags = new TransportFlags();
+        flags.withFD(true).withMerge(true);
+        EmbeddedCacheManager cm = addClusterEnabledCacheManager(flags);
         installCreson(
                 cm,
                 CACHE_MODE,
-                REPLICATION_FACTOR, MAX_ENTRIES,
+                REPLICATION_FACTOR,
+                MAX_ENTRIES,
                 PASSIVATION,
-                PERSISTENT_STORAGE_DIR + "/" + containers().size(),
+                PERSISTENT_STORAGE_DIR + "/" + index,
                 true,
                 false);
         waitForClusterToForm(CRESON_CACHE_NAME);
@@ -104,7 +105,6 @@ public class RemoteTest extends AbstractTest {
 
     @Override
     protected void createCacheManagers() throws Throwable {
-        createDefaultBuilder();
 
         for (int j = 0; j < NMANAGERS; j++) {
             addContainer();
@@ -121,20 +121,6 @@ public class RemoteTest extends AbstractTest {
         assertEquals(manager(0).getTransport().getMembers().size(), NMANAGERS);
 
         Factory.forCache(container(0).getCache(CRESON_CACHE_NAME), true);
-    }
-
-    // Helpers
-
-    private void createDefaultBuilder() {
-        defaultBuilder = getDefaultClusteredCacheConfig(CACHE_MODE, false);
-        defaultBuilder
-                .clustering().cacheMode(CacheMode.DIST_SYNC).hash().numOwners(REPLICATION_FACTOR)
-                .locking().useLockStriping(false)
-                .compatibility().enable();
-        defaultBuilder.clustering().stateTransfer()
-                .awaitInitialTransfer(true)
-                .timeout(10000)
-                .fetchInMemoryState(true);
     }
 
 }
