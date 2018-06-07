@@ -54,6 +54,9 @@ public class Server {
     @Option(name = "-userLibs", usage = "directory containing the user libraries")
     private String userLib = userLibraries;
 
+    @Option(name = "-wt", usage = "number of HotRod worker threads")
+    private int workerThreads = 100;
+
     private volatile boolean running = false;
 
     public Server() {
@@ -145,7 +148,7 @@ public class Server {
             hbuilder.proxyPort(proxyPort);
         }
 
-        hbuilder.workerThreads(100);
+        hbuilder.workerThreads(workerThreads);
         hbuilder.tcpNoDelay(true);
 
         final HotRodServer server = new HotRodServer();

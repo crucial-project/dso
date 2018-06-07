@@ -56,7 +56,7 @@ public abstract class AbstractContainer {
    public abstract void doExecute(Call call);
 
    protected Object execute(Call call)
-         throws InterruptedException, ExecutionException, java.util.concurrent.TimeoutException {
+         throws Throwable {
 
       if (log.isTraceEnabled())
          log.trace(this + " Executing "+call);
@@ -72,8 +72,8 @@ public abstract class AbstractContainer {
             attempts++;
             doExecute(call);
             ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
-            if (ret instanceof Throwable)
-               throw new ExecutionException((Throwable) ret);
+//            if (ret instanceof Throwable)
+//               throw new ExecutionException((Throwable) ret);
          }catch (TimeoutException e) {
             if (!future.isDone())
                log.warn(" Failed "+ call + " ("+e.getMessage()+")");
@@ -83,6 +83,9 @@ public abstract class AbstractContainer {
             }
             Thread.sleep(TTIMEOUT_TIME);
          }
+         if (ret instanceof Throwable)
+            throw ((Throwable) ret).getCause();
+
       }
 
       registeredCalls.remove(call.getCallID());
