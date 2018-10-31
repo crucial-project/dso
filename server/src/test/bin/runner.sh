@@ -2,7 +2,7 @@
 
 PROJDIR=`realpath $(dirname "${BASH_SOURCE[0]}")/../../../`
 TARGETDIR="${PROJDIR}/target"
-ARTIFACT="infinispan-creson-server"
+ARTIFACT="infinispan-crucial-server"
 VERSION="9.0.3.Final"
 
 # 1. Build

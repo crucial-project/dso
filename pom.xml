@@ -10,10 +10,10 @@
         <version>9.0.3.Final</version>
     </parent>
 
-    <artifactId>infinispan-creson</artifactId>
-    <name>infinispan-creson</name>
+    <artifactId>infinispan-crucial</artifactId>
+    <name>infinispan-crucial</name>
     <packaging>pom</packaging>
-    <description>Implementation of the CRESON framework on top of Infinispan.</description>
+    <description>Implementation of the CRUCIAL framework on top of Infinispan.</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -35,8 +35,9 @@
     </developers>
 
     <modules>
-        <module>client</module>
+        <module>core</module>
         <module>server</module>
+        <module>client</module>
     </modules>
 
     <dependencyManagement>
@@ -146,20 +147,20 @@
     <profiles>
 
         <profile>
-            <id>creson</id>
+            <id>crucial</id>
             <activation><activeByDefault>true</activeByDefault></activation>
             <properties>
-                <defaultTestGroup>creson</defaultTestGroup>
+                <defaultTestGroup>crucial</defaultTestGroup>
                 <defaultExcludedTestGroup>unstable,extra,stress</defaultExcludedTestGroup>
                 <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
             </properties>
         </profile>
 
         <profile>
-            <id>creson-stress</id>
+            <id>crucial-stress</id>
             <activation><activeByDefault>false</activeByDefault></activation>
             <properties>
-                <defaultTestGroup>creson,stress</defaultTestGroup>
+                <defaultTestGroup>crucial,stress</defaultTestGroup>
                 <defaultExcludedTestGroup>unstable,extra</defaultExcludedTestGroup>
                 <infinispan.test.jgroups.protocol>tcp</infinispan.test.jgroups.protocol>
             </properties>

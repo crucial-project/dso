@@ -32,7 +32,7 @@
       <directory>target</directory>
       <outputDirectory>lib</outputDirectory>
       <includes>
-        <include>infinispan-creson-server.jar</include>
+        <include>infinispan-crucial-server.jar</include>
       </includes>
     </fileSet>
   </fileSets>
