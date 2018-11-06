@@ -5,7 +5,6 @@ import org.infinispan.crucial.CFuture;
 import org.infinispan.crucial.Factory;
 
 import java.util.Map;
-import java.util.concurrent.Future;
 
 /**
  * CRUCIAL client to get instances of basic objects.
@@ -29,7 +28,7 @@ public class CrucialClient{
         return client;
     }
 
-    public CrucialClient getClient(){
+    public static CrucialClient getClient(){
         return getClient(defaultServer);
     }
 
