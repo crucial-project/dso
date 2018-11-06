@@ -37,7 +37,7 @@ public class CrucialClient{
         return factory.getInstanceOf(Map.class, key);
     }
 
-    public <T> Future<T> getFuture(String key){
+    public <T> CFuture<T> getFuture(String key){
         return new CFuture<>(key);
     }
 

@@ -49,7 +49,8 @@ public class ConfigurationHelper{
         // clustering
         builder.clustering()
                 .stateTransfer().fetchInMemoryState(true)
-                .stateTransfer().chunkSize(Integer.MAX_VALUE) // FIXME necessary for elasticity.
+                .stateTransfer().chunkSize(1024) // FIXME necessary for elasticity.
+//                .stateTransfer().chunkSize(Integer.MAX_VALUE) // Throws OutOfMemory:  Requested array size exceeds VM limit // when calling keySet()
                 .awaitInitialTransfer(true)
                 .hash().numOwners(replicationFactor);
 
