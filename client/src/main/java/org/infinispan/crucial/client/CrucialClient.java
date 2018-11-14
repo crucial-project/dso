@@ -1,6 +1,8 @@
 package org.infinispan.crucial.client;
 
+import org.infinispan.crucial.CAtomicByteArray;
 import org.infinispan.crucial.CAtomicInt;
+import org.infinispan.crucial.CAtomicLong;
 import org.infinispan.crucial.CFuture;
 import org.infinispan.crucial.Factory;
 
@@ -42,5 +44,12 @@ public class CrucialClient{
 
     public CAtomicInt getAtomicInt(String key){
         return factory.getInstanceOf(CAtomicInt.class, key);
+    }
+
+    public CAtomicLong getAtomicLong(String key){
+        return factory.getInstanceOf(CAtomicLong.class, key);
+    }
+    public CAtomicByteArray getAtomicByteArray(String key){
+        return factory.getInstanceOf(CAtomicByteArray.class, key);
     }
 }

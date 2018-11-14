@@ -5,13 +5,13 @@ package org.infinispan.crucial;
  *
  * @author Daniel
  */
-public class CAtomicInt{
-    private int value = 0;
+public class CAtomicLong{
+    private long value = 0;
 
-    public CAtomicInt(){
+    public CAtomicLong(){
     }
 
-    public CAtomicInt(int initialValue){
+    public CAtomicLong(long initialValue){
         value = initialValue;
     }
 
@@ -19,42 +19,42 @@ public class CAtomicInt{
         System.out.println(value);
     }
 
-    public int get(){
+    public long get(){
         return value;
     }
 
-    public void set(int newValue){
+    public void set(long newValue){
         value = newValue;
     }
 
-    public int getAndSet(int newValue){
-        int old = value;
+    public long getAndSet(long newValue){
+        long old = value;
         value = newValue;
         return old;
     }
 
-    public int getAndIncrement(){
+    public long getAndIncrement(){
         return getAndAdd(1);
     }
 
-    public int getAndDecrement(){
+    public long getAndDecrement(){
         return getAndAdd(- 1);
     }
 
-    public int getAndAdd(int delta){
+    public long getAndAdd(long delta){
         value += delta;
         return value - delta;
     }
 
-    public int incrementAndGet(){
+    public long incrementAndGet(){
         return addAndGet(1);
     }
 
-    public int decrementAndGet(){
+    public long decrementAndGet(){
         return addAndGet(- 1);
     }
 
-    public int addAndGet(int delta){
+    public long addAndGet(long delta){
         value += delta;
         return value;
     }
@@ -66,14 +66,14 @@ public class CAtomicInt{
      * @return the String representation of the current value
      */
     public String toString(){
-        return Integer.toString(get());
+        return Long.toString(get());
     }
 
     /**
      * Returns the value of this {@code CAtomicInt} as an {@code int}.
      */
     public int intValue(){
-        return get();
+        return (int) get();
     }
 
     /**
