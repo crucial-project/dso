@@ -20,7 +20,7 @@ import static org.infinispan.crucial.utils.ConfigurationHelper.installCrucial;
 @CleanupAfterTest
 public class Emulation extends MultipleCacheManagersTest {
 
-    protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
+    protected static final CacheMode CACHE_MODE = CacheMode.DIST_ASYNC;
     protected static final int REPLICATION_FACTOR = 1;
     protected static final boolean PASSIVATION = false;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/crucial-storage";

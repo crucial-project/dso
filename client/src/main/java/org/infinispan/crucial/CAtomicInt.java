@@ -1,11 +1,13 @@
 package org.infinispan.crucial;
 
 
+import java.io.Serializable;
+
 /**
  *
  * @author Daniel
  */
-public class CAtomicInt{
+public class CAtomicInt implements Serializable{
     private int value = 0;
 
     public CAtomicInt(){

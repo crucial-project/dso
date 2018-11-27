@@ -1,10 +1,12 @@
 package org.infinispan.crucial;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Daniel
  */
-public class CAtomicByteArray {
+public class CAtomicByteArray implements Serializable{
     private byte[] value;
 
     public CAtomicByteArray() {

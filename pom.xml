@@ -22,7 +22,7 @@
         <version.guava>18.0</version.guava>
         <version.java-uuid-generator>3.1.5</version.java-uuid-generator>
         <version.javaee-api>7.0</version.javaee-api>
-        <version.aspectjrt>1.9.2</version.aspectjrt>
+        <version.aspectjrt>1.8.13</version.aspectjrt>
         <version.args4j>2.32</version.args4j>
         <version.testng>6.14.3</version.testng>
         <!--<version.javassist>3.23.1-GA</version.javassist>-->

@@ -1,11 +1,13 @@
 package org.infinispan.crucial;
 
 
+import java.io.Serializable;
+
 /**
  *
  * @author Daniel
  */
-public class CAtomicLong{
+public class CAtomicLong implements Serializable{
     private long value = 0;
 
     public CAtomicLong(){
