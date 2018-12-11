@@ -1,13 +1,6 @@
 package org.infinispan.crucial.client;
 
-import org.infinispan.crucial.CAtomicBoolean;
-import org.infinispan.crucial.CAtomicByteArray;
-import org.infinispan.crucial.CAtomicInt;
-import org.infinispan.crucial.CAtomicLong;
-import org.infinispan.crucial.CFuture;
-import org.infinispan.crucial.CLogger;
-import org.infinispan.crucial.CSemaphore;
-import org.infinispan.crucial.Factory;
+import org.infinispan.crucial.*;
 
 import java.util.Map;
 
@@ -47,6 +40,9 @@ public class CrucialClient{
 
     public <T> CFuture<T> getFuture(String key){
         return new CFuture<>(key);
+    }
+    public  CCyclicBarrier getCyclicBarrier(String key, int parties){
+        return new CCyclicBarrier(key, parties);
     }
 
     public CSemaphore getSemaphore(String key, int permits){
