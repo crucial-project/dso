@@ -37,7 +37,7 @@ public class CyclicBarrierTest extends Emulation{
         List<Future<Void>> toComplete = new ArrayList<>();
 
         for (int j = 0; j < ITERATIONS; j++) {
-        	System.out.println("\n== New iteration: " + j + " ==");
+            System.out.println("\n== New iteration: " + j + " ==");
 
             for (int i = 0; i < THREADS; i++) {
                 int finalI = i;
