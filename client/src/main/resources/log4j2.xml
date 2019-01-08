@@ -19,7 +19,7 @@
 
   <Loggers>
     <Logger name="org.infinispan" level="INFO"/>
-    <Logger name="org.infinispan.crucial" level="WARNING"/>
+    <Logger name="org.infinispan.creson" level="WARNING"/>
     <Logger name="org.jgroups" level="DEBUG"/>
     <Logger name="org.infinispan.server.hotrod.Decoder2x" level="ERROR"/>
     <Logger name="org.infinispan.commons.test.TestNGTestListener" level="ERROR"/>

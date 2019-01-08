@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>infinispan-crucial</artifactId>
+        <artifactId>infinispan-creson</artifactId>
         <groupId>org.infinispan</groupId>
         <version>9.0.3.Final</version>
     </parent>
 
-    <artifactId>infinispan-crucial-client</artifactId>
-    <name>infinispan-crucial-client</name>
-    <description>Client side of the CRUCIAL framework.</description>
+    <artifactId>infinispan-creson-client</artifactId>
+    <name>infinispan-creson-client</name>
+    <description>Client side of the CRESON framework.</description>
 
     <properties>
         <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
@@ -22,14 +22,14 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-crucial-core</artifactId>
+            <artifactId>infinispan-creson-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!--TEST-->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-crucial-core</artifactId>
+            <artifactId>infinispan-creson-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -51,7 +51,7 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>org.infinispan</groupId>
-                            <artifactId>infinispan-crucial-core</artifactId>
+                            <artifactId>infinispan-creson-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>

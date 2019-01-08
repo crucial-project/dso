@@ -3,14 +3,14 @@
 
     <parent>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-crucial</artifactId>
+      <artifactId>infinispan-creson</artifactId>
       <version>9.0.3.Final</version>
       <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>infinispan-crucial-core</artifactId>
-    <name>infinispan-crucial-core</name>
-    <description>Core of the CRUCIAL framework.</description>
+    <artifactId>infinispan-creson-core</artifactId>
+    <name>infinispan-creson-core</name>
+    <description>Core of the CRESON framework.</description>
 
     <properties>
         <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>

@@ -20,4 +20,4 @@ then
 fi
 
 JVM="-XX:+UseConcMarkSweepGC -Xms64m -Xmx1024m -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configurationFile=${DIR}/log4j2.xml"
-java -cp ${CLASSPATH} ${JVM} org.infinispan.crucial.Server -server ${IP}:11222 ${EXTRA}
+java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:11222 ${EXTRA}

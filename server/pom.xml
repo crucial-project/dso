@@ -4,14 +4,14 @@
 
     <parent>
         <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-crucial</artifactId>
+        <artifactId>infinispan-creson</artifactId>
         <version>9.0.3.Final</version>
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>infinispan-crucial-server</artifactId>
-    <name>infinispan-crucial-server</name>
-    <description>Server side of the CRUCIAL framework.</description>
+    <artifactId>infinispan-creson-server</artifactId>
+    <name>infinispan-creson-server</name>
+    <description>Server side of the CRESON framework.</description>
 
     <properties>
         <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
@@ -45,12 +45,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-crucial-core</artifactId>
+            <artifactId>infinispan-creson-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-crucial-client</artifactId>
+            <artifactId>infinispan-creson-client</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -91,7 +91,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-crucial-core</artifactId>
+            <artifactId>infinispan-creson-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -135,7 +135,7 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>org.infinispan</groupId>
-                            <artifactId>infinispan-crucial-core</artifactId>
+                            <artifactId>infinispan-creson-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>
