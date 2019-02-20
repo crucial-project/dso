@@ -31,6 +31,10 @@ public class Emulation extends MultipleCacheManagersTest {
         return 3;
     }
 
+    protected int getReplicationFactor(){
+        return REPLICATION_FACTOR;
+    }
+
     private static List<HotRodServer> servers = new ArrayList<>();
 
     private boolean addContainer() {
@@ -43,7 +47,7 @@ public class Emulation extends MultipleCacheManagersTest {
         installCreson(
                 cm,
                 CACHE_MODE,
-                REPLICATION_FACTOR,
+                getReplicationFactor(),
                 -1,
                 PASSIVATION,
                 PERSISTENT_STORAGE_DIR + "/" + index,
