@@ -1,4 +1,4 @@
-package org.infinispan.creson;
+package org.infinispan.creson.benchmarks.count;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -18,7 +18,7 @@ public class Counter implements Comparable<Counter> {
 
    @Id
    public String name;     // counter name
-   public int count = 0;         // current value
+   public int count = 0;   // current value
 
    public Counter(){}
 

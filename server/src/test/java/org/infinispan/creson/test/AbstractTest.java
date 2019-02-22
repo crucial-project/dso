@@ -8,7 +8,7 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.creson.Counter;
+import org.infinispan.creson.benchmarks.count.Counter;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.ShardedObject;
 import org.infinispan.creson.Shared;

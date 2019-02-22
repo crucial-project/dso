@@ -29,4 +29,4 @@ fi
 
 mv ${CONFIG} jgroups.xml
 
-java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:11222 ${EXTRA}
+java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}

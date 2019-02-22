@@ -9,12 +9,10 @@ N_CLIENTS=100
 N_OPS=10000
 N_PAR=1
 
-random_transfer(){    
-    from=$((RANDOM % N_ACCOUNTS))
-    to=$((RANDOM % N_ACCOUNTS))
-    amount=$((RANDOM))
-    transfer ${from} ${to} ${amount}
-}
+if [ $# -ne 1 ]; then
+    echo "usage: config key"
+    exit -1
+fi
 
 if [[ "$1" == "-create" ]]
 then    
