@@ -48,21 +48,16 @@ public class Server {
     @Option(name = "-me", usage = "max #entries in the object cache (implies -p)")
     private long maxEntries = -1;
 
-    @Option(name = "-ec2", usage = "use AWS EC2 jgroups configuration")
-    private boolean useEC2 = false;
-
     @Option(name = "-userLibs", usage = "directory containing the user libraries")
     private String userLib = userLibraries;
 
     @Option(name = "-wt", usage = "number of HotRod worker threads")
     private int workerThreads = 100;
 
-    private volatile boolean running = false;
-
     public Server() {
     }
 
-    public Server(String server, String proxyServer, int replicationFactor, boolean usePersistence) {
+    public Server(String server, String proxyServer, int replicationFactor) {
         this.server = server;
         this.proxyServer = proxyServer;
         this.replicationFactor = replicationFactor;
@@ -115,9 +110,7 @@ public class Server {
         GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
         gbuilder.transport().clusterName("creson-cluster");
         gbuilder.transport().nodeName("creson-server-" + host);
-
-        if (useEC2)
-            gbuilder.transport().addProperty("configurationFile", "jgroups-creson-ec2.xml");
+        gbuilder.transport().addProperty("configurationFile", "jgroups.xml");
 
         ConfigurationBuilder cBuilder
                 = AbstractCacheTest.getDefaultClusteredCacheConfig(CacheMode.DIST_ASYNC, false);

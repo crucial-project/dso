@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 
@@ -103,6 +104,16 @@ public class FakeCache implements BasicCache{
     @Override
     public boolean replace(Object o, Object o2, Object v1, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
         return false;
+    }
+
+    @Override
+    public Object merge(Object o, Object o2, BiFunction biFunction, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public Object merge(Object o, Object o2, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
     }
 
     @Override

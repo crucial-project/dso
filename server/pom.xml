@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-creson</artifactId>
-        <version>9.0.3.Final</version>
+        <version>9.3.5.Final</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -155,6 +155,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>${version.apache.felix.plugin}</version>
                 <configuration>
                     <instructions>
                         <Export-Package>

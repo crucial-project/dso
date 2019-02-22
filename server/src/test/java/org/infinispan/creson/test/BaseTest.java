@@ -5,6 +5,7 @@ import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.creson.Factory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.fwk.TransportFlags;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +18,7 @@ import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
  * @author Pierre Sutra
  */
 
+@Test(testName = "BaseTest")
 public abstract class BaseTest extends AbstractTest{
 
     private static List<Cache<Object, Object>> caches = new ArrayList<>();

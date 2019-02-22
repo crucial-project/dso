@@ -1,0 +1,17 @@
+asia-south1-b
+europe-north1-b
+southamerica-east1-b
+australia-southeast1-b
+europe-west1-b
+asia-east1-b
+us-central1-b
+asia-northeast1-b
+europe-west2-b
+asia-southeast1-b
+us-west1-b
+europe-west3-b
+us-east1-b
+europe-west4-b
+us-west2-b
+northamerica-northeast1-b
+us-east4-b

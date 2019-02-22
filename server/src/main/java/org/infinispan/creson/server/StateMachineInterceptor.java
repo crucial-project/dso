@@ -94,6 +94,12 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
                     CallInvoke invocation = (CallInvoke) call;
 
+                    // FIXME
+                    if (entry.getValue() == null ) {
+                        entry.setValue(
+                                Reflection.open(reference, new Object[0]));
+                    }
+
                     assert (entry.getValue() != null);
 
                     java.lang.Object[] args = invocation.arguments;
@@ -101,9 +107,6 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                     java.lang.Object response;
 
                     try {
-
-                        if (log.isTraceEnabled())
-                            log.trace(dm.getCacheTopology().getLocalAddress()+"#"+call);
 
                         synchronized (entry.getValue()) { // synchronization contract
                             response = callObject(entry.getValue(), invocation.method, args);
@@ -157,8 +160,11 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         }
 
         PutKeyValueCommand clone = cf.buildPutKeyValueCommand(
-                command.getKey(), entry.getValue(),
-                command.getMetadata(), command.getFlagsBitSet());
+                command.getKey(),
+                entry.getValue(),
+                command.getSegment(),
+                command.getMetadata(),
+                command.getFlagsBitSet());
         invokeNext(ctx, clone);
 
         if (log.isTraceEnabled())

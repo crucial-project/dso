@@ -10,7 +10,6 @@ import org.infinispan.creson.object.Reference;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -84,7 +83,7 @@ public abstract class AbstractContainer {
             Thread.sleep(TTIMEOUT_TIME);
          }
          if (ret instanceof Throwable)
-            throw ((Throwable) ret).getCause();
+            throw (Throwable) ret;
 
       }
 

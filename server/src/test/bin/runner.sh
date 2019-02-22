@@ -2,26 +2,19 @@
 
 PROJDIR=`realpath $(dirname "${BASH_SOURCE[0]}")/../../../`
 TARGETDIR="${PROJDIR}/target"
-ARTIFACT="infinispan-creson-server"
-VERSION="9.0.3.Final"
 
-# 1. Build
-mvn -f ${PROJDIR} package -DskipTests
-cat ${PROJDIR}/src/main/docker/Dockerfile \
-    | sed s,RUN\ apt-get.*,,g \
-    | sed s,ADD\ https.*,,g \
-    | sed s,RUN\ git\ clone.*,,g \
-    | sed s,RUN\ mvn.*,COPY\ ${ARTIFACT}-${VERSION}.tar.gz\ /app,g \
-    | sed s,RUN\ tar.*,RUN\ tar\ zxvf\ /app/${ARTIFACT}-${VERSION}.tar.gz\ -C\ /app,g \
-    | sed s,Xmx2048m,Xmx128m,g > ${TARGETDIR}/Dockerfile.debug
-docker build -f ${TARGETDIR}/Dockerfile.debug -t ${ARTIFACT}:debug ${TARGETDIR}
+NAME="infinispan-creson-server"
+MAINTAINER="0track"
+TAG="latest"
+IMAGE="${MAINTAINER}/${NAME}:${TAG}"
+IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
-# 2. Deploy
+# 1. Deploy
 NSERVERS=3
 echo ">>>>> Starting servers..."
 for i in `seq 1 ${NSERVERS}`
 do
-    docker run -p $((11221+i)):11222 ${ARTIFACT}:debug 2>&1 > ${TARGETDIR}/.${i}.log &
+    docker run --rm -p $((11221+i)):11222 ${IMAGE} 2>&1 > ${TARGETDIR}/.${i}.log &
 done
 up=-1
 while [ ${up} != ${NSERVERS} ]; do
@@ -31,24 +24,23 @@ while [ ${up} != ${NSERVERS} ]; do
 done
 echo " up!"
 
-# 3. Run
+# 2. Run
 CLASSPATH=${PROJDIR}/target/*:${PROJDIR}/target/lib/*
 
 echo ">>>>> Counters"
-java -cp ${CLASSPATH} org.infinispan.creson.benchmarks.count.Benchmark -clients 10 -counters 100 -increments 10000
+java -cp ${CLASSPATH} org.infinispan.creson.benchmarks.count.Benchmark -clients 10 -counters 100 -increments 1
 
 echo ">>>>> Queue"
-for c in `docker ps -a -q --filter="ancestor=$(docker images | grep ${ARTIFACT} | awk '{print $3}')"`;
+for c in $(docker ps -q --filter="ancestor=${IMAGE_ID}");
 do
-    docker cp ${TARGETDIR}/${ARTIFACT}-tests.jar ${c}:/app/userlibs
+    docker cp ${TARGETDIR}/${NAME}-tests.jar ${c}:/tmp
 done
 sleep 3 # that jars are read
 java -cp ${CLASSPATH} org.infinispan.creson.benchmarks.queue.Benchmark -clients 10 -operations 100
 
 # 4. Terminate
 echo ">>>>> Terminate"
-for c in `docker ps -a -q --filter="ancestor=$(docker images | grep ${ARTIFACT} | awk '{print $3}')"`;
+for c in $(docker ps -q --filter="ancestor=${IMAGE_ID}");
 do
     docker kill ${c}
-    docker rm ${c}
 done

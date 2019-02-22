@@ -4,7 +4,7 @@
     <parent>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-creson</artifactId>
-      <version>9.0.3.Final</version>
+      <version>9.3.5.Final</version>
       <relativePath>../</relativePath>
     </parent>
 

@@ -8,6 +8,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -103,7 +104,7 @@ public class Benchmark {
 
         private int T;
         private List<Counter> counters;
-        private List<Long> latencies;
+        private List<Long> latencies, lastLatencies;
         private Random random;
 
         private AtomicDouble throughput;
@@ -115,12 +116,24 @@ public class Benchmark {
             random = new Random();
 
             latencies = new ArrayList<>();
+            lastLatencies = Collections.synchronizedList(new ArrayList<>());
             throughput = new AtomicDouble(0);
             isOver = false;
         }
 
         public double getThroughput() {
             return throughput.get();
+        }
+
+        public double getLastThroughput() {
+            double avrgLatency = 0;
+            for (int i = 1; i <= lastLatencies.size(); i++) {
+                avrgLatency += latencies.get(latencies.size() - i);
+            }
+            avrgLatency = avrgLatency / ((double) lastLatencies.size());
+            avrgLatency = avrgLatency * Math.pow(10, -9);
+            lastLatencies.clear();
+            return ((double) 1) / avrgLatency;
         }
 
         public boolean getIsOver() {
@@ -133,8 +146,16 @@ public class Benchmark {
             // increment T counters at random
             for (int t = 0; t < T; t++) {
                 long start = System.nanoTime();
-                counters.get(random.nextInt(counters.size())).increment();
+                Counter counter = counters.get(random.nextInt(counters.size()));
+                try {
+                    counter.increment();
+                }catch(Throwable throwable) {
+                    throwable.printStackTrace();
+                    continue;
+                    //ignore
+                }
                 latencies.add(System.nanoTime() - start);
+                lastLatencies.add(System.nanoTime() - start);
                 double avrgLatency = 0; // average latency over the last 100 operations
                 int count = Math.min(1000, latencies.size());
                 for (int i = 1; i <= count; i++) {
@@ -162,15 +183,22 @@ public class Benchmark {
             boolean isOver = false;
             int throughput = 0;
             while (!isOver) {
-                Thread.sleep(100);
+                Thread.sleep(10000);
                 throughput = 0;
                 for (IncrementCallable callable : callables) {
                     isOver |= callable.getIsOver();
-                    throughput += callable.getThroughput();
+                    throughput += callable.getLastThroughput();
                 }
-                System.out.println("Throughput:" + System.currentTimeMillis() + ":" + throughput);
+                System.out.println(+ System.currentTimeMillis() + ":" + throughput);
             }
+
+            throughput = 0;
+            for (IncrementCallable callable : callables) {
+                throughput += callable.getThroughput();
+            }
+
             System.out.println("Throughput:" + System.currentTimeMillis() + ":" + throughput);
+
             return null;
         }
     }

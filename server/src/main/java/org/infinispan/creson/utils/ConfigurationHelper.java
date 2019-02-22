@@ -33,6 +33,8 @@ public class ConfigurationHelper {
             boolean purge,
             boolean withIndexing) {
 
+        manager.getClassWhiteList().addRegexps(".*");
+
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering().cacheMode(mode);
         builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
