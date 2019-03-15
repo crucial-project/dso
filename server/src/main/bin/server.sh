@@ -23,10 +23,15 @@ then
     | sed s,%BUCKET_SECRET%,${BUCKET_SECRET},g \
     | sed s,%IP%,${IP},g > tmp
     mv tmp ${CONFIG}
+elif [ "${CLOUD}" == "k8s" ];
+then
+    echo "K8S mode"
+    CONFIG=jgroups-creson-k8s.xml
 else
     echo "local mode"
 fi
 
 mv ${CONFIG} jgroups.xml
 
+echo "java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}"
 java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}

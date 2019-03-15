@@ -2,56 +2,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-creson</artifactId>
-      <version>9.3.5.Final</version>
-      <relativePath>../</relativePath>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-creson</artifactId>
+        <version>9.4.1.Final</version>
+        <relativePath>../</relativePath>
     </parent>
 
+    <groupId>org.infinispan</groupId>
     <artifactId>infinispan-creson-client</artifactId>
-    <name>infinispan-creson-client</name>
-    <description>Client side of the CRESON framework.</description>
-
-    <properties>
-        <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
-        <skipTests>true</skipTests>
-    </properties>
+    <name>infinispan-creson-server</name>
+    <description>The client side of the CRESON framework.</description>
 
     <dependencies>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-client-hotrod</artifactId>
+            <artifactId>infinispan-creson-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.uuid</groupId>
-            <artifactId>java-uuid-generator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
+            <groupId>args4j</groupId>
+            <artifactId>args4j</artifactId>
         </dependency>
 
         <!-- TEST -->
@@ -62,26 +34,67 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-commons-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.10</version>
                 <configuration>
-                    <skipTests>${skipTests}</skipTests>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>org.infinispan</groupId>
+                            <artifactId>infinispan-creson-core</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
+                            <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 
 </project>
+    

@@ -14,14 +14,8 @@ if [ -z "${DOCKER_USER}" ]; then
 fi
 
 DIR=$(dirname "$0")
-IMAGE=${DOCKER_USER}/infinispan-creson-server:${TAG}
+IMAGE=${DOCKER_USER}/infinispan-creson-client-test:${TAG}
 DOCKERFILE=${DIR}/../docker/Dockerfile
-
-# package
-mvn clean package -DskipTests
-
-# last commit hash
-git log -1 --format="%H" >${DIR}/../../../version-hash
 
 # build image
 docker build \
