@@ -4,10 +4,11 @@
     <parent>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-creson</artifactId>
-        <version>9.3.5.Final</version>
+        <version>9.4.1.Final</version>
         <relativePath>../</relativePath>
     </parent>
 
+    <groupId>org.infinispan</groupId>
     <artifactId>infinispan-creson-server</artifactId>
     <name>infinispan-creson-server</name>
     <description>Server side of the CRESON framework.</description>
@@ -18,6 +19,12 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-creson-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -32,7 +39,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -43,24 +49,8 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-creson-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
         </dependency>
 
         <dependency>
@@ -78,14 +68,21 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-core</artifactId>
+            <version>${project.version}</version>
             <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jgroups.kubernetes</groupId>
+          <artifactId>jgroups-kubernetes</artifactId>
+          <version>1.0.9.Final</version>
         </dependency>
 
         <!-- TEST -->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-creson-client</artifactId>
+            <artifactId>infinispan-creson-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -100,12 +97,14 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-commons-test</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -125,7 +124,7 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>org.infinispan</groupId>
-                            <artifactId>infinispan-creson-client</artifactId>
+                            <artifactId>infinispan-creson-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>
@@ -198,6 +197,18 @@
                             <descriptor>src/main/assembly/bin.xml</descriptor>
                             <finalName>${project.name}-${project.version}</finalName>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

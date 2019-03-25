@@ -8,14 +8,11 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.creson.benchmarks.count.Counter;
 import org.infinispan.creson.Factory;
-import org.infinispan.creson.ShardedObject;
 import org.infinispan.creson.Shared;
-import org.infinispan.creson.SimpleObject;
-import org.infinispan.creson.utils.ID;
 import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
+import org.infinispan.creson.utils.ID;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -265,10 +262,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert object1.getField().equals("aspectj2");
 
         // 3 - equals()
-        for (int i = 0; i < 100; i++) {
-            ShardedObject object2 = new ShardedObject();
-            assert object2.equals(object2);
-        }
+        ShardedObject object2 = new ShardedObject();
+        assert object2.equals(object2);
 
     }
 
@@ -420,17 +415,17 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     @Test(groups = {"creson"})
     public void idempotence() throws IllegalAccessException {
 
-        Counter counter = new Counter("idempotence");
+        SimpleObject object = new SimpleObject("idempotence");
 
         RandomBasedGenerator generator = Generators.randomBasedGenerator(new Random(42));
         ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
-        counter.increment();
+        object.setField("a");
 
         generator = Generators.randomBasedGenerator(new Random(42));
         ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
-        counter.increment();
+        object.setField("a");
 
-        assert counter.tally() == 1;
+        assert object.getCount() == 1;
 
     }
 

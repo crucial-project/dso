@@ -30,11 +30,12 @@ import static org.infinispan.creson.utils.ConfigurationHelper.installCreson;
 public class Server {
 
     private static final Log log = LogFactory.getLog(Server.class);
-    private static final String defaultServer = "localhost:11222";
-    private static final String userLibraries = "/tmp";
+    private static final String DEFAULT_SERVER = "localhost:11222";
+    private static final String USER_LIBRARIES = "/tmp";
+    private static final String STORAGE_PATH_PREFIX = "/tmp";
 
     @Option(name = "-server", usage = "ip:port or ip of the server")
-    private String server = defaultServer;
+    private String server = DEFAULT_SERVER;
 
     @Option(name = "-proxy", usage = "proxy server as seen by clients")
     private String proxyServer = null;
@@ -49,7 +50,7 @@ public class Server {
     private long maxEntries = -1;
 
     @Option(name = "-userLibs", usage = "directory containing the user libraries")
-    private String userLib = userLibraries;
+    private String userLib = USER_LIBRARIES;
 
     @Option(name = "-wt", usage = "number of HotRod worker threads")
     private int workerThreads = 100;
@@ -122,8 +123,8 @@ public class Server {
                 CacheMode.DIST_ASYNC,
                 replicationFactor,
                 maxEntries,
-                passivation,
-                System.getProperty("store-creson-server" + host),
+                false,
+                STORAGE_PATH_PREFIX + "/"+ host,
                 true,
                 false);
 
@@ -131,8 +132,11 @@ public class Server {
         hbuilder.topologyStateTransfer(true);
         hbuilder.host(host);
         hbuilder.port(port);
+        hbuilder.recvBufSize(1000000);
+        hbuilder.sendBufSize(1000000);
+        hbuilder.tcpNoDelay(true);
 
-        if (proxyServer != null && !proxyServer.equals(defaultServer)) {
+        if (proxyServer != null && !proxyServer.equals(DEFAULT_SERVER)) {
             String proxyHost = proxyServer.split(":")[0];
             int proxyPort = Integer.valueOf(
                     proxyServer.split(":").length == 2

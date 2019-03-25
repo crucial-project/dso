@@ -1,25 +1,26 @@
-package org.infinispan.creson.benchmarks.count;
+package org.infinispan.creson;
 
-import org.infinispan.creson.benchmarks.Task;
-import org.infinispan.creson.concurrent.Counter;
-
-import java.util.List;
 import java.util.Random;
 
-public class CounterTask extends Task {
+public class AtomicCounterTask extends Task {
 
     private Random random;
-    private int size;
 
-    public CounterTask(List<Object> objects, String[] parameters, int calls) {
-        super(objects, parameters, calls);
+    public AtomicCounterTask(String[] parameters, int calls, int clients) {
+        super(parameters, calls, clients);
         assert parameters == null;
         random = new Random();
     }
 
     @Override
     public void doCall() {
-        Counter counter = (Counter) objects.get(random.nextInt(objects.size()));
+        AtomicCounter counter = (AtomicCounter) instances.get(random.nextInt(instances.size()));
         counter.increment();
     }
+
+    @Override
+    public Object newObject(int id) {
+        return new AtomicCounter("counter-test-"+id,0);
+    }
+
 }

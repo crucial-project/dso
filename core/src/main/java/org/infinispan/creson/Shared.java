@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 public @interface Shared {
     String DEFAULT_KEY = "__none";
     String SEPARATOR = "#";
-    boolean readOptimization() default true;
+    boolean readOptimization() default false;
     boolean forceNew() default false;
     String key() default DEFAULT_KEY;
 }

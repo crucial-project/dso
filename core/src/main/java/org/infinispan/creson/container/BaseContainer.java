@@ -8,8 +8,8 @@ import org.infinispan.creson.ReadOnly;
 import org.infinispan.creson.object.BoxedReference;
 import org.infinispan.creson.object.Call;
 import org.infinispan.creson.object.CallConstruct;
-import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.CallInvoke;
+import org.infinispan.creson.object.CallResponse;
 import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
@@ -20,7 +20,6 @@ import javax.persistence.Entity;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Pierre Sutra

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static org.infinispan.creson.Factory.CRESON_CACHE_NAME;
 
@@ -113,6 +114,36 @@ public class FakeCache implements BasicCache{
 
     @Override
     public Object merge(Object o, Object o2, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
+    }
+
+    @Override
+    public Object compute(Object o, BiFunction biFunction, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public Object compute(Object o, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
+    }
+
+    @Override
+    public Object computeIfPresent(Object o, BiFunction biFunction, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public Object computeIfPresent(Object o, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
+    }
+
+    @Override
+    public Object computeIfAbsent(Object o, Function function, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public Object computeIfAbsent(Object o, Function function, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
         return null;
     }
 
@@ -258,6 +289,66 @@ public class FakeCache implements BasicCache{
 
     @Override
     public CompletableFuture getAsync(Object o) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeAsync(Object o, BiFunction biFunction) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeAsync(Object o, BiFunction biFunction, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeAsync(Object o, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeIfAbsentAsync(Object o, Function function) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeIfAbsentAsync(Object o, Function function, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeIfAbsentAsync(Object o, Function function, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeIfPresentAsync(Object o, BiFunction biFunction) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeIfPresentAsync(Object o, BiFunction biFunction, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture computeIfPresentAsync(Object o, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture mergeAsync(Object o, Object o2, BiFunction biFunction) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture mergeAsync(Object o, Object o2, BiFunction biFunction, long l, TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture mergeAsync(Object o, Object o2, BiFunction biFunction, long l, TimeUnit timeUnit, long l1, TimeUnit timeUnit1) {
         return null;
     }
 

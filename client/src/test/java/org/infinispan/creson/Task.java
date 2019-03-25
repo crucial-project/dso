@@ -1,4 +1,4 @@
-package org.infinispan.creson.benchmarks;
+package org.infinispan.creson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +9,17 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class Task implements Callable<Double> {
 
     private int calls;
-    protected List<Object> objects;
+    protected int clients;
     protected String[] parameters;
+    protected List<Object> instances;
 
     private List<Long> latencies;
     private Lock lock;
     private boolean isOver;
 
-    public Task(List<Object> objects, String[] parameters, int calls) {
+    public Task(String[] parameters, int calls, int clients) {
+        this.clients = clients;
         this.calls = calls;
-        this.objects = objects;
         this.parameters = parameters;
 
         latencies = new ArrayList<>();
@@ -63,6 +64,12 @@ public abstract class Task implements Callable<Double> {
         return (Math.pow(10, -3) * ((double) (System.currentTimeMillis() - beg))) / (double) calls;
     }
 
+    public void setInstances(List<Object> instances){
+        this.instances = instances;
+    }
+
     public abstract void doCall();
+
+    public abstract Object newObject(int id);
 
 }

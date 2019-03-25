@@ -12,5 +12,4 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface ReadOnly {
-}
+public @interface ReadOnly {}

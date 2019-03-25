@@ -28,6 +28,6 @@ docker build \
     --no-cache \
     -t "${IMAGE}" -f "${DOCKERFILE}" .
 
-# # push image
+# push image
 docker push "${IMAGE}"
 

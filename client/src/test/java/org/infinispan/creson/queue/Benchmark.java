@@ -1,4 +1,4 @@
-package org.infinispan.creson.benchmarks.queue;
+package org.infinispan.creson.queue;
 
 import org.infinispan.creson.Factory;
 import org.kohsuke.args4j.CmdLineException;

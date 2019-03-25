@@ -33,7 +33,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
-    private ConcurrentMap<UUID,Map<Reference,CallResponse>> lastCall = new ConcurrentHashMap<>(); // key == callerID
+    private ConcurrentMap<Reference,Map<UUID,CallResponse>> lastCall = new ConcurrentHashMap<>(); // UUID == callID
     private Factory factory;
 
     @Override
@@ -52,31 +52,33 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
             log.trace(" Accessing " + reference);
 
         CallResponse future;
+        CacheEntry<Reference, Object> entry = ctx.lookupEntry(reference);
 
         // FIXME elasticity
-
-        CacheEntry<Reference, Object> entry = ctx.lookupEntry(reference);
         assert (call instanceof CallConstruct) | (entry.getValue()!=null);
 
         if (log.isTraceEnabled()) {
             log.trace(" Received [" + call.toString() + "]");
             log.trace(" With ID " + call.getCallID() + "]");
             log.trace(" By " + call.getCallerID() + "]");
+            log.trace(" Value  "+entry.getValue());
+            // log.trace(" lastCall="+lastCall);
         }
-
 
         future = new CallResponse(reference ,call);
 
-        if (log.isTraceEnabled()) {
-            log.trace(" lastCall="+lastCall);
+        if (!lastCall.containsKey(reference)){
+            lastCall.put(reference,new HashMap<>());
         }
 
-        if (lastCall.containsKey(call.getCallerID())
-                && lastCall.get(call.getCallerID()).containsKey(reference)
-                && lastCall.get(call.getCallerID()).get(reference).getCallID().equals(call.getCallID())) {
+        if (lastCall.get(reference).containsKey(call.getCallID())) {
+
+            if (log.isTraceEnabled()) {
+                log.trace(" already completed");
+            }
 
             // call already completed
-            future = lastCall.get(call.getCallerID()).get(reference);
+            future = lastCall.get(reference).get(call.getCallID());
 
         } else {
 
@@ -94,11 +96,11 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
                     CallInvoke invocation = (CallInvoke) call;
 
-                    // FIXME
-                    if (entry.getValue() == null ) {
-                        entry.setValue(
-                                Reflection.open(reference, new Object[0]));
-                    }
+                    // FIXME elasticity
+//                    if (entry.getValue() == null ) {
+//                        entry.setValue(
+//                                Reflection.open(reference, new Object[0]));
+//                    }
 
                     assert (entry.getValue() != null);
 
@@ -108,7 +110,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
                     try {
 
-                        synchronized (entry.getValue()) { // synchronization contract
+                        synchronized (entry.getKey()) { // synchronization contract
                             response = callObject(entry.getValue(), invocation.method, args);
                         }
 
@@ -147,10 +149,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         assert future.isDone();
 
         // save return value
-        if (!lastCall.containsKey(call.getCallerID())) {
-            lastCall.putIfAbsent(call.getCallerID(), new HashMap<>());
-        }
-        lastCall.get(call.getCallerID()).put(reference,future);
+        lastCall.get(reference).put(call.getCallID(),future);
 
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
@@ -159,21 +158,24 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
             }
         }
 
-        PutKeyValueCommand clone = cf.buildPutKeyValueCommand(
-                command.getKey(),
-                entry.getValue(),
-                command.getSegment(),
-                command.getMetadata(),
-                command.getFlagsBitSet());
-        invokeNext(ctx, clone);
+        if (call instanceof CallConstruct) {
+            PutKeyValueCommand clone = cf.buildPutKeyValueCommand(
+                    command.getKey(),
+                    entry.getValue(),
+                    command.getSegment(),
+                    command.getMetadata(),
+                    command.getFlagsBitSet());
+            invokeNext(ctx, clone);
+        }
 
-        if (log.isTraceEnabled())
-            log.trace(" returning " + future.toString());
+        if (log.isTraceEnabled()) {
+            log.trace(" Executed [" + call.toString() + "] -> "+future.toString());
+        }
 
         return future;
     }
 
-    public void setup(Factory factory) {
+    public void setup(Factory factory){
         this.factory = factory;
     }
 

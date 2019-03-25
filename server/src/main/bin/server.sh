@@ -33,5 +33,5 @@ fi
 
 mv ${CONFIG} jgroups.xml
 
-echo "java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}"
-java -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}
+echo "java -ea -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}"
+java -ea -cp ${CLASSPATH} ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}

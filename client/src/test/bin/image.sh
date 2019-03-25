@@ -17,6 +17,13 @@ DIR=$(dirname "$0")
 IMAGE=${DOCKER_USER}/infinispan-creson-client-test:${TAG}
 DOCKERFILE=${DIR}/../docker/Dockerfile
 
+# package
+mvn clean package -DskipTests
+
+# last commit hash
+# FIXME
+# git log -1 --format="%H" >${DIR}/../../../version-hash
+
 # build image
 docker build \
     --no-cache \

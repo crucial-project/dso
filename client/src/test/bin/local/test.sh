@@ -3,6 +3,7 @@
 PROJDIR=`realpath $(dirname "${BASH_SOURCE[0]}")/../../../../`
 TARGETDIR="${PROJDIR}/target"
 
+NSERVERS=2
 NAME="infinispan-creson-server"
 MAINTAINER="0track"
 TAG="latest"
@@ -10,58 +11,68 @@ IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
 INSTANCES="1"
-CLIENTS="1"
-CALLS="10000"
+CLIENTS="16"
+CALLS="1000"
 
-CLASSPATH=${PROJDIR}/target/*:${PROJDIR}/target/lib/*
+CLIENT="infinispan-creson-client"
+VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
 
 if [ $# -ne 1 ]; then
-    echo "usage: config key"
+    echo "usage: -[create|blobs|counters|delete]"
     exit -1
 fi
 
 if [[ "$1" == "-create" ]]
-then    
-    NSERVERS=3
+then
     echo ">>>>> Starting servers..."
+    rm -f ${TARGETDIR}/*.log
     for i in `seq 1 ${NSERVERS}`
     do
 	port=$((11221+i))
-	docker run --net host --rm -p ${port}:${port} --env EXTRA="-rf 2" --env CLOUD=local --env PORT=${port} ${IMAGE} 2>&1 > ${TARGETDIR}/.${i}.log &
+	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=${port} ${IMAGE} 2>&1 > ${TARGETDIR}/${i}.log &
     done
-    up=-1
+    up=0
     while [ ${up} != ${NSERVERS} ]; do
-	up=$(cat ${TARGETDIR}/.*.log | grep "LAUNCHED" | wc -l)
+	up=$(cat ${TARGETDIR}/*.log | grep "LAUNCHED" | wc -l)
 	echo -n "."
 	sleep 1
     done
-    echo " up!"
-elif [[ "$1" == "-counters" ]]
-then
-    CLASS="org.infinispan.creson.benchmarks.count.Counter"
-    ARGS="-ea org.infinispan.creson.benchmarks.Benchmark -class ${CLASS} -instances ${INSTANCES} -clients ${CLIENTS} -calls ${CALLS} -verbose"
-    echo ">>>>> Counters"
-    java -cp ${CLASSPATH} ${ARGS}
-elif [[ "$1" == "-blobs" ]]
-then    
-    echo ">>>>> Blobs"
-    CLASS="org.infinispan.creson.benchmarks.intensive.Blob"
-    ARGS="-ea org.infinispan.creson.benchmarks.Benchmark -parameters 1000 -class ${CLASS} -instances ${INSTANCES} -clients ${CLIENTS} -calls ${CALLS} -verbose"
-    java -cp ${CLASSPATH} ${ARGS}
-elif [[ "$1" == "-queues" ]]
-then
-    echo ">>>>> Queue"
-    for c in $(docker ps -q --filter="ancestor=${IMAGE_ID}");
+    for container in $(docker ps | awk '{print $1}' | tail -n ${NSERVERS})
     do
-	docker cp ${TARGETDIR}/${NAME}-tests.jar ${c}:/tmp
+    docker cp ${PROJDIR}/target/${CLIENT}-${VERSION}.jar ${container}:/tmp
     done
-    sleep 3 # that jars are read
-    java -cp ${CLASSPATH} org.infinispan.creson.benchmarks.queue.Benchmark -clients 10 -operations 100
+    echo " up!"
 elif [[ "$1" == "-delete" ]]
-then
+  then
     echo ">>>>> Terminate"
     for c in $(docker ps -q --filter="ancestor=${IMAGE_ID}");
     do
 	docker kill ${c}
     done
+else
+  if [[ "$1" == "-counters" ]]
+  then
+    echo ">>>>> Counters"
+    CLASS="org.infinispan.creson.AtomicCounter"
+  elif [[ "$1" == "-blobs" ]]
+  then
+    echo ">>>>> Blobs"
+    EXTRA="-parameters 100"
+    CLASS="org.infinispan.creson.Blob"
+  elif [[ "$1" == "-barrier" ]]
+  then
+    echo ">>>>> Barrier"
+    CLASS="org.infinispan.creson.CyclicBarrier"
+    INSTANCES=1
+  elif [[ "$1" == "-countdownlatch" ]]
+  then
+    echo ">>>>> CountDownLatch"
+    CLASS="org.infinispan.creson.CountDownLatch"
+    CALLS=1
+    INSTANCES=1
+  fi
+  CLASSPATH=${PROJDIR}/target/*:${PROJDIR}/target/lib/*
+  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -clients ${CLIENTS} -calls ${CALLS} -verbose"
+  echo "java -cp ${CLASSPATH} ${ARGS} ${EXTRA}"
+  java -cp ${CLASSPATH} ${ARGS} ${EXTRA}
 fi

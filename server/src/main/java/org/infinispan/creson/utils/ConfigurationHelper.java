@@ -46,7 +46,7 @@ public class ConfigurationHelper {
         StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
         builder.customInterceptors().addInterceptor().before(NonTransactionalLockingInterceptor.class).
-                interceptor(new ForceSkipLockInterceptor());
+                interceptor(new SkipInterceptor());
 
         // clustering
         builder.clustering()
@@ -57,6 +57,7 @@ public class ConfigurationHelper {
 
         // indexing
         if (withIndexing) {
+            System.out.println("indexing cannot be used w. blocking objects!");
             builder.indexing().index(Index.LOCAL)
                     .addProperty("default.directory_provider", "ram")
                     .addProperty("lucene_version", "LUCENE_CURRENT");
@@ -64,11 +65,12 @@ public class ConfigurationHelper {
 
         // persistence
         if (withPassivation) {
+            System.out.println("passivation cannot be used w. blocking objects!");
             SingleFileStoreConfigurationBuilder storeConfigurationBuilder
                     = builder.persistence().addSingleFileStore();
             storeConfigurationBuilder.location(storagePath);
             storeConfigurationBuilder.persistence().passivation(true); // no write-through
-            storeConfigurationBuilder.fetchPersistentState(true);
+            storeConfigurationBuilder.fetchPersistentState(false);
             storeConfigurationBuilder.purgeOnStartup(purge);
         }
 
@@ -79,7 +81,7 @@ public class ConfigurationHelper {
 
     }
 
-    public static class ForceSkipLockInterceptor extends BaseAsyncInterceptor{
+    public static class SkipInterceptor extends BaseAsyncInterceptor{
 
         @Override
         public Object visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {

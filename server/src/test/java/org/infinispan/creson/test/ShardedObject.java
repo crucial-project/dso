@@ -1,4 +1,4 @@
-package org.infinispan.creson;
+package org.infinispan.creson.test;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

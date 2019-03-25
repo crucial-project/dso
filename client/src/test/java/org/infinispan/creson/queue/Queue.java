@@ -1,4 +1,4 @@
-package org.infinispan.creson.benchmarks.queue;
+package org.infinispan.creson.queue;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

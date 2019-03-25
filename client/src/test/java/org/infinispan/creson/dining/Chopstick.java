@@ -1,4 +1,4 @@
-package org.infinispan.creson.benchmarks.dining;
+package org.infinispan.creson.dining;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

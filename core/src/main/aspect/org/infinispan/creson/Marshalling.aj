@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
  */
 public aspect Marshalling {
 
-   interface Marshallable extends Externalizable {}
+   public interface Marshallable extends Externalizable {}
 
    public void Marshallable.writeExternal(ObjectOutput objectOutput) throws IOException {
       try {

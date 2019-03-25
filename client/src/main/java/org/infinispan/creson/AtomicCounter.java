@@ -1,63 +1,46 @@
-package org.infinispan.creson.concurrent;
+package org.infinispan.creson;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-/**
- *  The <tt>Counter</tt> class is a mutable data type to encapsulate a counter.
- *  <p>
- *  For additional documentation, see <a href="/algs4/12oop">Section 1.2</a> of
- *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
- *
- *  @author Robert Sedgewick
- *  @author Kevin Wayne
- */
-
 @Entity
-public class Counter implements Comparable<Counter> {
+public class AtomicCounter implements Comparable<AtomicCounter> {
 
-   @Id
-   public String name;     // counter name
-   public int count = 0;   // current value
+    @Id
+    public String name;
+    public int count;
 
-   public Counter(){}
+    public AtomicCounter(){}
 
-   /**
-    * Initializes a new counter starting at 0, with the given key.
-    * @param id the name of the counter
-    */
-   public Counter(String id) {
-      name = id;
-   }
+    public AtomicCounter(String name, int value){
+        this.name = name;
+        this.count = value;
+    }
 
-   /**
-    * Increments the counter by 1.
-    */
-   public void increment() {
-      count++;
-   }
+    public int increment() {
+        return increment(1);
+    }
 
-   /**
-    * The current count.
-    */
-   public int tally() {
-      return count;
-   }
+    public int increment(int inc){
+        count+=inc;
+        return count;
+    }
 
-   /**
-    * A string representation of this counter.
-    */
-   public String toString() {
-      return name + ":" + count;
-   }
+    public int decrement() {
+        return --count;
+    }
 
-   /**
-    * Compares this counter to that counter.
-    */
-   public int compareTo(Counter that) {
-      if      (this.count < that.count) return -1;
-      else if (this.count > that.count) return +1;
-      else                              return  0;
-   }
+    public int tally() {
+        return count;
+    }
 
+    public int compareTo(AtomicCounter that) {
+        if      (this.count < that.count) return -1;
+        else if (this.count > that.count) return +1;
+        else                              return  0;
+    }
+
+    public void reset() {
+        count=0;
+    }
 }

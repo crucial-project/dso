@@ -1,4 +1,4 @@
-package org.infinispan.creson.benchmarks.dining;
+package org.infinispan.creson.dining;
 
 import org.infinispan.creson.Factory;
 

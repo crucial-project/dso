@@ -1,6 +1,5 @@
-package org.infinispan.creson.benchmarks;
+package org.infinispan.creson;
 
-import org.infinispan.creson.Factory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -8,7 +7,6 @@ import org.kohsuke.args4j.Option;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +18,6 @@ import java.util.concurrent.Future;
  * @author Pierre Sutra
  */
 public class Benchmark {
-
 
     @Option(name = "-class", required = true, usage = "object class")
     String className;
@@ -42,7 +39,6 @@ public class Benchmark {
 
     @Option(name = "-verbose", usage = "real-time report of total throughput (in ops/sec)")
     boolean verbosity = false;
-
 
     public static void main(String args[]) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         new Benchmark().doMain(args);
@@ -66,22 +62,23 @@ public class Benchmark {
 
         Factory factory = Factory.get(server);
         ExecutorService service = Executors.newFixedThreadPool(clients + 1);
+        List<Task> clientTasks = new ArrayList<>();
 
-        // create instances
-        List<Object> objects = new ArrayList<>();
-        Random random = new Random(System.currentTimeMillis());
-        for (int i = 0; i < instances; i++) {
-            Class<Object> clazz = (Class<Object>) ClassLoader.getSystemClassLoader().loadClass(className);
-            Object object = factory.getInstanceOf(clazz,"object"+random.nextInt());
-            objects.add(object);
+        // create clients
+        Class<Task> taskClazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
+        for (int i = 0; i < this.clients; i++) {
+            Task task = taskClazz.getConstructor(String[].class, int.class, int.class).newInstance(parameters, calls, clients);
+            clientTasks.add(task);
         }
 
-        // create clients clients
-        List<Task> clients = new ArrayList<>();
-        for (int i = 0; i < this.clients; i++) {
-            Class<Task> clazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
-            Task task = clazz.getConstructor(List.class, String[].class, int.class).newInstance(objects , parameters, calls);
-            clients.add(task);
+        // create instances
+        List<Object> instances = new ArrayList<>();
+        for (int i = 0; i < this.instances; i++) {
+            instances.add(clientTasks.get(0).newObject(i));
+        }
+
+        for (Task task : clientTasks){
+            task.setInstances(instances);
         }
 
         // run clients then print results
@@ -89,10 +86,10 @@ public class Benchmark {
 
             if (verbosity) {
                 System.out.println("Reporting every 1s.");
-                service.submit(new TroughtputReporter(clients));
+                service.submit(new TroughtputReporter(clientTasks));
             }
 
-            List<Future<Double>> futures = service.invokeAll(clients);
+            List<Future<Double>> futures = service.invokeAll(clientTasks);
 
             double avgTime = 0;
             for (Future<Double> future : futures) {
@@ -104,7 +101,7 @@ public class Benchmark {
             }
 
             avgTime = avgTime / futures.size();
-            System.out.println("Average time: " + avgTime + " [Throughput=" + (1 / avgTime) * clients.size() + "]");
+            System.out.println("Average time: " + avgTime + " [Throughput=" + (1 / avgTime) * clientTasks.size() + "]");
 
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -140,4 +137,3 @@ public class Benchmark {
     }
 
 }
-
