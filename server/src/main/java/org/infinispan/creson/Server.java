@@ -84,7 +84,7 @@ public class Server {
             return;
         }
 
-        Runnable runnable = (Runnable) () -> {
+        Runnable runnable = () -> {
             File folder = new File(userLib);
             File[] listOfFiles = folder.listFiles();
             for (File file : listOfFiles) {
@@ -101,7 +101,7 @@ public class Server {
         }
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(runnable,3, 3, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(runnable, 3, 3, TimeUnit.SECONDS);
 
         String host = server.split(":")[0];
         int port = Integer.valueOf(
@@ -124,7 +124,7 @@ public class Server {
                 replicationFactor,
                 maxEntries,
                 false,
-                STORAGE_PATH_PREFIX + "/"+ host,
+                STORAGE_PATH_PREFIX + "/" + host,
                 true,
                 false);
 
@@ -178,16 +178,16 @@ public class Server {
         try {
             java.net.URLClassLoader loader = (java.net.URLClassLoader) ClassLoader.getSystemClassLoader();
             java.net.URL url = jar.toURI().toURL();
-            for (java.net.URL it : java.util.Arrays.asList(loader.getURLs())) {
+            for (java.net.URL it : loader.getURLs()) {
                 if (it.equals(url)) {
                     return;
                 }
             }
-            System.out.println("Loading "+jar.getName());
+            System.out.println("Loading " + jar.getName());
             java.lang.reflect.Method method = java.net.URLClassLoader.class.
-                    getDeclaredMethod("addURL", new Class[]{java.net.URL.class});
+                    getDeclaredMethod("addURL", java.net.URL.class);
             method.setAccessible(true); /*promote the method to public access*/
-            method.invoke(loader, new Object[]{url});
+            method.invoke(loader, url);
         } catch (final java.lang.NoSuchMethodException |
                 java.lang.IllegalAccessException |
                 java.net.MalformedURLException |

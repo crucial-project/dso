@@ -8,9 +8,8 @@
         <relativePath>../</relativePath>
     </parent>
 
-    <groupId>org.infinispan</groupId>
     <artifactId>infinispan-creson-client</artifactId>
-    <name>infinispan-creson-server</name>
+    <name>infinispan-creson-client</name>
     <description>The client side of the CRESON framework.</description>
 
     <dependencies>
