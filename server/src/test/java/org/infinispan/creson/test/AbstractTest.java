@@ -198,7 +198,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"creson", "stress"})
-    public void concurrentUpdate() throws Exception {
+    public void concurrentUpdates() throws Exception {
 
         ExecutorService service = Executors.newCachedThreadPool();
         List<Future<Integer>> futures = new ArrayList<>();
@@ -217,7 +217,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         }
         System.out.println("Average time: " + (System.currentTimeMillis() - start));
 
-        assert total == (NCALLS) : "obtained = " + total + "; espected = " + (NCALLS);
+        assert total == (NCALLS) : "obtained = " + total + "; expected = " + (NCALLS);
 
     }
 

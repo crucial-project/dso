@@ -2,7 +2,6 @@ package org.infinispan.creson.server;
 
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import org.infinispan.commands.write.PutKeyValueCommand;
-import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.object.Call;
@@ -52,16 +51,16 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
             log.trace(" Accessing " + reference);
 
         CallResponse future;
-        CacheEntry<Reference, Object> entry = ctx.lookupEntry(reference);
+        Object object = ctx.lookupEntry(reference).getValue();
 
         // FIXME elasticity
-        // assert (call instanceof CallConstruct) | (entry.getValue()!=null);
+        // assert (call instanceof CallConstruct) | (object!=null);
 
         if (log.isTraceEnabled()) {
             log.trace(" Received [" + call.toString() + "]");
             log.trace(" With ID " + call.getCallID() + "]");
             log.trace(" By " + call.getCallerID() + "]");
-            log.trace(" Value  "+entry.getValue());
+            log.trace(" Object "+object);
             // log.trace(" lastCall="+lastCall);
         }
 
@@ -97,21 +96,19 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                     CallInvoke invocation = (CallInvoke) call;
 
                     // FIXME elasticity
-		    if (entry.getValue() == null ) {
-			entry.setValue(
-				       Reflection.open(reference, new Object[0]));
-		    }
+                    // assert (object != null);
+                    if (object == null ) {
+                        object = Reflection.open(reference, new Object[0]);
+                    }
 
-		   //assert (entry.getValue() != null);
-		    
                     java.lang.Object[] args = invocation.arguments;
 
                     java.lang.Object response;
 
                     try {
 
-                        synchronized (entry.getKey()) { // synchronization contract
-                            response = callObject(entry.getValue(), invocation.method, args);
+                        synchronized (object) { // synchronization contract
+                            response = callObject(object, invocation.method, args);
                         }
 
                         future.set(response);
@@ -125,13 +122,12 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
                     CallConstruct callConstruct = (CallConstruct) call;
 
-                    if (entry.getValue() == null | callConstruct.getForceNew()) {
+                    if (object == null | callConstruct.getForceNew()) {
 
                         if (log.isTraceEnabled())
                             log.trace(" New [" + reference + "]");
 
-                        entry.setValue(
-                                Reflection.open(reference, callConstruct.getInitArgs()));
+                        object = Reflection.open(reference, callConstruct.getInitArgs());
 
                     }
 
@@ -153,20 +149,18 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
 
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
-            synchronized (entry.getValue()) { // synchronization contract
-                future.setState(unmarshall(marshall(entry.getValue())));
+            synchronized (object) { // synchronization contract
+                future.setState(unmarshall(marshall(object)));
             }
         }
 
-        if (call instanceof CallConstruct) {
-            PutKeyValueCommand clone = cf.buildPutKeyValueCommand(
-                    command.getKey(),
-                    entry.getValue(),
-                    command.getSegment(),
-                    command.getMetadata(),
-                    command.getFlagsBitSet());
-            invokeNext(ctx, clone);
-        }
+        PutKeyValueCommand clone = cf.buildPutKeyValueCommand(
+                command.getKey(),
+                object,
+                command.getSegment(),
+                command.getMetadata(),
+                command.getFlagsBitSet());
+        invokeNext(ctx, clone);
 
         if (log.isTraceEnabled()) {
             log.trace(" Executed [" + call.toString() + "] -> "+future.toString());

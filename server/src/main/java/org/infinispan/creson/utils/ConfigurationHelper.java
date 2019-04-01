@@ -1,18 +1,12 @@
 package org.infinispan.creson.utils;
 
-import org.infinispan.commands.FlagAffectedCommand;
-import org.infinispan.commands.VisitableCommand;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.context.impl.FlagBitSets;
 import org.infinispan.creson.Factory;
 import org.infinispan.creson.server.StateMachineInterceptor;
-import org.infinispan.interceptors.BaseAsyncInterceptor;
 import org.infinispan.interceptors.impl.CallInterceptor;
-import org.infinispan.interceptors.locking.NonTransactionalLockingInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
 
@@ -45,8 +39,6 @@ public class ConfigurationHelper {
         // SMR interceptor
         StateMachineInterceptor stateMachineInterceptor = new StateMachineInterceptor();
         builder.customInterceptors().addInterceptor().before(CallInterceptor.class).interceptor(stateMachineInterceptor);
-        builder.customInterceptors().addInterceptor().before(NonTransactionalLockingInterceptor.class).
-                interceptor(new SkipInterceptor());
 
         // clustering
         builder.clustering()
@@ -79,15 +71,6 @@ public class ConfigurationHelper {
         stateMachineInterceptor.setup(Factory.
                 forCache(manager.getCache(CRESON_CACHE_NAME)));
 
-    }
-
-    public static class SkipInterceptor extends BaseAsyncInterceptor{
-
-        @Override
-        public Object visitCommand(InvocationContext ctx, VisitableCommand command) throws Throwable {
-            ((FlagAffectedCommand) command).setFlagsBitSet(FlagBitSets.SKIP_LOCKING);
-            return invokeNext(ctx, command);
-        }
     }
 
 }
