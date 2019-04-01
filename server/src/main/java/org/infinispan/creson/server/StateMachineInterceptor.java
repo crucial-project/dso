@@ -55,7 +55,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
         CacheEntry<Reference, Object> entry = ctx.lookupEntry(reference);
 
         // FIXME elasticity
-        assert (call instanceof CallConstruct) | (entry.getValue()!=null);
+        // assert (call instanceof CallConstruct) | (entry.getValue()!=null);
 
         if (log.isTraceEnabled()) {
             log.trace(" Received [" + call.toString() + "]");
@@ -97,13 +97,13 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                     CallInvoke invocation = (CallInvoke) call;
 
                     // FIXME elasticity
-//                    if (entry.getValue() == null ) {
-//                        entry.setValue(
-//                                Reflection.open(reference, new Object[0]));
-//                    }
+		    if (entry.getValue() == null ) {
+			entry.setValue(
+				       Reflection.open(reference, new Object[0]));
+		    }
 
-                    assert (entry.getValue() != null);
-
+		   //assert (entry.getValue() != null);
+		    
                     java.lang.Object[] args = invocation.arguments;
 
                     java.lang.Object response;
