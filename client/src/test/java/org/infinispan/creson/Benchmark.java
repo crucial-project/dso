@@ -31,7 +31,7 @@ public class Benchmark {
     @Option(name = "-clients", required = true, usage = "#clients")
     int clients;
 
-    @Option(name = "-calls", required = true, usage = "#calls per client")
+    @Option(name = "-calls", required = true, usage = "#calls per Dockerfile")
     int calls;
 
     @Option(name = "-server", usage = "connection string to server")

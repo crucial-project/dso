@@ -2,7 +2,7 @@
 
 DIR=$(dirname "${BASH_SOURCE[0]}")
 
-TMPLDIR="${DIR}/../templates"
+TMPLDIR="${DIR}/templates"
 CONFIG_FILE="${DIR}/exp.config"
 TMPDIR="/tmp"
 LOGDIR="${TMPDIR}/log"
@@ -92,6 +92,18 @@ k8s_delete_pod() {
     info "pod ${pod_name} deleted at ${context}"
 }
 
+k8s_pod_cp(){
+    if [ $# -ne 3 ]; then
+        echo "usage: k8s_pod_cp src pod dst"
+        exit -1
+    fi
+    local src=$1
+    local pod=$2
+    local dst=$2
+    kubectl cp $1 $2:$3
+   
+}
+
 k8s_create_all_pods(){
     local context=$(config context)
     local service=$(cat ${CONFIG_FILE} | grep -ioh "/.*:" | sed s,[/:],,g)
@@ -159,8 +171,21 @@ k8s_rs_create() {
 	sed s,%CLOUD%,$(config cloud),g \
             >${file}
 
-    # create rs
     info $(kubectl --context="${context}" create -f ${file})
+    
+    # wait until 
+    started=0
+    while [ "${started}" != "1" ]; do
+        sleep 1
+	starting=$(kubectl --context="${context}" get pods 2>&1 |
+		       grep $(k8s_name ${file}) |
+		       grep -v "Running" |
+		       wc -l)
+	if [ "${starting}" == "0" ]
+	then
+	    started=1
+	fi
+    done
 }
 
 k8s_rs_delete() {
@@ -171,8 +196,18 @@ k8s_rs_delete() {
     local template=$1
     local context=$(config context)
     local file=${template}-0
+    local image=$(k8s_name ${file})   
 
     info $(kubectl --context="${context}" delete -f ${file})
+    
+    # wait until 
+    running=1
+    while [ "${running}" != "0" ]; do
+        sleep 1
+	running=$(kubectl --context="${context}" get pods 2>&1 |
+		      grep ${image} |
+		      wc -l)
+    done
 }
 
 k8s_rs_count_pods() {
@@ -185,6 +220,25 @@ k8s_rs_count_pods() {
     local file=${template}-0
     local name=$(k8s_name ${file})
     kubectl --context="${context}" get pod -l app=${name} | grep "Running" | wc -l
+}
+
+k8s_rs_cp(){
+    if [ $# -ne 3 ]; then
+        echo "usage: k8s_rs_cp template.yaml file dst"
+        exit -1
+    fi
+    
+    local template=$1
+    local file=$2
+    local dst=$3
+    local context=$(config context)
+    local rs_name=$(k8s_name ${template})
+    
+    for pod in $(kubectl --context=${context} get pods | grep ${rs_name} | awk '{print $1}');
+    do
+	info "copying ${file} to ${pod}:${dst} at ${context}"
+	k8s_pod_cp ${file} ${pod} ${dst}
+    done
 }
 
 k8s_clean_all(){

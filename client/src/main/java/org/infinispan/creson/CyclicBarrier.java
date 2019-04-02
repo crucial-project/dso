@@ -9,14 +9,13 @@ public class CyclicBarrier {
     public CyclicBarrier(){}
 
     public CyclicBarrier(String name, int parties){
-        this.counter = new AtomicCounter(name,0);
-        this.generation = new AtomicCounter(name,0);
+        this.counter = new AtomicCounter(name+"-counter",0);
+        this.generation = new AtomicCounter(name+"generation",0);
         this.parties = parties;
     }
 
     public int await(){
         int previous = generation.tally();
-
         int ret = counter.increment();
         if (ret % parties == 0) {
             counter.reset();
@@ -24,10 +23,11 @@ public class CyclicBarrier {
         }
 
         int current = generation.tally();
+        int backoff = 2;
         while (previous == current) {
             current = generation.tally();
             try {
-                Thread.sleep(100);
+                Thread.currentThread().sleep(backoff);
             } catch (InterruptedException e) {
                 // ignore
             }

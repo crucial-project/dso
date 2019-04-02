@@ -3,7 +3,7 @@
 PROJDIR=`realpath $(dirname "${BASH_SOURCE[0]}")/../../../../`
 TARGETDIR="${PROJDIR}/target"
 
-NSERVERS=2
+NSERVERS=3
 NAME="infinispan-creson-server"
 MAINTAINER="0track"
 TAG="latest"
@@ -11,14 +11,14 @@ IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
 INSTANCES="1"
-CLIENTS="16"
+CLIENTS="100"
 CALLS="1000"
 
 CLIENT="infinispan-creson-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
 
 if [ $# -ne 1 ]; then
-    echo "usage: -[create|blobs|counters|delete]"
+    echo "usage: -[create|blobs|counters|countdownlatch|barrier|delete]"
     exit -1
 fi
 

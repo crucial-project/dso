@@ -3,24 +3,24 @@
 DIR=$(dirname "${BASH_SOURCE[0]}")
 source ${DIR}/utils_functions.sh
 
-start_increment(){
-    k8s_create_job ${TMPLDIR}/counter-test.yaml.tmpl
-}
-
-wait_increment(){
-    k8s_wait_job ${TMPLDIR}/counter-test.yaml.tmpl
-    k8s_fetch_logs ${TMPLDIR}/counter-test.yaml.tmpl "^[0-9]*:[0-9]*$" 
-    k8s_delete_job ${TMPLDIR}/counter-test.yaml.tmpl    
-}
-
 start_access(){
-    k8s_create_job ${TMPLDIR}/blob-test.yaml.tmpl
+    if [ $# -ne 1 ]; then
+        echo "usage: start_access template.yaml"
+        exit -1
+    fi
+    local template=$1
+    k8s_create_job ${template}
 }
 
 wait_access(){
-    k8s_wait_job ${TMPLDIR}/blob-test.yaml.tmpl
-    k8s_fetch_logs ${TMPLDIR}/blob-test.yaml.tmpl "^[0-9]*:[0-9]*$" 
-    k8s_delete_job ${TMPLDIR}/blob-test.yaml.tmpl    
+    if [ $# -ne 1 ]; then
+        echo "usage: wait_access template.yaml"
+        exit -1
+    fi
+    local template=$1
+    k8s_wait_job ${template}
+    k8s_fetch_logs ${template} "^[0-9]*:[0-9]*$" 
+    k8s_delete_job ${template}
 }
 
 # utils

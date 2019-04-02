@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: infinispan-creson-client
+spec:
+  parallelism: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: infinispan-creson-client
+        image: %IMAGE%
+        resources:
+          requests:
+            cpu: 0.2
+        env:
+          - name: PROXY
+            value: "%PROXY%"
+          - name: CLIENTS
+            value: "1"
+          - name: INSTANCES
+            value: "10000"
+          - name: CALLS
+            value: "100000"
+          - name: CLASS
+            value: "org.infinispan.creson.AtomicCounter"

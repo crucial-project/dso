@@ -14,21 +14,17 @@ if [ -z "${DOCKER_USER}" ]; then
 fi
 
 DIR=$(dirname "$0")
-IMAGE=${DOCKER_USER}/infinispan-creson-client-test:${TAG}
+IMAGE=${DOCKER_USER}/infinispan-creson-client-tests:${TAG}
 DOCKERFILE=${DIR}/../docker/Dockerfile
 
 # package
 mvn clean package -DskipTests
-
-# last commit hash
-# FIXME
-# git log -1 --format="%H" >${DIR}/../../../version-hash
 
 # build image
 docker build \
     --no-cache \
     -t "${IMAGE}" -f "${DOCKERFILE}" .
 
-# # push image
+# push image
 docker push "${IMAGE}"
 
