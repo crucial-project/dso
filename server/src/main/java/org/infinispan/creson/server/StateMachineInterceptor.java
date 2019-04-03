@@ -1,6 +1,7 @@
 package org.infinispan.creson.server;
 
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.creson.Factory;
@@ -12,7 +13,7 @@ import org.infinispan.creson.object.Reference;
 import org.infinispan.creson.utils.Context;
 import org.infinispan.creson.utils.ContextManager;
 import org.infinispan.creson.utils.Reflection;
-import org.infinispan.interceptors.distribution.NonTxDistributionInterceptor;
+import org.infinispan.interceptors.impl.ClusteringInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -28,12 +29,18 @@ import static org.infinispan.creson.server.Marshalling.unmarshall;
 import static org.infinispan.creson.utils.Reflection.callObject;
 import static org.infinispan.creson.utils.Reflection.hasReadOnlyMethods;
 
-public class StateMachineInterceptor extends NonTxDistributionInterceptor {
+public class StateMachineInterceptor extends ClusteringInterceptor {
 
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
     private ConcurrentMap<Reference,Map<UUID,CallResponse>> lastCall = new ConcurrentHashMap<>(); // UUID == callID
     private Factory factory;
+
+    @Override
+    public java.lang.Object visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
+        lastCall.clear();
+        return super.visitClearCommand(ctx, command);
+    }
 
     @Override
     public java.lang.Object visitPutKeyValueCommand(InvocationContext ctx, PutKeyValueCommand command) throws Throwable {
@@ -128,6 +135,7 @@ public class StateMachineInterceptor extends NonTxDistributionInterceptor {
                             log.trace(" New [" + reference + "]");
 
                         object = Reflection.open(reference, callConstruct.getInitArgs());
+                        lastCall.get(reference).clear();
 
                     }
 

@@ -237,13 +237,17 @@ public class Factory {
     }
 
     public void close() {
-        cache.clear();
         log.info("closed");
     }
 
     @Override
     public String toString() {
         return "Factory[" + cache.toString() + "]";
+    }
+
+    public void clear(){
+        log.info("cleared");
+        cache.clear();
     }
 
 }

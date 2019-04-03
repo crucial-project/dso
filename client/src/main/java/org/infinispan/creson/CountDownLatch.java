@@ -15,11 +15,6 @@ public class CountDownLatch {
         long current = getCount();
         while(current != 0) {
             current=getCount();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                // ignore
-            }
         }
         return ret;
     }
@@ -30,10 +25,6 @@ public class CountDownLatch {
 
     public int getCount(){
         return counter.tally();
-    }
-
-    public void reset(){
-        counter.increment(this.parties);
     }
 
 }

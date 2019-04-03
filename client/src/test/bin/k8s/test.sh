@@ -40,11 +40,11 @@ else
 	usage
     fi
     start_access ${template}
-    start_monitor
+    # start_monitor
     wait_access ${template}
     # sleep 300
-    stop_monitor
-    compute_throughput
+    # stop_monitor
+    # compute_throughput
 fi
 
 

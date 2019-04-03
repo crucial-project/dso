@@ -64,6 +64,9 @@ public class Benchmark {
         ExecutorService service = Executors.newFixedThreadPool(clients + 1);
         List<Task> clientTasks = new ArrayList<>();
 
+        // clear previous objects
+        factory.clear();
+
         // create clients
         Class<Task> taskClazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
         for (int i = 0; i < this.clients; i++) {

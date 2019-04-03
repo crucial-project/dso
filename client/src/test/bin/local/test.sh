@@ -11,8 +11,8 @@ IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
 INSTANCES="1"
-CLIENTS="100"
-CALLS="1000"
+CLIENTS="200"
+CALLS="200"
 
 CLIENT="infinispan-creson-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)

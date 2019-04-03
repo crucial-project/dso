@@ -2,6 +2,8 @@ package org.infinispan.creson;
 
 public class CyclicBarrier {
 
+    private static final int MAGIC = 10;
+
     private AtomicCounter counter;
     private AtomicCounter generation;
     private int parties;
@@ -23,14 +25,14 @@ public class CyclicBarrier {
         }
 
         int current = generation.tally();
-        int backoff = 2;
+        int backoff = (parties - ret)/MAGIC;
         while (previous == current) {
-            current = generation.tally();
             try {
                 Thread.currentThread().sleep(backoff);
             } catch (InterruptedException e) {
                 // ignore
             }
+            current = generation.tally();
         }
         return ret;
     }
