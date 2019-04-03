@@ -25,14 +25,14 @@ public class Benchmark {
     @Option(name = "-parameters", usage = "parameters of the call ")
     String[] parameters;
 
-    @Option(name = "-instances", required = true, usage = "#instances")
-    int instances;
+    @Option(name = "-instances", usage = "#instances")
+    int instances = 1;
 
-    @Option(name = "-clients", required = true, usage = "#clients")
-    int clients;
+    @Option(name = "-clients", usage = "#clients")
+    int clients = 1;
 
-    @Option(name = "-calls", required = true, usage = "#calls per Dockerfile")
-    int calls;
+    @Option(name = "-calls", usage = "#calls per Dockerfile")
+    int calls = 1;
 
     @Option(name = "-server", usage = "connection string to server")
     String server = "127.0.0.1:11222";
@@ -50,7 +50,7 @@ public class Benchmark {
         CmdLineParser parser = new CmdLineParser(this);
         parser.setUsageWidth(80);
         try {
-            if (args.length < 6)
+            if (args.length < 1)
                 throw new CmdLineException(parser, "Not enough arguments are given.");
             parser.parseArgument(args);
         } catch (CmdLineException e) {

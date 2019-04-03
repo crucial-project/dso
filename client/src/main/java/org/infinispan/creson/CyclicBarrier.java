@@ -8,8 +8,6 @@ public class CyclicBarrier {
     private AtomicCounter generation;
     private int parties;
 
-    public CyclicBarrier(){}
-
     public CyclicBarrier(String name, int parties){
         this.counter = new AtomicCounter(name+"-counter",0);
         this.generation = new AtomicCounter(name+"generation",0);

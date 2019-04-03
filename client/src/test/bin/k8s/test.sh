@@ -36,6 +36,9 @@ else
     elif [[ "$1" == "-barrier" ]]
     then
 	template=${TMPLDIR}/barrier-test.yaml.tmpl
+    elif [[ "$1" == "-sbarrier" ]]
+    then
+	template=${TMPLDIR}/sbarrier-test.yaml.tmpl
     else
 	usage
     fi

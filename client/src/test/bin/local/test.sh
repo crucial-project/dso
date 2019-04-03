@@ -11,14 +11,14 @@ IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
 INSTANCES="1"
-CLIENTS="200"
-CALLS="200"
+CLIENTS="128"
+CALLS="10"
 
 CLIENT="infinispan-creson-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
 
 if [ $# -ne 1 ]; then
-    echo "usage: -[create|blobs|counters|countdownlatch|barrier|delete]"
+    echo "usage: -[create|blobs|counters|countdownlatch|barrier|sbarrier|delete]"
     exit -1
 fi
 
@@ -63,6 +63,11 @@ else
   then
     echo ">>>>> Barrier"
     CLASS="org.infinispan.creson.CyclicBarrier"
+    INSTANCES=1
+  elif [[ "$1" == "-sbarrier" ]]
+  then
+    echo ">>>>> Scalable Barrier"
+    CLASS="org.infinispan.creson.ScalableCyclicBarrier"
     INSTANCES=1
   elif [[ "$1" == "-countdownlatch" ]]
   then

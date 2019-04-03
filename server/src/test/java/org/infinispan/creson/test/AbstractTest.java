@@ -318,7 +318,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         assert l1.size() == 1;
     }
 
-    @Test(groups = {"creson", "stress"})
+    @Test(groups = {"creson", "stress"}, enabled = false)
     public void baseElasticity() throws Exception {
 
         advancedComposition();
@@ -334,7 +334,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         advancedComposition();
     }
 
-    @Test(groups = {"creson", "stress"})
+    @Test(groups = {"creson", "stress"}, enabled = false)
     public void advancedElasticity() throws Exception {
 
         ExecutorService service = Executors.newCachedThreadPool();

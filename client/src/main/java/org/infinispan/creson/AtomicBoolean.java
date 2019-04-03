@@ -1,11 +1,16 @@
 package org.infinispan.creson;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 
 /**
  * @author Daniel
  */
+@Entity
 public class AtomicBoolean implements Serializable{
+
+    @Id public String name;
     private boolean value;
 
     /**
@@ -13,8 +18,9 @@ public class AtomicBoolean implements Serializable{
      *
      * @param initialValue the initial value
      */
-    public AtomicBoolean(boolean initialValue){
-        value = initialValue;
+    public AtomicBoolean(String name, boolean initialValue){
+        this.name = name;
+        this.value = initialValue;
     }
 
     /**
