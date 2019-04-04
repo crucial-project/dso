@@ -13,6 +13,6 @@ public class CyclicBarrierTask extends Task{
 
     @Override
     public Object newObject(int id) {
-        return new CyclicBarrier("barrier-"+id, clients);
+        return new CyclicBarrier("barrier-"+id, threads);
     }
 }

@@ -28,8 +28,8 @@ public class Benchmark {
     @Option(name = "-instances", usage = "#instances")
     int instances = 1;
 
-    @Option(name = "-clients", usage = "#clients")
-    int clients = 1;
+    @Option(name = "-threads", usage = "#threads")
+    int threads = 1;
 
     @Option(name = "-calls", usage = "#calls per Dockerfile")
     int calls = 1;
@@ -61,16 +61,16 @@ public class Benchmark {
         }
 
         Factory factory = Factory.get(server);
-        ExecutorService service = Executors.newFixedThreadPool(clients + 1);
+        ExecutorService service = Executors.newFixedThreadPool(threads + 1);
         List<Task> clientTasks = new ArrayList<>();
 
         // clear previous objects
         factory.clear();
 
-        // create clients
+        // create threads
         Class<Task> taskClazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
-        for (int i = 0; i < this.clients; i++) {
-            Task task = taskClazz.getConstructor(String[].class, int.class, int.class).newInstance(parameters, calls, clients);
+        for (int i = 0; i < this.threads; i++) {
+            Task task = taskClazz.getConstructor(String[].class, int.class, int.class).newInstance(parameters, calls, threads);
             clientTasks.add(task);
         }
 
@@ -84,7 +84,7 @@ public class Benchmark {
             task.setInstances(instances);
         }
 
-        // run clients then print results
+        // run threads then print results
         try {
 
             if (verbosity) {

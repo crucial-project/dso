@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
  */
 public class Benchmark {
 
-   @Option(name = "-clients", required = true, usage = "# clients")
+   @Option(name = "-threads", required = true, usage = "# threads")
    int C;
 
    @Option(name = "-operations", required = true, usage = "# operations")
@@ -53,13 +53,13 @@ public class Benchmark {
       // create one shared queue
       Queue<Integer> queue = new Queue<>("test");
 
-      // create C clients
+      // create C threads
       List<ExerciceQueueCallable> clients = new ArrayList<>();
       for (int i = 0; i < C; i++) {
          clients.add(new ExerciceQueueCallable(T, queue));
       }
 
-      // run clients then print results
+      // run threads then print results
       try {
          List<Future<Long>> futures = service.invokeAll(clients);
          long avgTime = 0;

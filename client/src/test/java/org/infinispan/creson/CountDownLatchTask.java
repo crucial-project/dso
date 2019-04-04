@@ -13,7 +13,7 @@ public class CountDownLatchTask extends Task{
 
     @Override
     public Object newObject(int id) {
-        return new CountDownLatch("barrier-"+id,clients);
+        return new CountDownLatch("barrier-"+id, threads);
     }
 
 }

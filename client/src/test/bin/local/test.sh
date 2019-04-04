@@ -11,7 +11,7 @@ IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
 INSTANCES="1"
-CLIENTS="128"
+THREADS="128"
 CALLS="10"
 
 CLIENT="infinispan-creson-client"
@@ -77,7 +77,7 @@ else
     INSTANCES=1
   fi
   CLASSPATH=${PROJDIR}/target/*:${PROJDIR}/target/lib/*
-  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -clients ${CLIENTS} -calls ${CALLS} -verbose"
+  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -threads ${THREADS} -calls ${CALLS} -verbose"
   echo "java -cp ${CLASSPATH} ${ARGS} ${EXTRA}"
   java -cp ${CLASSPATH} ${ARGS} ${EXTRA}
 fi

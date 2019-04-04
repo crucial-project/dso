@@ -1,5 +1,8 @@
 package org.infinispan.creson;
 
+/**
+ * From "Two Algorithms for Barrier Synchronization", Hensgen et al.
+ */
 public class ScalableCyclicBarrier {
 
     private static final int SLEEP = 10;
