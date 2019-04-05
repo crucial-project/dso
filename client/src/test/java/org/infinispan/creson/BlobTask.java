@@ -7,8 +7,8 @@ public class BlobTask extends Task {
     private Random random;
     private int size;
 
-    public BlobTask(String[] parameters, int calls, int clients) {
-        super(parameters, calls, clients);
+    public BlobTask(String[] parameters, int calls, int threads, int parallelism) {
+        super(parameters, calls, threads, parallelism);
         assert parameters != null && parameters.length == 1;
         size = Integer.parseInt(parameters[0]);
         random = new Random();

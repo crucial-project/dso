@@ -11,6 +11,7 @@ import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.creson.container.AbstractContainer;
 import org.infinispan.creson.container.BaseContainer;
 import org.infinispan.creson.object.Reference;
+import org.infinispan.creson.utils.ContextManager;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,6 +62,11 @@ public class Factory {
         }
 
         return factories.get(cache);
+    }
+
+    public static Factory get(String server, long seed) {
+        ContextManager.seedGenerator(seed);
+        return get(server);
     }
 
     public static Factory get(String server) {

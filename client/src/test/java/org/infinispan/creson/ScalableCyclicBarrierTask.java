@@ -2,8 +2,8 @@ package org.infinispan.creson;
 
 public class ScalableCyclicBarrierTask extends Task{
 
-    public ScalableCyclicBarrierTask(String[] parameters, int calls, int clients) {
-        super(parameters, calls, clients);
+    public ScalableCyclicBarrierTask(String[] parameters, int calls, int threads, int parallelism) {
+        super(parameters, calls, threads, parallelism);
     }
 
     @Override
@@ -13,6 +13,6 @@ public class ScalableCyclicBarrierTask extends Task{
 
     @Override
     public Object newObject(int id) {
-        return new ScalableCyclicBarrier("barrier-"+id, threads);
+        return new ScalableCyclicBarrier("barrier-"+id, parallelism*threads);
     }
 }

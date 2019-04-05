@@ -39,6 +39,7 @@ public class ScalableCyclicBarrier {
 
         try{
             for(int instance=0; instance<logParties; instance++) {
+                if (intended[instance] == myId) continue;
                 while (answers[intended[instance]][instance].get()) {Thread.currentThread().sleep(SLEEP);}
                 answers[intended[instance]][instance].set(true);
                 while (!answers[myId][instance].get()) {Thread.currentThread().sleep(SLEEP);}

@@ -5,7 +5,7 @@ metadata:
   labels:
     app: infinispan-creson-server
 spec:
-  replicas: 3
+  replicas: %REPLICAS%
   selector:
     matchLabels:
       app: infinispan-creson-server
@@ -20,9 +20,9 @@ spec:
          imagePullPolicy: "Always"
          resources:
            requests:
-             cpu: 0.5
+             cpu: %CPU%
            limits:
-             cpu: 0.5
+             cpu: %CPU%
          env:
          - name: IP
            valueFrom:

@@ -14,6 +14,10 @@ public class ContextManager {
    private static NoArgGenerator generator
            = Generators.randomBasedGenerator(new Random(System.nanoTime()));
 
+   public static void seedGenerator(long seed){
+      generator = Generators.randomBasedGenerator(new Random(seed));
+   }
+
    private static ThreadLocal<Context> context =
            ThreadLocal.withInitial(() -> new Context(
                    generator.generate(),

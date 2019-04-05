@@ -23,13 +23,15 @@ public class CyclicBarrier {
         }
 
         int current = generation.tally();
-        int backoff = (parties - ret)/MAGIC;
+        int backoff = (parties - Math.abs(ret % parties))/MAGIC;
+        // System.out.println(ret+" - ("+current+","+previous+")");
         while (previous == current) {
             try {
                 Thread.currentThread().sleep(backoff);
             } catch (InterruptedException e) {
                 // ignore
             }
+            // System.out.println(ret+" - ("+current+","+previous+")");
             current = generation.tally();
         }
         return ret;

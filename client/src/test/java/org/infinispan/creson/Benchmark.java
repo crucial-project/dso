@@ -19,26 +19,37 @@ import java.util.concurrent.Future;
  */
 public class Benchmark {
 
+    @Option(name="-id", usage = "identifier of this task")
+    private long id = System.nanoTime();
+
     @Option(name = "-class", required = true, usage = "object class")
-    String className;
+    private String className;
 
     @Option(name = "-parameters", usage = "parameters of the call ")
-    String[] parameters;
+    private String[] parameters;
 
-    @Option(name = "-instances", usage = "#instances")
-    int instances = 1;
+    @Option(name = "-parallelism", usage = "# benchmarks")
+    private int parallelism = 1;
 
-    @Option(name = "-threads", usage = "#threads")
-    int threads = 1;
+    @Option(name = "-instances", usage = "# instances")
+    private int instances = 1;
+
+    @Option(name = "-threads", usage = "# threads")
+    private int threads = 1;
 
     @Option(name = "-calls", usage = "#calls per Dockerfile")
-    int calls = 1;
+    private int calls = 1;
 
     @Option(name = "-server", usage = "connection string to server")
-    String server = "127.0.0.1:11222";
+    private String server = "127.0.0.1:11222";
+
+    @Option(name = "-persist", usage = "persist storage after the run")
+    private boolean persist = false;
 
     @Option(name = "-verbose", usage = "real-time report of total throughput (in ops/sec)")
-    boolean verbosity = false;
+    private boolean verbosity = false;
+
+    private CyclicBarrier barrier;
 
     public static void main(String args[]) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         new Benchmark().doMain(args);
@@ -60,17 +71,15 @@ public class Benchmark {
             return;
         }
 
-        Factory factory = Factory.get(server);
+        Factory factory = Factory.get(server, id);
+        barrier = new CyclicBarrier("benchmark", parallelism);
         ExecutorService service = Executors.newFixedThreadPool(threads + 1);
         List<Task> clientTasks = new ArrayList<>();
-
-        // clear previous objects
-        factory.clear();
 
         // create threads
         Class<Task> taskClazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
         for (int i = 0; i < this.threads; i++) {
-            Task task = taskClazz.getConstructor(String[].class, int.class, int.class).newInstance(parameters, calls, threads);
+            Task task = taskClazz.getConstructor(String[].class, int.class, int.class, int.class).newInstance(parameters, calls, threads, parallelism);
             clientTasks.add(task);
         }
 
@@ -83,6 +92,10 @@ public class Benchmark {
         for (Task task : clientTasks){
             task.setInstances(instances);
         }
+
+        // sync start
+        barrier.await();
+        long start = System.currentTimeMillis();
 
         // run threads then print results
         try {
@@ -103,13 +116,25 @@ public class Benchmark {
                 }
             }
 
+            service.shutdown();
             avgTime = avgTime / futures.size();
+            System.out.println("Total time: " + (System.currentTimeMillis() - start));
             System.out.println("Average time: " + avgTime + " [Throughput=" + (1 / avgTime) * clientTasks.size() + "]");
 
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
+
+        // sync terminate
+        barrier.await();
+        System.out.println("Checksum: "+clientTasks.get(0).checksum());
+        try {
+            Thread.currentThread().sleep(3000);
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        if (!persist) factory.clear();
         factory.close();
     }
 

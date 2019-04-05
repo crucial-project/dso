@@ -2,8 +2,8 @@
 
 DIR=$(dirname "${BASH_SOURCE[0]}")
 
-MACHINE_TYPE=n1-standard-2
-NODE_NUMBER=8
+MACHINE_TYPE=n1-standard-8
+NODE_NUMBER=4
 GCP_PROJECT=$(gcloud config list --format='value(core.project)')
 NETWORK="projects/${GCP_PROJECT}/global/networks/default"
 
@@ -63,9 +63,13 @@ fetch_credentials() {
 }
 
 name="creson"
-zone="europe-west4-b"
+zone="europe-north1-c"
 sleep_time=$((i * 2)) # avoid "gcp db locked" error
 
 create_cluster ${name} ${zone} ${sleep_time}
 fetch_credentials ${name} ${zone}
 
+# RBAC
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user 0track@gmail.com
+kubectl apply -f ${DIR}/../templates/service.yaml
+kubectl apply -f ${DIR}/../templates/role.yaml

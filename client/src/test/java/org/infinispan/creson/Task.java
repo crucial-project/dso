@@ -10,6 +10,7 @@ public abstract class Task implements Callable<Double> {
 
     private int calls;
     protected int threads;
+    protected int parallelism;
     protected String[] parameters;
     protected List<Object> instances;
 
@@ -17,10 +18,11 @@ public abstract class Task implements Callable<Double> {
     private Lock lock;
     private boolean isOver;
 
-    public Task(String[] parameters, int calls, int threads) {
+    public Task(String[] parameters, int calls, int threads, int parallelism) {
         this.threads = threads;
         this.calls = calls;
         this.parameters = parameters;
+        this.parallelism = parallelism;
 
         latencies = new ArrayList<>();
         isOver = false;
@@ -71,5 +73,9 @@ public abstract class Task implements Callable<Double> {
     public abstract void doCall();
 
     public abstract Object newObject(int id);
+
+    public int checksum(){
+        return 0;
+    }
 
 }

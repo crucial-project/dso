@@ -4,14 +4,16 @@ MAINTAINER otrack
 
 ENV NAME=infinispan-creson-client
 ENV VERSION=9.4.1.Final
+ENV JAR=$NAME-${VERSION}.jar
+ENV TESTJAR=$NAME-${VERSION}-tests.jar
 ENV THREADS=1
 ENV INSTANCES=1
 ENV CALLS=1
+ENV PARALLELISM=1
 ENV PROXY=127.0.0.1:11222
 ENV CLASS=Counter
-ENV EXTRA=""
-ENV JAR=$NAME-${VERSION}.jar
-ENV TESTJAR=$NAME-${VERSION}-tests.jar
+ENV PARAMETERS="\"\""
+ENV ID=""
 
 ADD src/test/bin/client-test.sh  .
 ADD target/$JAR .

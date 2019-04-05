@@ -153,27 +153,32 @@ k8s_pod_status() {
 
 # replicaSet
 k8s_rs_create() {
-    if [ $# -ne 1 ]; then
-        echo "usage: k8s_rs_create template.yaml"
+    if [ $# -ne 4 ]; then
+        echo "usage: k8s_rs_create template.yaml #replicas cpu pattern"
         exit -1
     fi
     local template=$1
-    local context=$2
+    local replicas=$2
+    local cpu=$3
+    local pattern=$4
+
+    local context=$(config context)
     local file=${template}-0
     local pull=$(config pull-image)
     local image=$(config image)
+    local rs_name=$(k8s_name ${template})
 
-    # create final template
+    # create template
     cat ${template} |
 	sed s,%IMAGE%,${image},g |
 	sed s,%PULL_IMAGE%,${pull},g |
-        sed s,%CONTEXT%,${context},g |
-	sed s,%CLOUD%,$(config cloud),g \
+        sed s,%REPLICAS%,${replicas},g |
+	sed s,%CPU%,${cpu},g \
             >${file}
 
     info $(kubectl --context="${context}" create -f ${file})
     
-    # wait until 
+    # wait until running
     started=0
     while [ "${started}" != "1" ]; do
         sleep 1
@@ -185,6 +190,15 @@ k8s_rs_create() {
 	then
 	    started=1
 	fi
+    done
+
+    # wait pattern in log
+    for pod in $(kubectl --context=${context} get pods | grep ${rs_name} | awk '{print $1}');
+    do
+	while [ "$(kubectl --context="${context}" logs ${pod} | grep -e ${pattern})" == "" ];
+	do
+	    sleep 1
+	done
     done
 }
 
@@ -249,11 +263,14 @@ k8s_clean_all(){
 
 # job
 k8s_create_job() {
-    if [ $# -ne 1 ]; then
-        echo "usage: k8s_create_job template.yaml"
+    if [ $# -ne 4 ]; then
+        echo "usage: k8s_create_job template.yaml parallelism #calls #threads"
         exit -1
     fi
     local template=$1
+    local parallelism=$2
+    local calls=$3
+    local threads=$4
     local context=$(config context)
     local file=${template}-0
     local pull=$(config pull-image)
@@ -264,6 +281,9 @@ k8s_create_job() {
     cat ${template} |
 	sed s,%IMAGE%,${image},g |
 	sed s,%PULL_IMAGE%,${pull},g |
+	sed s,%PARALLELISM%,${parallelism},g |
+	sed s,%CALLS%,${calls},g |
+	sed s,%THREADS%,${threads},g |
 	sed s,%PROXY%,${proxy},g \
             >${file}
 
@@ -336,14 +356,19 @@ k8s_fetch_logs() {
     local job_name=$(k8s_name ${file})
 
     mkdir -p ${LOGDIR}
-    rm ${LOGDIR}/log-*
-    
+    rm -f ${LOGDIR}/.log-* ${LOGDIR}/log-*
+
+    children=()
     for pod in $(kubectl --context=${context} get pods | grep ${job_name} | awk '{print $1}');
     do
 	info "job ${job_name} fetching from ${pod} at ${context}"
-	kubectl --context="${context}" logs ${pod} | grep -e ${pattern} > ${LOGDIR}/log-${pod}
+	kubectl --context="${context}" logs ${pod} > ${LOGDIR}/.log-${pod} && 
+	    cat ${LOGDIR}/.log-${pod} | grep -e ${pattern} > ${LOGDIR}/log-${pod} &
+	children+=($!)
     done
-
+    for pid in ${children[@]}; do
+	wait $pid
+    done
     info "job ${job_name} logs fetched at ${context}"
 }
 

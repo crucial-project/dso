@@ -22,7 +22,7 @@ public class DistributionClass {
       return factory.getInstanceOf(
               pjp.getStaticPart().getSignature().getDeclaringType(),
               null,
-              true,
+              false,
               false,
               pjp.getArgs());
    }

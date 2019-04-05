@@ -43,4 +43,5 @@ public class AtomicCounter implements Comparable<AtomicCounter> {
     public void reset() {
         count=0;
     }
+
 }

@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: infinispan-creson-client-test
 spec:
-  parallelism: 6
+  parallelism: %PARALLELISM%
   template:
     spec:
       restartPolicy: OnFailure
@@ -12,17 +12,20 @@ spec:
         image: %IMAGE%
         resources:
           requests:
-            cpu: 0.2
+            memory: "256M"
+            cpu: "0.5"
         env:
           - name: PROXY
             value: "%PROXY%"
           - name: THREADS
-            value: "1"
+            value: "%THREADS%"
           - name: INSTANCES
             value: "10000"
           - name: CALLS
-            value: "100000"
+            value: "%CALLS%"
           - name: CLASS
             value: "org.infinispan.creson.Blob"
-          - name: EXTRA
-            value: "-parameters 10000"
+          - name: PARALLELISM
+            value: "%PARALLELISM%"
+          - name: PARAMETERS
+            value: "10000"

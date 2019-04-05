@@ -4,12 +4,15 @@ DIR=$(dirname "${BASH_SOURCE[0]}")
 source ${DIR}/utils_functions.sh
 
 start_access(){
-    if [ $# -ne 1 ]; then
-        echo "usage: start_access template.yaml"
+    if [ $# -ne 4 ]; then
+        echo "usage: start_access template.yaml parallelism #calls #threads"
         exit -1
     fi
     local template=$1
-    k8s_create_job ${template}
+    local parallellsm=$2
+    local calls=$3
+    local threads=$4
+    k8s_create_job ${template} ${parallellsm} ${calls} ${threads}
 }
 
 wait_access(){
@@ -27,9 +30,7 @@ wait_access(){
 
 compute_throughput(){
     nlogs=$(ls ${LOGDIR}/log-*  | wc -l)
-    alog="${LOGDIR}/monitor" # $(wc -l ${LOGDIR}/log-* | head -n $((nlogs-1)) | sort | tail -n 1 | awk '{print $2}') # longuest
-    echo ${alog}
-
+    alog=$(find ${LOGDIR} -iname "log*" -type f | xargs wc -l | sort -rn | grep -v ' total$' | head -1 | awk '{print $2}')
     lines=$(cat ${alog} | wc -l | awk '{print $1}')
     beg=1
     end=$((lines))
@@ -45,7 +46,7 @@ compute_throughput(){
     	    tput=$(sed -n -e ${i}p ${log} | awk -F':' '{print $2}')
 	    total=$((total+tput))
     	done
-    	echo ${t}" "${total}" "${n}
+    	echo -e ${t}"\t"${total}"\t"${n}
     done        
 }
 

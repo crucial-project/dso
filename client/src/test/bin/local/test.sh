@@ -10,9 +10,10 @@ TAG="latest"
 IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
-INSTANCES="1"
-THREADS="128"
-CALLS="10"
+INSTANCES="100"
+THREADS="4"
+CALLS="1000"
+EXTRA="-verbose"
 
 CLIENT="infinispan-creson-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
@@ -57,7 +58,7 @@ else
   elif [[ "$1" == "-blobs" ]]
   then
     echo ">>>>> Blobs"
-    EXTRA="-parameters 100"
+    EXTRA="-parameters 100 "${EXTRA}
     CLASS="org.infinispan.creson.Blob"
   elif [[ "$1" == "-barrier" ]]
   then
@@ -77,7 +78,7 @@ else
     INSTANCES=1
   fi
   CLASSPATH=${PROJDIR}/target/*:${PROJDIR}/target/lib/*
-  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -threads ${THREADS} -calls ${CALLS} -verbose"
+  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -threads ${THREADS} -calls ${CALLS}"
   echo "java -cp ${CLASSPATH} ${ARGS} ${EXTRA}"
   java -cp ${CLASSPATH} ${ARGS} ${EXTRA}
 fi
