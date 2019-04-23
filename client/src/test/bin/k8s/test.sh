@@ -14,13 +14,13 @@ if [ $# -ne 1 ]; then
     usage
 fi
 
-PARALLELISM=10
-CALLS=30000
+PARALLELISM=1200
+CALLS=500
 THREADS=1
 
 if [[ "$1" == "-create" ]]
 then    
-    k8s_rs_create ${TMPLDIR}/replicaset.yaml.tmpl 3 2 "LAUNCHED"
+    k8s_rs_create ${TMPLDIR}/replicaset.yaml.tmpl 50 4 "LAUNCHED"
     k8s_rs_cp ${TMPLDIR}/replicaset.yaml.tmpl ${DIR}/../../../../target/infinispan-creson-client-9.4.1.Final.jar/ /tmp
     # kubectl create -f ${TMPLDIR}/autoscaler.yaml
     # kubectl autoscale replicaset infinispan-creson-server --cpu-percent=50 --min=3 --max=8 # FIXME
@@ -31,12 +31,12 @@ then
     # gsutil rm -r gs://$(config bucket)/* >&/dev/null # clean bucket
 else
     template=""
-    if [[ "$1" == "-counters" ]]
+    if [[ "$1" == "-counter" ]]
     then
 	template=${TMPLDIR}/counter-test.yaml.tmpl
-    elif [[ "$1" == "-blobs" ]]
+    elif [[ "$1" == "-blob" ]]
     then
-	template=${TMPLDIR}/blobs-test.yaml.tmpl
+	template=${TMPLDIR}/blob-test.yaml.tmpl
     elif [[ "$1" == "-barrier" ]]
     then
 	template=${TMPLDIR}/barrier-test.yaml.tmpl
@@ -46,10 +46,10 @@ else
     else
 	usage
     fi
-    # start_access ${template} ${PARALLELISM} ${CALLS} ${THREADS}
+    start_access ${template} ${PARALLELISM} ${CALLS} ${THREADS}
     # start_monitor
-    # wait_access ${template}
-    # # sleep 300
+    wait_access ${template}
+    # sleep 300
     # stop_monitor
     compute_throughput
 fi

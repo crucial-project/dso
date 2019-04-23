@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# see Dockerfile for env. variables 
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CLASSPATH="${DIR}/*:${DIR}/lib/*"
 CONFIG="jgroups-creson-tcp.xml"
@@ -9,7 +11,6 @@ then
     CLOUD="$1"
     IP='127.0.0.1'
     PORT='11222'
-#    EXTRA='-rf 2 -userLibs .'
     CONFIG='jgroups-creson-udp.xml'
 fi
 
@@ -25,13 +26,13 @@ then
     #IP=`/sbin/ifconfig eth0 | grep 'inet addr' | cut -d: -f2 | awk '{print $1}'`
     IP=`hostname -I | sed -e 's/[[:space:]]*$//'`
     PIP=`curl -s checkip.amazonaws.com`
-    EXTRA="-proxy ${PIP}:11222 -ec2 -rf 1"
+    EXTRA="${EXTRA} -proxy ${PIP}:11222 -ec2"
 elif [[ "${CLOUD}" == "vpc" ]];
 then
     echo "AWS EC2 VPC mode"
     CONFIG=jgroups-creson-ec2.xml
     IP=`hostname -I | sed -e 's/[[:space:]]*$//'`
-    EXTRA="-ec2 -rf 1"
+    EXTRA="${EXTRA} -ec2"
 elif [[ "${CLOUD}" == "gcp" ]];
 then
     echo "GCP mode"
@@ -52,7 +53,7 @@ fi
 
 cp ${CONFIG} jgroups.xml
 
-JVM="-XX:+UseConcMarkSweepGC -Xms64m -Xmx1024m -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configurationFile=\"${DIR}/log4j2.xml\""
+JVM="${JVM_EXTRA} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configurationFile=\"${DIR}/log4j2.xml\""
 CMD="java -ea -cp \"${CLASSPATH}\" ${JVM} org.infinispan.creson.Server -server ${IP}:${PORT} ${EXTRA}"
 echo ${CMD}
 bash -c "$CMD"

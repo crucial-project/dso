@@ -314,9 +314,18 @@ k8s_delete_job() {
     local context=$(config context)
     local file=${template}-0
     local job_name=$(k8s_name ${file})
+    local image=$(config image)
 
     kubectl --context="${context}" delete -f ${file} >& /dev/null
 
+    completed=1
+    while [ "${completed}" != "0" ]; do
+        sleep 1
+	completed=$(kubectl --context="${context}" get pods 2>&1 |
+		      grep ${image} |
+		      wc -l)
+    done
+    
     info "job ${job_name} deleted"
 }
 

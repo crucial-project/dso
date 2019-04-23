@@ -3,7 +3,7 @@
 DIR=$(dirname "${BASH_SOURCE[0]}")
 
 MACHINE_TYPE=n1-standard-8
-NODE_NUMBER=4
+NODE_NUMBER=50
 GCP_PROJECT=$(gcloud config list --format='value(core.project)')
 NETWORK="projects/${GCP_PROJECT}/global/networks/default"
 
@@ -19,12 +19,13 @@ create_cluster() {
     sleep ${seconds}
 
     gcloud container clusters create ${name} \
-        --zone ${zone} \
-        --num-nodes ${NODE_NUMBER} \
-        --machine-type ${MACHINE_TYPE} \
-	--network ${NETWORK} \
-        --preemptible \
-        --scopes "cloud-platform,service-control,service-management,https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+	   --disk-size 30\
+           --zone ${zone} \
+           --num-nodes ${NODE_NUMBER} \
+           --machine-type ${MACHINE_TYPE} \
+	   --network ${NETWORK} \
+           --preemptible \
+           --scopes "cloud-platform,service-control,service-management,https://www.googleapis.com/auth/ndev.clouddns.readwrite"
 
 }
 
