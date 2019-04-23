@@ -64,11 +64,7 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         // assert (call instanceof CallConstruct) | (object!=null);
 
         if (log.isTraceEnabled()) {
-            log.trace(" Received [" + call.toString() + "]");
-            log.trace(" With ID " + call.getCallID() + "]");
-            log.trace(" By " + call.getCallerID() + "]");
-            log.trace(" Object "+object);
-            // log.trace(" lastCall="+lastCall);
+            log.trace(" Rcv [" + call.toString() + ", key=" + reference+", call=" + call.getCallID() + ", caller=" + call.getCallerID() + "]");
         }
 
         future = new CallResponse(reference ,call);
@@ -158,7 +154,11 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
             synchronized (object) { // synchronization contract
-                future.setState(unmarshall(marshall(object)));
+                byte[] buf = marshall(object);
+                future.setState(unmarshall(buf));
+                if (log.isTraceEnabled()) {
+                    log.trace(" keeping state "+buf.length+"B");
+                }
             }
         }
 
