@@ -8,17 +8,19 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class Task implements Callable<Double> {
 
+    private long taskId;
+    protected String[] parameters;
     private int calls;
     protected int threads;
     protected int parallelism;
-    protected String[] parameters;
     protected List<Object> instances;
 
     private List<Long> latencies;
     private Lock lock;
     private boolean isOver;
 
-    public Task(String[] parameters, int calls, int threads, int parallelism) {
+    public Task(long taskId, String[] parameters, int calls, int threads, int parallelism) {
+        this.taskId = taskId;
         this.threads = threads;
         this.calls = calls;
         this.parameters = parameters;

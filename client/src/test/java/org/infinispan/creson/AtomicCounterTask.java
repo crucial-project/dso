@@ -6,8 +6,8 @@ public class AtomicCounterTask extends Task {
 
     private Random random;
 
-    public AtomicCounterTask(String[] parameters, int calls, int threads, int parallelism) {
-        super(parameters, calls, threads, parallelism);
+    public AtomicCounterTask(long taskId, String[] parameters, int calls, int threads, int parallelism) {
+        super(taskId, parameters, calls, threads, parallelism);
         random = new Random();
     }
 

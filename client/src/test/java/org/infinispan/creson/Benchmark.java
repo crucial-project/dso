@@ -79,7 +79,7 @@ public class Benchmark {
         // create threads
         Class<Task> taskClazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
         for (int i = 0; i < this.threads; i++) {
-            Task task = taskClazz.getConstructor(String[].class, int.class, int.class, int.class).newInstance(parameters, calls, threads, parallelism);
+            Task task = taskClazz.getConstructor(long.class, String[].class, int.class, int.class, int.class).newInstance(id, parameters, calls, threads, parallelism);
             clientTasks.add(task);
         }
 

@@ -5,7 +5,7 @@ package org.infinispan.creson;
  */
 public class ScalableCyclicBarrier {
 
-    private static final int SLEEP = 10;
+    private static final int SLEEP = 1;
 
     private final AtomicBoolean answers[][];
     private final int parties, logParties;
