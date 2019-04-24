@@ -14,5 +14,6 @@ public @interface Shared {
     String SEPARATOR = "#";
     boolean readOptimization() default false;
     boolean forceNew() default false;
+    boolean isIdempotent() default true;
     String key() default DEFAULT_KEY;
 }

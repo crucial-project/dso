@@ -12,17 +12,19 @@ public class CallConstruct extends Call {
 
     private boolean forceNew;
     private boolean readOptimization;
+    private boolean isIdempotent;
     private Object[] initArgs;
 
     @Deprecated
     public CallConstruct() {
     }
 
-    public CallConstruct(Reference reference, UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization) {
+    public CallConstruct(Reference reference, UUID callID, boolean forceNew, Object[] initargs, boolean readOptimization, boolean isIdempotent) {
         super(reference, callID);
         this.forceNew = forceNew;
         this.initArgs = initargs;
         this.readOptimization = readOptimization;
+        this.isIdempotent = isIdempotent;
     }
 
     @Override
@@ -38,6 +40,8 @@ public class CallConstruct extends Call {
         return readOptimization;
     }
 
+    public boolean isIdempotent(){ return isIdempotent;}
+
     public Object[] getInitArgs() {
         return initArgs;
     }
@@ -47,6 +51,7 @@ public class CallConstruct extends Call {
         super.writeExternal(objectOutput);
         objectOutput.writeBoolean(forceNew);
         objectOutput.writeBoolean(readOptimization);
+        objectOutput.writeBoolean(isIdempotent);
         objectOutput.writeObject(initArgs);
     }
 
@@ -55,6 +60,7 @@ public class CallConstruct extends Call {
         super.readExternal(objectInput);
         forceNew = objectInput.readBoolean();
         readOptimization = objectInput.readBoolean();
+        isIdempotent = objectInput.readBoolean();
         initArgs = (Object[]) objectInput.readObject();
     }
 

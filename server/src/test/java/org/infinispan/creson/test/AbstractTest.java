@@ -111,17 +111,17 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         HashSet set1, set2;
 
         // 0 - Base persistence
-        set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, true);
+        set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, false, true);
         set1.add("smthing");
         factory1.disposeInstanceOf(HashSet.class, "persist1");
-        set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, false);
+        set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, false, false);
         assert set1.contains("smthing");
         factory1.disposeInstanceOf(HashSet.class, "persist1");
 
         // 1 - Concurrent retrieval
         set1 = factory1.getInstanceOf(HashSet.class, "persist2");
         set1.add("smthing");
-        set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, false);
+        set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, false, false);
         assert set2.contains("smthing");
         factory1.disposeInstanceOf(HashSet.class, "persist2");
         factory2.disposeInstanceOf(HashSet.class, "persist2");
@@ -130,7 +130,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         set1 = factory1.getInstanceOf(HashSet.class, "persist3");
         set1.add("smthing");
         factory1.disposeInstanceOf(HashSet.class, "persist3");
-        set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, false);
+        set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, false, false);
         assert set2.contains("smthing");
         factory1.disposeInstanceOf(HashSet.class, "persist3");
         factory2.disposeInstanceOf(HashSet.class, "persist3");
@@ -139,7 +139,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         set1 = factory1.getInstanceOf(HashSet.class, "persist4");
         set1.add("smthing");
         factory1.disposeInstanceOf(HashSet.class, "persist4");
-        set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, true);
+        set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, false, true);
         assert !set2.contains("smthing");
         factory2.disposeInstanceOf(HashSet.class, "persist4");
 
@@ -183,15 +183,15 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         HashSet set1, set2;
 
         // 0 - Base caching
-        set1 = factory1.getInstanceOf(HashSet.class, "aset", false, true);
+        set1 = factory1.getInstanceOf(HashSet.class, "aset", false, false, true);
         set1.add("smthing");
-        set2 = factory1.getInstanceOf(HashSet.class, "aset2", false, true);
+        set2 = factory1.getInstanceOf(HashSet.class, "aset2", false, false, true);
         assert set1.contains("smthing");
 
         // 1 - Caching multiple instances of the same object
-        set1 = factory1.getInstanceOf(HashSet.class, "aset3", false, true);
+        set1 = factory1.getInstanceOf(HashSet.class, "aset3", false, false, true);
         set1.add("smthing");
-        set2 = factory1.getInstanceOf(HashSet.class, "aset3", false, false);
+        set2 = factory1.getInstanceOf(HashSet.class, "aset3", false, false, false);
         assert set1.contains("smthing");
         assert set2.contains("smthing");
 
@@ -416,8 +416,11 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     public void idempotence() throws IllegalAccessException {
 
         SimpleObject object = new SimpleObject("idempotence");
+        object.getCount(); // to open it.
 
-        RandomBasedGenerator generator = Generators.randomBasedGenerator(new Random(42));
+        RandomBasedGenerator generator = null;
+
+        generator = Generators.randomBasedGenerator(new Random(42));
         ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
         object.setField("a");
 

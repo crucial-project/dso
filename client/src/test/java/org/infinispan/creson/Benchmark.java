@@ -3,6 +3,7 @@ package org.infinispan.creson;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.omg.SendingContext.RunTimeOperations;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -25,19 +26,16 @@ public class Benchmark {
     @Option(name = "-class", required = true, usage = "object class")
     private String className;
 
-    @Option(name = "-parameters", usage = "parameters of the call ")
-    private String[] parameters;
-
-    @Option(name = "-parallelism", usage = "# benchmarks")
+    @Option(name = "-parallelism", usage = "#concurrent benchmarks")
     private int parallelism = 1;
 
-    @Option(name = "-instances", usage = "# instances")
+    @Option(name = "-instances", usage = "#object instances")
     private int instances = 1;
 
-    @Option(name = "-threads", usage = "# threads")
+    @Option(name = "-threads", usage = "#threads")
     private int threads = 1;
 
-    @Option(name = "-calls", usage = "#calls per Dockerfile")
+    @Option(name = "-calls", usage = "#calls per thread")
     private int calls = 1;
 
     @Option(name = "-server", usage = "connection string to server")
@@ -48,6 +46,9 @@ public class Benchmark {
 
     @Option(name = "-verbose", usage = "real-time report of total throughput (in ops/sec)")
     private boolean verbosity = false;
+
+    @Option(name = "-parameters", usage = "parameters of the call ")
+    private String[] parameters;
 
     private CyclicBarrier barrier;
 
@@ -122,7 +123,7 @@ public class Benchmark {
             System.out.println("Average time: " + avgTime + " [Throughput=" + (1 / avgTime) * clientTasks.size() + "]");
 
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
 

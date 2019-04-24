@@ -1,5 +1,6 @@
 package org.infinispan.creson.container;
 
+import io.netty.util.concurrent.CompleteFuture;
 import javassist.util.proxy.MethodFilter;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
@@ -9,6 +10,7 @@ import org.infinispan.creson.object.Reference;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -26,11 +28,12 @@ public abstract class AbstractContainer {
 
    public static final int TTIMEOUT_TIME = 1000;
    public static final int MAX_ATTEMPTS = 3;
-   protected static final Map<UUID, CallResponse> registeredCalls = new ConcurrentHashMap<>();
+   protected static final Map<UUID, CompletableFuture<CallResponse>> registeredCalls = new ConcurrentHashMap<>();
    protected static final Log log = LogFactory.getLog(AbstractContainer.class);
    protected static final MethodFilter methodFilter = m -> !m.getName().equals("finalize");
 
    protected boolean readOptimization;
+   protected boolean isIdempotent;
    protected Object proxy;
    protected Object state;
    protected boolean forceNew;
@@ -39,9 +42,11 @@ public abstract class AbstractContainer {
    public AbstractContainer(
          Class clazz,
          final boolean readOptimization,
+         final boolean isIdempotent,
          final boolean forceNew,
          final Object... initArgs){
       this.readOptimization = readOptimization && hasReadOnlyMethods(clazz);
+      this.isIdempotent = isIdempotent;
       this.forceNew = forceNew;
       this.initArgs = initArgs;
    }
@@ -60,17 +65,19 @@ public abstract class AbstractContainer {
       if (log.isTraceEnabled())
          log.trace(this + " Executing "+call);
 
-      CallResponse future = new CallResponse(getReference(), call);
+      CompletableFuture<CallResponse> future = new CompletableFuture<CallResponse>();
 
       registeredCalls.put(call.getCallID(), future);
 
+      CallResponse response = null;
       Object ret = null;
       int attempts = 0;
       while(!future.isDone()) {
          try {
             attempts++;
             doExecute(call);
-            ret = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
+            response = future.get(TTIMEOUT_TIME, TimeUnit.MILLISECONDS);
+            ret = response.getResult();
 //            if (ret instanceof Throwable)
 //               throw new ExecutionException((Throwable) ret);
          }catch (TimeoutException e) {
@@ -89,8 +96,8 @@ public abstract class AbstractContainer {
 
       registeredCalls.remove(call.getCallID());
 
-      if (readOptimization && future.getState()!=null ) {
-         this.state = future.getState();
+      if (readOptimization && response.getState()!=null ) {
+         this.state = response.getState();
       }
 
       if (log.isTraceEnabled())
@@ -101,18 +108,22 @@ public abstract class AbstractContainer {
    }
 
 
-   protected static void handleFuture(CallResponse future){
+   protected static void handleFuture(CallResponse response){
       try {
-         assert (future instanceof CallResponse && future.isDone());
-         if (!registeredCalls.containsKey(future.getCallID())) {
-            log.trace("Future " + future.getCallID() + " ignored");
+
+         if (!registeredCalls.containsKey(response.getCallID())) {
+            log.trace("Future " + response.getCallID() + " ignored");
             return; // duplicate received
          }
-         CallResponse clientFuture = registeredCalls.get(future.getCallID());
-         assert (clientFuture!=null);
-         registeredCalls.remove(future.getCallID());
-         clientFuture.setState(future.getState());
-         clientFuture.set(future.get());
+
+         CompletableFuture future = registeredCalls.get(response.getCallID());
+
+         assert (future!=null);
+
+         registeredCalls.remove(response.getCallID());
+
+         future.complete(response);
+
       } catch (Exception e) {
          e.printStackTrace();
       }

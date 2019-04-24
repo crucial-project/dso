@@ -12,13 +12,15 @@ num-from-string() { # FIXME
 }
 
 CLASSPATH="${DIR}/*:${DIR}/lib/*"
-ARGS="-ea org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -threads ${THREADS} -calls ${CALLS} -parallelism ${PARALLELISM} -server ${PROXY} -verbose -parameters ${PARAMETERS}"
+ARGS="-ea org.infinispan.creson.Benchmark "
 
 if [ "${ID}" != "" ]
 then
-    ID=$(num-from-string ${ID})
     ARGS=${ARGS}" -id ${ID}"
 fi
+
+ARGS=${ARGS}" -class ${CLASS} -instances ${INSTANCES} ${PERSIST} "
+ARGS=${ARGS}" -threads ${THREADS} -calls ${CALLS} -parallelism ${PARALLELISM} -server ${PROXY} -verbose -parameters ${PARAMETERS}"
 
 echo "java -Xmx128M -cp ${CLASSPATH} ${ARGS}"
 java -cp ${CLASSPATH} ${ARGS}

@@ -3,10 +3,6 @@ package org.infinispan.creson.object;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -15,11 +11,10 @@ import java.util.concurrent.TimeoutException;
  * The ID of a response is the one of the call it is answering.
  *
  */
-public class CallResponse extends Call implements Future<Object> {
+public class CallResponse extends Call {
 
-    private Object ret;
+    private Object result;
     private Object state;
-    private int status; // 0 => init, 1 => done, -1 => cancelled
 
     @Deprecated
     public CallResponse() {
@@ -27,56 +22,15 @@ public class CallResponse extends Call implements Future<Object> {
 
     public CallResponse(Reference reference, Call call) {
         super(reference, call);
-        this.ret = null;
-        this.status = 0;
+        this.result = null;
     }
 
-    public void set(Object r) {
-
-        synchronized (this) {
-
-            if (status != 0) {
-                return;
-            }
-
-            ret = r;
-            status = 1;
-            this.notifyAll();
-
-        }
-
+    public void setResult(Object result) {
+        this.result = result;
     }
 
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        synchronized (this) {
-            if (status != 0)
-                return false;
-            status = -1;
-            if (mayInterruptIfRunning)
-                this.notifyAll();
-        }
-        return true;
-    }
-
-    @Override
-    public Object get() throws InterruptedException, ExecutionException {
-        synchronized (this) {
-            if (status == 0)
-                this.wait();
-        }
-        return (status == -1) ? null : ret;
-    }
-
-    @Override
-    public Object get(long timeout, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException {
-        synchronized (this) {
-            if (status == 0)
-                this.wait(timeout);
-        }
-        if (status == 0) throw new TimeoutException(this + " failed");
-        return (status == -1) ? null : ret;
+    public Object getResult() {
+        return this.result;
     }
 
     public Object getState() {
@@ -88,33 +42,21 @@ public class CallResponse extends Call implements Future<Object> {
     }
 
     @Override
-    public boolean isCancelled() {
-        return status == -1;
-    }
-
-    @Override
-    public boolean isDone() {
-        return status == 1;
-    }
-
-    @Override
     public String toString() {
-        return super.toString()+"-RESP-("+getCallID()+")" + ret + "]";
+        return super.toString()+"-RESP-("+getCallID()+")" + result + "]";
     }
 
     @Override
     public void writeExternal(ObjectOutput objectOutput) throws IOException {
         super.writeExternal(objectOutput);
-        objectOutput.writeInt(status);
         objectOutput.writeObject(state);
-        objectOutput.writeObject(ret);
+        objectOutput.writeObject(result);
     }
 
     @Override
     public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
         super.readExternal(objectInput);
-        status = objectInput.readInt();
         state = objectInput.readObject();
-        ret = objectInput.readObject();
+        result = objectInput.readObject();
     }
 }

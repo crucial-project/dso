@@ -14,8 +14,8 @@ if [ $# -ne 1 ]; then
     usage
 fi
 
-PARALLELISM=1200
-CALLS=500
+PARALLELISM=24
+CALLS=10000
 THREADS=1
 
 if [[ "$1" == "-create" ]]
@@ -51,5 +51,5 @@ else
     wait_access ${template}
     # sleep 300
     # stop_monitor
-    compute_throughput
+    compute_average_throughput
 fi

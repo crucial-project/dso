@@ -30,12 +30,12 @@ public class BaseContainer extends AbstractContainer {
     private Reference reference;
     private BasicCache<Reference, Call> cache;
 
-    public BaseContainer(BasicCache cache, Class clazz, java.lang.Object key, boolean readOptimization,
+    public BaseContainer(BasicCache cache, Class clazz, java.lang.Object key, boolean readOptimization, boolean isIdempotent,
                          boolean forceNew, java.lang.Object... initArgs)
             throws IllegalAccessException, InstantiationException,
             NoSuchMethodException, InvocationTargetException {
 
-        super(clazz, readOptimization, forceNew, initArgs);
+        super(clazz, readOptimization, isIdempotent, forceNew, initArgs);
         this.isOpen = false;
 
         // build the proxy
@@ -87,26 +87,18 @@ public class BaseContainer extends AbstractContainer {
             }
 
 
-            Context context = ContextManager.get();
-
             open();
-
-            UUID uuid = context.getGenerator().generate();
-
-            if (log.isTraceEnabled()) {
-                log.trace("generated " + uuid + " m=" + m.getName() + "[" + context + "]");
-            }
 
             Object ret = execute(
                     new CallInvoke(
                             reference,
-                            uuid,
+                            generateCallID(),
                             m.getName(),
                             args)
             );
 
             assert (m.getReturnType().equals(Void.TYPE) && ret == null) || Reflection.isCompatible(ret, m.getReturnType())
-                    : m.getReturnType() + " => " + ret.getClass() + " [" + reference.getClazz() + "." + m.getName() + "()]";
+                    : m.getReturnType() + " => " + ret + " [" + reference.getClazz() + "." + m.getName() + "()]";
 
             return ret;
 
@@ -171,7 +163,7 @@ public class BaseContainer extends AbstractContainer {
                 log.trace(" Opening - "+this.toString());
 
             CallConstruct construct = new CallConstruct(reference,
-                    ID.generator().generate(), forceNew, initArgs, readOptimization);
+                    generateCallID(), forceNew, initArgs, readOptimization, isIdempotent);
 
             execute(construct);
 
@@ -186,6 +178,15 @@ public class BaseContainer extends AbstractContainer {
 
     public interface WriteReplace {
         java.lang.Object writeReplace() throws java.io.ObjectStreamException;
+    }
+
+    private UUID generateCallID(){
+        Context context = ContextManager.get();
+        UUID uuid = context.getGenerator().generate();
+        if (log.isTraceEnabled()) {
+            log.trace("generated " + uuid + " [" + context + "]");
+        }
+        return uuid;
     }
 
 }

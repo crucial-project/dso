@@ -40,6 +40,7 @@ public class DistributionField {
                     fieldClass,
                     key,
                     field.getAnnotation(Shared.class).readOptimization(),
+                    field.getAnnotation(Shared.class).isIdempotent(),
                     field.getAnnotation(Shared.class).forceNew()));
             return;
         }
