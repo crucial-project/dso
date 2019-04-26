@@ -29,6 +29,7 @@ wait_access(){
 # utils
 
 compute_realtime_throughput(){
+    info "computing realtime throughput"
     nlogs=$(ls ${LOGDIR}/log-*  | wc -l)
     alog=$(find ${LOGDIR} -iname "log*" -type f | xargs wc -l | sort -rn | grep -v ' total$' | head -1 | awk '{print $2}')
     lines=$(cat ${alog} | wc -l | awk '{print $1}')
