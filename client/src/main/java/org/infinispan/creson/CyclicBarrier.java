@@ -10,7 +10,7 @@ public class CyclicBarrier {
 
     public CyclicBarrier(String name, int parties){
         this.counter = new AtomicCounter(name+"-counter",0);
-        this.generation = new AtomicCounter(name+"generation",0);
+        this.generation = new AtomicCounter(name+"-generation",0);
         this.parties = parties;
     }
 

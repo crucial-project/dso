@@ -55,6 +55,9 @@ public class Server {
     @Option(name = "-wt", usage = "number of HotRod worker threads")
     private int workerThreads = 100;
 
+    @Option(name = "-idempotence", usage = "idempotence of method calls")
+    private boolean withIdempotence = false;
+
     public Server() {
     }
 
@@ -126,6 +129,7 @@ public class Server {
                 false,
                 STORAGE_PATH_PREFIX + "/" + host,
                 true,
+                false,
                 false);
 
         HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: idempotence-test-%ID%
+spec:  
+  restartPolicy: OnFailure
+  containers:
+  - name: infinispan-creson-client
+    image: "%IMAGE%"
+    imagePullPolicy: "%PULL_IMAGE%"
+    resources:
+      requests:
+        memory: "256M"
+        cpu: "0.5"
+    env:
+    - name: PROXY
+      value: "%PROXY%"
+    - name: THREADS
+      value: "%THREADS%"
+    - name: INSTANCES
+      value: "1"
+    - name: CALLS
+      value: "%CALLS%"
+    - name: CLASS
+      value: "org.infinispan.creson.AtomicCounter"
+    - name: PARALLELISM
+      value: "%PARALLELISM%"
+    - name: PERSIST
+      value: ""
+    - name: ID
+      value: "%ID%"

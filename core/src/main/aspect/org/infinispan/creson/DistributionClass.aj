@@ -23,6 +23,7 @@ public class DistributionClass {
               pjp.getStaticPart().getSignature().getDeclaringType(),
               null,
               false,
+              true,
               false,
               pjp.getArgs());
    }

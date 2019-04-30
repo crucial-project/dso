@@ -29,33 +29,48 @@ log() {
     fi
 }
 
-# pod
-k8s_create_pod() {
-    if [ $# -ne 2 ] && [ $# -ne 3 ]; then
-        echo "usage: k8s_create_pod template.yaml context [id]"
+k8s_name() {
+    if [ $# -ne 1 ]; then
+        echo "usage: k8s_name file"
         exit -1
     fi
-    local template=$1
-    local context=$2
-    local id=${3:-0} # default id is 0
-    local file=${template}-${id}
-    local pull=$(config pull-image)
-    local image=$(config image)
+    local file=$1
+    grep -E "^  name: " ${file} | awk '{ print $2 }'
+}
 
+# pod
+k8s_create_pod() {
+    if [ $# -ne 5 ]; then
+        echo "usage: k8s_create_pod template.yaml id parallelism #calls #threads"
+        exit -1
+    fi
+
+    local template=$1
+    local id=$2
+    local parallelism=$3
+    local calls=$4
+    local threads=$5
+
+    local context=$(config context)
+    local pull=$(config pull-image)
+    local image=$(config image-client)
+    local proxy=$(get_proxy):11222
+
+    local file=${template}-${id}
+    
     # create final template
     cat ${template} |
-        sed s,%ID%,${id},g |
 	sed s,%IMAGE%,${image},g |
 	sed s,%PULL_IMAGE%,${pull},g |
-        sed s,%CONTEXT%,${context},g |
-	sed s,%CLOUD%,$(config cloud),g |
-	sed s,%BUCKET%,$(config bucket),g |
-	sed s,%BUCKET_KEY%,$(config bucket_key),g |
-	sed s,%BUCKET_SECRET%,$(config bucket_secret),g \
+	sed s,%ID%,${id},g |
+	sed s,%PARALLELISM%,${parallelism},g |
+	sed s,%CALLS%,${calls},g |
+	sed s,%THREADS%,${threads},g |
+	sed s,%PROXY%,${proxy},g \
             >${file}
-
+    
     # create pod
-    info $(kubectl --context="${context}" create -f ${file})
+    kubectl --context="${context}" create -f ${file} > /dev/null
 
     local pod_name=$(k8s_name ${file})
     local pod_status="NotFound"
@@ -64,22 +79,45 @@ k8s_create_pod() {
     while [ "${pod_status}" != "Running" ]; do
         sleep 1
         pod_status=$(k8s_pod_status ${context} ${pod_name})
-	info "pod ${pod_name} status ${pod_status}"
     done
     info "pod ${pod_name} running at ${context}"
 }
 
-k8s_delete_pod() {
-    if [ $# -ne 2 ] && [ $# -ne 3 ]; then
-        echo "usage: k8s_delete_pod template.yaml context [id]"
+k8s_wait_pod() {
+    if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+        echo "usage: k8s_wait_pod template.yaml [id]"
         exit -1
     fi
     local template=$1
-    local context=$2
-    local id=${3:-0} # default id is 0
+    local id=${2:-0} # default id is 0
     local file=${template}-${id}
+    
     local pod_name=$(k8s_name ${file})
     local pod_status="Running"
+    local context=$(config context)
+
+    # loop until pod is completed
+    while [ "${pod_status}" != "Completed" ]; do
+        pod_status=$(k8s_pod_status ${context} ${pod_name})
+	if [ "${pod_status}" != "Completed" ]
+	then
+	    sleep 1
+	fi
+    done
+}
+
+k8s_delete_pod() {
+    if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+        echo "usage: k8s_delete_pod template.yaml [id]"
+        exit -1
+    fi
+    local template=$1
+    local id=${2:-0} # default id is 0
+    local file=${template}-${id}
+    
+    local pod_name=$(k8s_name ${file})
+    local pod_status="Running"
+    local context=$(config context)
 
     # loop until pod is down
     while [ "${pod_status}" != "NotFound" ]; do
@@ -100,18 +138,102 @@ k8s_pod_cp(){
     local src=$1
     local pod=$2
     local dst=$2
-    kubectl cp $1 $2:$3
-   
+    kubectl cp $1 $2:$3   
 }
 
-k8s_create_all_pods(){
+# missing indexed job in k8s
+k8s_create_pods(){
+    if [ $# -ne 4 ]; then
+        echo "usage: k8s_create_pods template.yaml #pods #calls #threads"
+        exit -1
+    fi
+
+    local template=$1
+    local pods=$2
+    local calls=$3
+    local threads=$4
+
+    for p in $(seq 0 1 $((pods-1)))
+    do
+	k8s_create_pod ${template} ${p} ${pods} ${calls} ${threads} &	
+    done
+    wait
+}
+
+k8s_wait_pods(){
+    if [ $# -ne 2 ]; then
+        echo "usage: k8s_wait_pods template.yaml #pods"
+        exit -1
+    fi
+
+    local template=$1
+    local pods=$2
+
+    for p in $(seq 0 1 $((pods-1)))
+    do
+	k8s_wait_pod ${template} ${p}
+    done
+}
+
+k8s_delete_pods(){
+    if [ $# -ne 2 ]; then
+        echo "usage: k8s_delete_pods template.yaml #pods"
+        exit -1
+    fi
+
+    local template=$1
+    local pods=$2
+
+    for p in $(seq 0 1 $((pods-1)))
+    do
+	k8s_delete_pod ${template} ${p} &	
+    done
+    wait
+}
+
+k8s_fetch_log_pods() {
+    if [ $# -ne 2 ]; then
+        echo "usage: k8s_fetch_log_pods template.yaml pattern"
+        exit -1
+    fi
+    
     local context=$(config context)
-    local service=$(cat ${CONFIG_FILE} | grep -ioh "/.*:" | sed s,[/:],,g)
-    local proxy=""
-    for i in $(seq 1 $(config nodes))
+    local template=$1
+    local pattern=$2
+    local file=${template}-0
+    local pod_name=$(k8s_name ${file})
+
+    mkdir -p ${LOGDIR}
+    rm -f ${LOGDIR}/.log-* ${LOGDIR}/log-*
+
+    children=()
+    for pod in $(kubectl --context=${context} get pods | grep "Completed" | awk '{print $1}');
+    do
+	info "fetching log ${pod} at ${context}"
+	kubectl --context="${context}" logs ${pod} > ${LOGDIR}/.log-${pod} && 
+	    cat ${LOGDIR}/.log-${pod} | grep -e ${pattern} > ${LOGDIR}/log-${pod} &
+	children+=($!)
+    done
+    for pid in ${children[@]}; do
+	wait $pid
+    done
+    info "logs fetched at ${context}"
+
+    for pod in $(kubectl --context=${context} get pods | grep "Completed" | awk '{print $1}');
     do	
-	k8s_create_pod ${TMPLDIR}/${service}.yaml.tmpl ${context} ${i}
-    done    
+    	if [ -f ${LOGDIR}/.crash-${pod} ];
+	then
+	    info "crash log ${pod}"
+	    cat ${LOGDIR}/.crash-${pod} | grep -e ${pattern} > ${LOGDIR}/log-${pod}
+	    start=$(cat ${LOGDIR}/.crash-${pod} | grep -e ${pattern} | tail -n 1 | awk -F':' '{print $1}' )
+	    end=$(cat ${LOGDIR}/.log-${pod} | grep -e ${pattern} | head -n 1 | awk -F':' '{print $1}')
+	    for i in $(seq ${start} 1000 ${end})
+	    do
+		echo $((i))":0" >> ${LOGDIR}/log-${pod}
+	    done
+	    cat ${LOGDIR}/.log-${pod} | grep -e ${pattern} >> ${LOGDIR}/log-${pod}
+	fi
+    done
 }
 
 k8s_delete_all_pods() {
@@ -130,15 +252,6 @@ k8s_delete_all_pods() {
     done
 }
 
-k8s_name() {
-    if [ $# -ne 1 ]; then
-        echo "usage: k8s_name file"
-        exit -1
-    fi
-    local file=$1
-    grep -E "^  name: " ${file} | awk '{ print $2 }'
-}
-
 k8s_pod_status() {
     if [ $# -ne 2 ]; then
         echo "usage: k8s_pod_status context pod_name"
@@ -149,6 +262,34 @@ k8s_pod_status() {
 
     kubectl --context="${context}" get pod ${pod_name} 2>&1 |
 	 grep -oE "(Running|Completed|Terminating|NotFound|ContainerCreating)"
+}
+
+k8s_crash_pods() {
+    if [ $# -ne 2 ]; then
+        echo "usage: k8s_crash_pods template.yaml amount"
+        exit -1
+    fi
+    
+    local template=$1
+    local crashes=$2
+
+    local context=$(config context)
+    local file=${template}-0
+    local pod_name=$(k8s_name ${file} | sed s/-.*//g)
+
+    mkdir -p ${LOGDIR}
+    rm -f ${LOGDIR}/.crash*
+
+    children=()
+    for pod in $(kubectl --context=${context} get pods | grep "Running" | grep ${pod_name} | awk '{print $1}' | sort -R | head -n ${crashes});
+    do
+	# fetch log then crash pod
+	kubectl --context="${context}" logs ${pod} > ${LOGDIR}/.crash-${pod} && kubectl exec ${pod} -- /sbin/killall5 -9 && info "${pod} crashed" &
+	children+=($!)
+    done
+    for pid in ${children[@]}; do
+	wait $pid
+    done
 }
 
 # replicaSet
@@ -314,9 +455,18 @@ k8s_delete_job() {
     local context=$(config context)
     local file=${template}-0
     local job_name=$(k8s_name ${file})
+    local image=$(config image)
 
     kubectl --context="${context}" delete -f ${file} >& /dev/null
 
+    completed=1
+    while [ "${completed}" != "0" ]; do
+        sleep 1
+	completed=$(kubectl --context="${context}" get pods 2>&1 |
+		      grep ${image} |
+		      wc -l)
+    done
+    
     info "job ${job_name} deleted"
 }
 
@@ -359,7 +509,7 @@ k8s_fetch_logs() {
     rm -f ${LOGDIR}/.log-* ${LOGDIR}/log-*
 
     children=()
-    for pod in $(kubectl --context=${context} get pods | grep ${job_name} | awk '{print $1}');
+    for pod in $(kubectl --context=${context} get pods | grep "Completed" | grep ${job_name} | awk '{print $1}');
     do
 	info "job ${job_name} fetching from ${pod} at ${context}"
 	kubectl --context="${context}" logs ${pod} > ${LOGDIR}/.log-${pod} && 
@@ -382,7 +532,6 @@ k8s_get_service(){
 	proxy=$(kubectl --context="${context}" get svc ${service} -o yaml | grep ip | awk '{print $3}')
         sleep 1
     done
-    info "service ${service} @ ${proxy}"
     echo ${proxy}
 }
 
@@ -395,3 +544,4 @@ get_proxy(){
     fi
     echo ${proxy}
 }
+

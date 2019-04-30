@@ -17,12 +17,7 @@ import org.infinispan.interceptors.impl.ClusteringInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.infinispan.creson.server.Marshalling.marshall;
 import static org.infinispan.creson.server.Marshalling.unmarshall;
@@ -33,12 +28,16 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
 
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
-    private ConcurrentMap<Reference,Map<UUID,CallResponse>> lastCall = new ConcurrentHashMap<>(); // UUID == callID
     private Factory factory;
+    private CallResponseCache responseCache = new CallResponseCache();
+    private boolean withIdempotence;
 
     @Override
     public java.lang.Object visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
-        lastCall.clear();
+
+        log.trace(" Clearing all");
+
+        responseCache.clearAll();
         return super.visitClearCommand(ctx, command);
     }
 
@@ -54,37 +53,21 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         Call call = (Call) command.getValue();
 
         Reference reference = call.getReference();
-        if (log.isTraceEnabled())
-            log.trace(" Accessing " + reference);
-
-        CallResponse future;
+        CallResponse response;
         Object object = ctx.lookupEntry(reference).getValue();
 
         // FIXME elasticity
         // assert (call instanceof CallConstruct) | (object!=null);
 
         if (log.isTraceEnabled()) {
-            log.trace(" Received [" + call.toString() + "]");
-            log.trace(" With ID " + call.getCallID() + "]");
-            log.trace(" By " + call.getCallerID() + "]");
-            log.trace(" Object "+object);
-            // log.trace(" lastCall="+lastCall);
+            log.trace(" Rcv [" + call.toString() + ", key=" + reference+", call=" + call.getCallID() + "["+responseCache.contains(call)+"], caller=" + call.getCallerID() + "]");
         }
 
-        future = new CallResponse(reference ,call);
+        response = new CallResponse(reference ,call);
 
-        if (!lastCall.containsKey(reference)){
-            lastCall.put(reference,new HashMap<>());
-        }
+        if (withIdempotence && responseCache.contains(call)) {
 
-        if (lastCall.get(reference).containsKey(call.getCallID())) {
-
-            if (log.isTraceEnabled()) {
-                log.trace(" already completed");
-            }
-
-            // call already completed
-            future = lastCall.get(reference).get(call.getCallID());
+            return responseCache.get(call);
 
         } else {
 
@@ -110,18 +93,18 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
 
                     java.lang.Object[] args = invocation.arguments;
 
-                    java.lang.Object response;
+                    java.lang.Object result;
 
                     try {
 
                         synchronized (object) { // synchronization contract
-                            response = callObject(object, invocation.method, args);
+                            result = callObject(object, invocation.method, args);
                         }
 
-                        future.set(response);
+                        response.setResult(result);
 
                     } catch (Throwable e) {
-                        future.set(e);
+                        response.setResult(e);
                     }
 
 
@@ -135,11 +118,11 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
                             log.trace(" New [" + reference + "]");
 
                         object = Reflection.open(reference, callConstruct.getInitArgs());
-                        lastCall.get(reference).clear();
+                        if (withIdempotence) responseCache.clear(call);
 
                     }
 
-                    future.set(null);
+                    response.setResult(null);
 
                 }
 
@@ -149,16 +132,17 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
 
         } // end compute return value
 
-        assert !future.isCancelled();
-        assert future.isDone();
-
         // save return value
-        lastCall.get(reference).put(call.getCallID(),future);
+        if (withIdempotence) responseCache.put(call,response);
 
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
             synchronized (object) { // synchronization contract
-                future.setState(unmarshall(marshall(object)));
+                byte[] buf = marshall(object);
+                response.setState(unmarshall(buf));
+                if (log.isTraceEnabled()) {
+                    log.trace(" keeping state "+buf.length+"B");
+                }
             }
         }
 
@@ -171,14 +155,15 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         invokeNext(ctx, clone);
 
         if (log.isTraceEnabled()) {
-            log.trace(" Executed [" + call.toString() + "] -> "+future.toString());
+            log.trace(" Executed [" + call.toString() + "] = "+response.toString());
         }
 
-        return future;
+        return response;
     }
 
-    public void setup(Factory factory){
+    public void setup(Factory factory, boolean useIdempotence){
         this.factory = factory;
+        this.withIdempotence = useIdempotence;
     }
 
     // utils

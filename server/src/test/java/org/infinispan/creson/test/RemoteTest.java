@@ -56,7 +56,8 @@ public class RemoteTest extends AbstractTest {
                 PASSIVATION,
                 PERSISTENT_STORAGE_DIR + "/" + index,
                 true,
-                false);
+                false,
+                true);
         waitForClusterToForm(CRESON_CACHE_NAME);
 
         // hotrod server

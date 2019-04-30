@@ -2,9 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: infinispan-creson-client
-spec:  
+spec:
   parallelism: %PARALLELISM%
-  completions: %PARALLELISM%
   template:
     spec:
       restartPolicy: OnFailure
@@ -13,8 +12,8 @@ spec:
         image: %IMAGE%
         resources:
           requests:
-            memory: "256M"
-            cpu: "0.5"
+            memory: "128M"
+            cpu: "0.125"
         env:
           - name: PROXY
             value: "%PROXY%"
@@ -25,6 +24,6 @@ spec:
           - name: CALLS
             value: "%CALLS%"
           - name: CLASS
-            value: "org.infinispan.creson.AtomicCounter"
+            value: "org.infinispan.creson.ScalableCyclicBarrier"
           - name: PARALLELISM
             value: "%PARALLELISM%"

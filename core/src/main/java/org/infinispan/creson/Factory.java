@@ -128,17 +128,17 @@ public class Factory {
 
     @Deprecated
     public <T> T getInstanceOf(Class clazz) throws CacheException {
-        return (T) getInstanceOf(clazz, null, false, false);
+        return (T) getInstanceOf(clazz, null, false, false, false);
     }
 
     @Deprecated
     public <T> T getInstanceOf(Reference reference) throws CacheException {
-        return (T) getInstanceOf(reference.getClazz(), reference.getKey(), false, false);
+        return (T) getInstanceOf(reference.getClazz(), reference.getKey(), false, false, false);
     }
 
     @Deprecated
     public <T> T getInstanceOf(Class clazz, Object key) throws CacheException {
-        return (T) getInstanceOf(clazz, key, false, false);
+        return (T) getInstanceOf(clazz, key, false, false, false);
     }
 
     /**
@@ -158,7 +158,7 @@ public class Factory {
     @Deprecated
     public <T> T getInstanceOf(Class<T> clazz, boolean withReadOptimization)
             throws CacheException {
-        return getInstanceOf(clazz, null, withReadOptimization, false);
+        return getInstanceOf(clazz, null, withReadOptimization, false, false, false);
     }
 
     /**
@@ -174,13 +174,14 @@ public class Factory {
      *
      * @param clazz                a class object
      * @param withReadOptimization set the read optimization on/off.
+     * @param withIdempotence      set idempotence on/off.
      * @param forceNew             force the creation of the object, even if key exists already in the cache
      * @return an object of the class <i>clazz</i>
      * @throws CacheException
      */
     @Deprecated
-    public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean forceNew, Object... initArgs)
-            throws CacheException {
+    public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean withIdempotence,
+                               boolean forceNew, Object... initArgs) throws CacheException {
 
         Reference reference;
         AbstractContainer container = null;
@@ -198,7 +199,7 @@ public class Factory {
                 } catch (Exception e) {
                     throw new CacheException(clazz + " no constructor with "+ Arrays.toString(initArgs));
                 }
-                container = new BaseContainer(cache, clazz, key, withReadOptimization, forceNew, initArgs);
+                container = new BaseContainer(cache, clazz, key, withReadOptimization, withIdempotence, forceNew, initArgs);
                 reference = container.getReference();
                 if (registeredContainers.putIfAbsent(reference, container) == null) {
                     if (log.isTraceEnabled())

@@ -28,26 +28,42 @@ wait_access(){
 
 # utils
 
-compute_throughput(){
+compute_realtime_throughput(){
+    info "computing realtime throughput"
     nlogs=$(ls ${LOGDIR}/log-*  | wc -l)
     alog=$(find ${LOGDIR} -iname "log*" -type f | xargs wc -l | sort -rn | grep -v ' total$' | head -1 | awk '{print $2}')
     lines=$(cat ${alog} | wc -l | awk '{print $1}')
     beg=1
     end=$((lines))
 
+    # avg per time unit
     start=$(head -n 1 ${alog} | awk -F':' '{print $1}')
     for i in $(seq ${beg} 1 ${end})
     do
     	total=0
-	t=$(( ( $(sed -n -e ${i}p ${alog} | tail -n 1 | awk -F':' '{print $1}') - start ) / 1000))
-	n=$(head -n $i ${LOGDIR}/monitor | tail -n 1 | awk -F':' '{print $2}')
+    	t=$(( ( $(sed -n -e ${i}p ${alog} | tail -n 1 | awk -F':' '{print $1}') - start ) / 1000))
+    	n=$(head -n $i ${LOGDIR}/monitor | tail -n 1 | awk -F':' '{print $2}')
     	for log in $(ls ${LOGDIR}/log-*)
     	do    	    
     	    tput=$(sed -n -e ${i}p ${log} | awk -F':' '{print $2}')
-	    total=$((total+tput))
+    	    total=$((total+tput))
     	done
     	echo -e ${t}"\t"${total}"\t"${n}
-    done        
+    done
+}
+
+compute_average_throughput(){
+    nlogs=$(ls ${LOGDIR}/log-*  | wc -l)
+    alog=$(find ${LOGDIR} -iname "log*" -type f | xargs wc -l | sort -rn | grep -v ' total$' | head -1 | awk '{print $2}')
+    lines=$(cat ${alog} | wc -l | awk '{print $1}')
+    beg=1
+    end=$((lines))
+
+    # avg over all the run
+    for log in $(ls ${LOGDIR}/.log-*)
+    do
+	grep "Average time" ${log} | awk '{print $3}' 
+    done  | awk 'BEGIN {SUM=0}; {SUM=SUM+$0}; END {printf "%.10f\n", SUM/NR}'
 }
 
 start_monitor(){
