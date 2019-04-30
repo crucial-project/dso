@@ -30,6 +30,7 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
 
     private Factory factory;
     private CallResponseCache responseCache = new CallResponseCache();
+    private boolean withIdempotence;
 
     @Override
     public java.lang.Object visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
@@ -64,7 +65,7 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
 
         response = new CallResponse(reference ,call);
 
-        if (responseCache.contains(call)) {
+        if (withIdempotence && responseCache.contains(call)) {
 
             return responseCache.get(call);
 
@@ -117,7 +118,7 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
                             log.trace(" New [" + reference + "]");
 
                         object = Reflection.open(reference, callConstruct.getInitArgs());
-                        responseCache.clear(call);
+                        if (withIdempotence) responseCache.clear(call);
 
                     }
 
@@ -132,7 +133,7 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         } // end compute return value
 
         // save return value
-        responseCache.put(call,response);
+        if (withIdempotence) responseCache.put(call,response);
 
         // save state if required
         if (hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
@@ -160,8 +161,9 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         return response;
     }
 
-    public void setup(Factory factory){
+    public void setup(Factory factory, boolean useIdempotence){
         this.factory = factory;
+        this.withIdempotence = useIdempotence;
     }
 
     // utils

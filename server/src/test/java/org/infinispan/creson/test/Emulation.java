@@ -52,7 +52,8 @@ public class Emulation extends MultipleCacheManagersTest {
                 PASSIVATION,
                 PERSISTENT_STORAGE_DIR + "/" + index,
                 true,
-                false);
+                false,
+                true);
         waitForClusterToForm(CRESON_CACHE_NAME);
 
         // hotrod server

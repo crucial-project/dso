@@ -46,7 +46,8 @@ public abstract class BaseTest extends AbstractTest{
                 PASSIVATION,
                 PERSISTENT_STORAGE_DIR + "/" + containers().size(),
                 true,
-                false);
+                false,
+                true);
         waitForClusterToForm(CRESON_CACHE_NAME);
         Cache cache = cm.getCache(CRESON_CACHE_NAME);
         caches.add(cache);

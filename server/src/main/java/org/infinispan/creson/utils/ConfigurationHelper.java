@@ -25,7 +25,8 @@ public class ConfigurationHelper {
             boolean withPassivation,
             String storagePath,
             boolean purge,
-            boolean withIndexing) {
+            boolean withIndexing,
+            boolean withIdempotence) {
 
         manager.getClassWhiteList().addRegexps(".*");
 
@@ -68,8 +69,7 @@ public class ConfigurationHelper {
 
         // installation
         manager.defineConfiguration(CRESON_CACHE_NAME,builder.build());
-        stateMachineInterceptor.setup(Factory.
-                forCache(manager.getCache(CRESON_CACHE_NAME)));
+        stateMachineInterceptor.setup(Factory.forCache(manager.getCache(CRESON_CACHE_NAME)),withIdempotence);
 
     }
 
