@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.logging.Log;
@@ -75,11 +76,14 @@ public class Factory {
         org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
                 = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
         cb.tcpNoDelay(true)
+                .clientIntelligence(ClientIntelligence.BASIC)
                 .addServer()
                 .host(host)
                 .port(port)
                 .forceReturnValues(true)
-                .addJavaSerialWhiteList(".*");
+                .addJavaSerialWhiteList(".*")
+                .connectionTimeout(3000)
+                .maxRetries(5);
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());
         return forCache(manager.getCache(CRESON_CACHE_NAME));
     }

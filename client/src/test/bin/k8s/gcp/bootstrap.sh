@@ -3,7 +3,7 @@
 DIR=$(dirname "${BASH_SOURCE[0]}")
 
 MACHINE_TYPE=n1-standard-8
-NODE_NUMBER=12
+NODE_NUMBER=1
 GCP_PROJECT=$(gcloud config list --format='value(core.project)')
 NETWORK="projects/${GCP_PROJECT}/global/networks/default"
 

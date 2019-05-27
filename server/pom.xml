@@ -81,7 +81,12 @@
           <groupId>org.aspectj</groupId>
           <artifactId>aspectjrt</artifactId>
         </dependency>
-	
+
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+        </dependency>
+
         <!-- TEST -->
 
         <dependency>

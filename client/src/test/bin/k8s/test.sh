@@ -6,7 +6,7 @@ source ${DIR}/utils_benchmarks.sh
 trap "pkill -KILL -P $$; exit 255" SIGINT SIGTERM
 
 usage(){
-    echo "usage: -[create|delete|counters|blobs|barrier|sbarrier]"
+    echo "usage: -[create|delete|counter|blob|barrier|sbarrier]"
     exit -1
 }
 
@@ -14,13 +14,13 @@ if [ $# -ne 1 ]; then
     usage
 fi
 
-PARALLELISM=24
-CALLS=10000
+PARALLELISM=1
+CALLS=1
 THREADS=1
 
 if [[ "$1" == "-create" ]]
 then    
-    k8s_rs_create ${TMPLDIR}/replicaset.yaml.tmpl 50 4 "LAUNCHED"
+    # k8s_rs_create ${TMPLDIR}/replicaset.yaml.tmpl 50 4 "LAUNCHED"
     k8s_rs_cp ${TMPLDIR}/replicaset.yaml.tmpl ${DIR}/../../../../target/infinispan-creson-client-9.4.1.Final.jar/ /tmp
     # kubectl create -f ${TMPLDIR}/autoscaler.yaml
     # kubectl autoscale replicaset infinispan-creson-server --cpu-percent=50 --min=3 --max=8 # FIXME

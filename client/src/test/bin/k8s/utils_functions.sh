@@ -486,8 +486,9 @@ k8s_wait_job() {
     while [ "${parallelism}" != "${completed}" ]; do
         sleep 1
 	completed=$(kubectl --context="${context}" get job 2>&1 |
-		      grep ${job_name} |
-		      awk '{print $3}')
+			grep ${job_name} |
+			awk '{print $2}' |
+			awk -F'/' '{print $1}')
     	info "job ${job_name} (${completed}/${parallelism})"
     done
     info "job ${job_name} completed at ${context}"      
