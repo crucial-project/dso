@@ -6,7 +6,7 @@
 
     <groupId>org.infinispan</groupId>
     <artifactId>infinispan-creson</artifactId>
-    <version>9.4.1.Final</version>
+    <version>9.4.16.Final</version>
     <name>infinispan-creson</name>
     <packaging>pom</packaging>
     <description>Implementation of the CRESON framework on top of Infinispan.</description>
