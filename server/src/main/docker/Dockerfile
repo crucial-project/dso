@@ -3,7 +3,7 @@ FROM openjdk:8-slim
 MAINTAINER otrack
 
 ENV NAME=infinispan-creson-server
-ENV VERSION=9.4.1.Final
+ENV VERSION=9.4.16.Final
 ENV CLOUD=local
 ENV BUCKET=undefined
 ENV BUCKET_KEY=undefined

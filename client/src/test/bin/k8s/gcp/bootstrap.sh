@@ -64,7 +64,7 @@ fetch_credentials() {
 }
 
 name="creson"
-zone="europe-north1-c"
+zone="us-east4-a"
 sleep_time=$((i * 2)) # avoid "gcp db locked" error
 
 create_cluster ${name} ${zone} ${sleep_time}
