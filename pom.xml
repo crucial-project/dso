@@ -41,6 +41,7 @@
         <module>core</module>
         <module>server</module>
         <module>client</module>
+        <module>jython</module>
     </modules>
 
     <dependencyManagement>
