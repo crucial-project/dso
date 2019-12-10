@@ -1,16 +1,16 @@
 package org.infinispan.creson;
 
-public class JythonFactory {
+public class PythonFactory {
 
     public final static String DEFAULT_SERVER = org.infinispan.creson.client.Interpreter.DEFAULT_SERVER;
 
     private Factory factory;
 
-    public JythonFactory(){
+    public PythonFactory(){
         factory = Factory.get(DEFAULT_SERVER);
     }
 
-    public JythonFactory(String server){
+    public PythonFactory(String server){
         factory = Factory.get(server);
     }
 

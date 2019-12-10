@@ -8,9 +8,9 @@
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>infinispan-creson-jython</artifactId>
-    <name>infinispan-creson-jython</name>
-    <description>Jython bindings for the CRESON framework.</description>
+    <artifactId>infinispan-creson-python</artifactId>
+    <name>infinispan-creson-python</name>
+    <description>Python bindings for the CRESON framework.</description>
 
     <dependencies>
 
