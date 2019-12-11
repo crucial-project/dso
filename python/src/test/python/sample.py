@@ -1,23 +1,27 @@
-import os
-
-import jpype
+from creson.factory import Factory
 from jpype import *
+from jpype import java
 
-if "CLASSPATH" in os.environ:
-    classpath = os.environ["CLASSPATH"]
-    jpype.addClassPath(classpath)
+factory = Factory()
 
-startJVM(getDefaultJVMPath(), "-ea", convertStrings=False)
-testPkg = JPackage("org.infinispan.creson")
-server=testPkg.PythonFactory.DEFAULT_SERVER
+c = factory.createCounter("cnt")
+c.reset()
+print("counter: "+str(c.increment()))
 
-if "SERVER" in os.environ:
-    server = os.environ["SERVER"]
+m1 = factory.createMap("map1")
+m1.clear()
+m1[1]=1
 
-f = testPkg.PythonFactory(server)
+try :
+    print("merge: "+str(m1.merge(1,3,factory.Package.Sum())))
+except java.lang.Throwable as ex:
+    print(ex.stacktrace())
 
-c = f.createCounter("cnt")
+m2 = java.util.HashMap()
+m2[3]=5
 
-print(c.increment())
-
-shutdownJVM()
+try :
+    m1.mergeAll(m2,factory.Package.Sum())
+    print("mergeAll: "+str(m1.keySet()))
+except java.lang.Throwable as ex:
+    print(ex.stacktrace())

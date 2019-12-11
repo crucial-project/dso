@@ -5,19 +5,11 @@ import org.infinispan.creson.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import pl.joegreen.lambdaFromString.LambdaCreationException;
-import pl.joegreen.lambdaFromString.LambdaFactory;
-import pl.joegreen.lambdaFromString.TypeReference;
 
-import java.io.*;
-import java.lang.invoke.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 @Command(name = "interpreter")
 public class Interpreter implements Callable<Integer> {
@@ -95,8 +87,6 @@ public class Interpreter implements Callable<Integer> {
         }
         return null;
     }
-
-    public static interface RemoteBiFunction<U,R,V> extends BiFunction<U,R,V>, Serializable{}
 
     public static final Map<String, RemoteBiFunction<String,String,String>> BIFUNCTIONS = ImmutableMap.of(
             "sum", (x,y) -> Integer.toString(Integer.valueOf(x) + Integer.valueOf(y))

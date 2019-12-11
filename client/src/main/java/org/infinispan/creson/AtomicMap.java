@@ -10,6 +10,7 @@ import picocli.CommandLine.Option;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 @Entity
@@ -81,6 +82,10 @@ public class AtomicMap<K,V> implements MergeableMap<K,V> {
     public void clear() {
         delegate.clear();
     }
+
+    @Override
+    @Command(name= "foreach")
+    public void forEach(@Option(names = "-1") BiConsumer<? super K, ? super V> c) { delegate.forEach(c);}
 
     @Override
     @Command(name = "keySet")
