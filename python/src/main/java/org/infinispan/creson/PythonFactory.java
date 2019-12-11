@@ -14,9 +14,5 @@ public class PythonFactory {
 
     public AtomicMap createMap(String name){ return new AtomicMap(name);}
 
-    public CyclicBarrier createBarrier(String name, int parties) { return new CyclicBarrier(name, parties);}
-
-    public Future createFuture(String name){ return new Future(name);}
-
 }
 
