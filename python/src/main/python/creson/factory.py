@@ -15,9 +15,13 @@ class Factory:
         self.Package = JPackage("org.infinispan.creson")
         self.factory = self.Package.PythonFactory(server)
 
-    def createCounter(self,name,value=0):
+    def createCounter(self, name, value=0):
         return self.factory.createCounter(name,value)
 
-    def createMap(self,name):
+    def createMap(self, name):
         return self.factory.createMap(name)
+
+    def createMatrix(self, name, type="java.lang.Integer", n=0, m=0):
+        clazz = JClass(type)
+        return self.factory.createMatrix(name, clazz, n, m)
 

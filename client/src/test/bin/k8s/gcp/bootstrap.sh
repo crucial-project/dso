@@ -3,7 +3,7 @@
 DIR=$(dirname "${BASH_SOURCE[0]}")
 
 MACHINE_TYPE=n1-standard-4
-NODE_NUMBER=3
+NODE_NUMBER=1
 GCP_PROJECT=$(gcloud config list --format='value(core.project)')
 NETWORK="projects/${GCP_PROJECT}/global/networks/default"
 
@@ -64,7 +64,7 @@ fetch_credentials() {
 }
 
 name="creson"
-zone="us-west2-a"
+zone="europe-west3"
 sleep_time=$((i * 2)) # avoid "gcp db locked" error
 
 create_cluster ${name} ${zone} ${sleep_time}

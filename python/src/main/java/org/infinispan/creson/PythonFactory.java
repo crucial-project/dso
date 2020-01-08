@@ -14,5 +14,7 @@ public class PythonFactory {
 
     public AtomicMap createMap(String name){ return new AtomicMap(name);}
 
+    public <T> AtomicMatrix<T> createMatrix(String name, Class<T> clazz, int n, int m) { return new AtomicMatrix(name, clazz, n, m);}
+
 }
 
