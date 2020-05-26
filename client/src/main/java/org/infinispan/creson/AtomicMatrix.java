@@ -23,17 +23,27 @@ public class AtomicMatrix<T> {
         this.array = (T[][]) Array.newInstance(clazz, n, m);
     }
 
+    public AtomicMatrix(String id, Class<T> clazz, T zero, int n, int m) {
+        this.id = id;
+        this.array = (T[][]) Array.newInstance(clazz, n, m);
+        for (int i=0; i<array.length; i++) {
+            for (int j = 0; j < array[i].length; j++) {
+                array[i][j] = zero;
+            }
+        }
+    }
+
     public AtomicMatrix(String id, T[][] array) {
         this.id = id;
         this.array = array;
     }
 
     public int rows(){
-        return array[0].length;
+        return array.length;
     }
 
     public int columns(){
-        return array.length;
+        return array[0].length;
     }
 
     public T get(int i, int j){
@@ -59,7 +69,7 @@ public class AtomicMatrix<T> {
     public void compute(T[][] array, BiFunction<T,T,T> f){
         for (int i=0; i<array.length; i++) {
             for (int j=0; j<array[i].length; j++){
-                array[i][j] = f.apply(array[i][j], this.array[i][j]);
+                this.array[i][j] = f.apply(array[i][j], this.array[i][j]);
             }
         }
     }

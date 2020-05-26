@@ -192,8 +192,11 @@ public class Factory {
 
         try {
 
-            if (key != null) {
-                reference = new Reference(clazz, key);
+            reference = new Reference(clazz, key);
+
+            if (forceNew) {
+                registeredContainers.remove(reference);
+            } else {
                 container = registeredContainers.get(reference);
             }
 

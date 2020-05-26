@@ -3,7 +3,6 @@ package org.infinispan.creson;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.omg.SendingContext.RunTimeOperations;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

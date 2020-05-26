@@ -134,6 +134,15 @@ public class BaseContainer extends AbstractContainer {
         assert key != null;
         this.reference = new Reference(clazz, key);
         this.cache = cache;
+
+        if (forceNew) {
+            try {
+                open();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+
     }
 
 

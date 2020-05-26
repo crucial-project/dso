@@ -3,7 +3,7 @@
 PROJDIR=`realpath $(dirname "${BASH_SOURCE[0]}")/../../../../`
 TARGETDIR="${PROJDIR}/target"
 
-NSERVERS=3
+NSERVERS=1
 NAME="infinispan-creson-server"
 MAINTAINER="0track"
 TAG="latest"
