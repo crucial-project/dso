@@ -25,7 +25,7 @@
         <version.args4j>2.32</version.args4j>
         <version.javassist>3.23.1-GA</version.javassist>
         <version.testng>6.14.3</version.testng>
-        <version.infinispan>9.4.16.Final</version.infinispan>
+        <version.infinispan>11.0.0.Final</version.infinispan>
         <version.io-kubernetes-client-java>4.0.0</version.io-kubernetes-client-java>
         <log4j.configurationFile>log4j2.xml</log4j.configurationFile>
     </properties>
