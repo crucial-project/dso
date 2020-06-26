@@ -1,6 +1,6 @@
 #  DSO
 
-The distributed shared objects (DSO) datastore allows to share, persist and call objects remotely.
+The distributed shared objects (DSO) datastore allows to share, call and persist objects remotely.
 
 ## For the inpatient
 
