@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: infinispan-creson-client-test
+  name: dso-client-test
 spec:
   parallelism: 1
   template:
     spec:
       restartPolicy: OnFailure
       containers:
-      - name: infinispan-creson-client-test
+      - name: dso-client-test
         image: %IMAGE%
         resources:
           requests:

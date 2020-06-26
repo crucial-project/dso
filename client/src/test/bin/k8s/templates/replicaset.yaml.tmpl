@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: infinispan-creson-server
+  name: dso-server
   labels:
-    app: infinispan-creson-server
+    app: dso-server
 spec:
   replicas: %REPLICAS%
   selector:
     matchLabels:
-      app: infinispan-creson-server
+      app: dso-server
   template:
     metadata:
       labels:
-        app: infinispan-creson-server
+        app: dso-server
     spec:
       containers:
        - name: server

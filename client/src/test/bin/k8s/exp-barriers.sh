@@ -7,7 +7,7 @@ trap "pkill -KILL -P $$; exit 255" SIGINT SIGTERM
 
 # 1 - set-up
 # k8s_rs_create ${TMPLDIR}/replicaset.yaml.tmpl 3 6 "LAUNCHED"
-# k8s_rs_cp ${TMPLDIR}/replicaset.yaml.tmpl ${DIR}/../../../../target/infinispan-creson-client-9.4.1.Final.jar/ /tmp
+# k8s_rs_cp ${TMPLDIR}/replicaset.yaml.tmpl ${DIR}/../../../../target/dso-client-1.0.jar/ /tmp
 
 # 2 - barriers
 CALLS=1000

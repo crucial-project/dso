@@ -2,8 +2,8 @@ FROM openjdk:8-slim
 
 MAINTAINER otrack
 
-ENV NAME=infinispan-creson-server
-ENV VERSION=9.4.16.Final
+ENV NAME=dso-server
+ENV VERSION=1.0
 ENV CLOUD=local
 ENV BUCKET=undefined
 ENV BUCKET_KEY=undefined
@@ -18,12 +18,12 @@ WORKDIR $NAME
 
 ADD target/$JAR .
 ADD target/lib lib
-ADD src/main/resources/jgroups-creson-tcp.xml  .
-ADD src/main/resources/jgroups-creson-ec2.xml  .
-ADD src/main/resources/jgroups-creson-gcp.xml  .
-ADD src/main/resources/jgroups-creson-k8s.xml  .
+ADD src/main/resources/jgroups-dso-tcp.xml  .
+ADD src/main/resources/jgroups-dso-ec2.xml  .
+ADD src/main/resources/jgroups-dso-gcp.xml  .
+ADD src/main/resources/jgroups-dso-k8s.xml  .
 ADD src/main/resources/log4j2.xml .
 ADD src/main/bin/server.sh  .
 RUN chmod +x .
 
-CMD ["bash", "/infinispan-creson-server/server.sh"]
+CMD ["bash", "/dso-server/server.sh"]

@@ -5,7 +5,7 @@ metadata:
 spec:  
   restartPolicy: OnFailure
   containers:
-  - name: infinispan-creson-client
+  - name: dso-client
     image: "%IMAGE%"
     imagePullPolicy: "%PULL_IMAGE%"
     resources:
@@ -22,7 +22,7 @@ spec:
     - name: CALLS
       value: "%CALLS%"
     - name: CLASS
-      value: "org.infinispan.creson.AtomicCounter"
+      value: "org.crucial.dso.AtomicCounter"
     - name: PARALLELISM
       value: "%PARALLELISM%"
     - name: PERSIST

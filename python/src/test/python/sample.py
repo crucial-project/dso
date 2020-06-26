@@ -1,4 +1,4 @@
-from creson.factory import Factory
+from crucial.factory import Factory
 from jpype import *
 from jpype import java
 

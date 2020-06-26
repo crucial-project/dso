@@ -2,21 +2,21 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-creson</artifactId>
-        <version>9.4.16.Final</version>
+        <groupId>org.crucial</groupId>
+        <artifactId>dso</artifactId>
+        <version>1.0</version>
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>infinispan-creson-client</artifactId>
-    <name>infinispan-creson-client</name>
-    <description>The client side of the CRESON framework.</description>
+    <artifactId>dso-client</artifactId>
+    <name>dso-client</name>
+    <description>Client side of the DSO datastore.</description>
 
     <dependencies>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-creson-core</artifactId>
+            <artifactId>dso-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -86,8 +86,8 @@
                 <configuration>
                     <aspectLibraries>
                         <aspectLibrary>
-                            <groupId>org.infinispan</groupId>
-                            <artifactId>infinispan-creson-core</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>dso-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>

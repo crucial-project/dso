@@ -8,26 +8,26 @@ if sys.version_info < (3,):
 if sys.version_info > (3,) and sys.version_info < (3, 4):
     sys.exit('Sorry, Python3 version < 3.4 is not supported')
 
-exec(open('src/main/python/creson/version.py').read())
+exec(open('src/main/python/dso/version.py').read())
 
-rmtree("src/main/python/creson/java",ignore_errors=True)
-copytree("target/lib","src/main/python/creson/java")
-copy("target/infinispan-creson-python-9.4.16.Final.jar","src/main/python/creson/java")
+rmtree("src/main/python/dso/java",ignore_errors=True)
+copytree("target/lib","src/main/python/dso/java")
+copy("target/dso-python-9.4.16.Final.jar","src/main/python/dso/java")
 
 setup(
-    name='creson',
+    name='dso',
     version=__version__,
-    url='https://github.com/creson',
+    url='https://github.com/crucial-project/dso',
     author='Pierre Sutra',
-    description='Python bindings for the Creson framework',
-    long_description="Python bindings for the Creson framework",
+    description='Python bindings for the DSO datastore',
+    long_description="Python bindings for the DSO datastore',
     author_email='pierre.sutra@telecom-sudparis.eu',
     package_dir={'':'src/main/python'},
     packages=find_packages('src/main/python'),
     install_requires=['JPype1'],
     include_package_data=True,
     package_data={
-        'creson': ['java/*.jar']
+        'dso': ['java/*.jar']
     },
     python_requires='>=3.6',
     classifiers=[

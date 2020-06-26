@@ -529,7 +529,7 @@ k8s_get_service(){
     local service=$(echo $(config image) | grep -ioh "/.*:" | sed s,[/:],,g)
     local proxy=$(kubectl --context="${context}" get svc ${service} -o yaml | grep ip | awk '{print $3}')
     while [ "${proxy}" == "" ]; do
-	kubectl --context="${context}" apply -f ${TMPLDIR}/${service}-service.yaml.tmpl
+	kubectl --context="${context}" apply -f ${TMPLDIR}/${service}-service.yaml
 	proxy=$(kubectl --context="${context}" get svc ${service} -o yaml | grep ip | awk '{print $3}')
         sleep 1
     done

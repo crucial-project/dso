@@ -17,7 +17,7 @@ do
     line=${r}
 
     k8s_rs_create ${TMPLDIR}/replicaset.yaml.tmpl ${r} 2 "LAUNCHED"
-    k8s_rs_cp ${TMPLDIR}/replicaset.yaml.tmpl ${DIR}/../../../../target/infinispan-creson-client-9.4.1.Final.jar/ /tmp
+    k8s_rs_cp ${TMPLDIR}/replicaset.yaml.tmpl ${DIR}/../../../../target/dso-client-1.0.jar/ /tmp
 
     prev=0; cur=1; diff=1; p=32    
     while [ ${diff} -gt 0 ] && [ ${p} -le 400 ];

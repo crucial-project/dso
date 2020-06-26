@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: "dso-server"
+spec:
+  selector:
+    app: "dso-server"
+  ports:
+  - protocol: TCP
+    port: 11222
+    targetPort: 11222
+  type: LoadBalancer
+

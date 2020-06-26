@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: infinispan-creson-client
+  name: dso-client
 spec:
   parallelism: %PARALLELISM%
   template:
     spec:
       restartPolicy: OnFailure
       containers:
-      - name: infinispan-creson-client
+      - name: dso-client
         image: %IMAGE%
         resources:
           requests:
@@ -24,6 +24,6 @@ spec:
           - name: CALLS
             value: "%CALLS%"
           - name: CLASS
-            value: "org.infinispan.creson.ScalableCyclicBarrier"
+            value: "org.crucial.dso.ScalableCyclicBarrier"
           - name: PARALLELISM
             value: "%PARALLELISM%"

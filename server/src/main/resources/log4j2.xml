@@ -18,8 +18,8 @@
   </Appenders>
 
   <Loggers>
+    <Logger name="org.crucial.dso" level="INFO"/>
     <Logger name="org.infinispan" level="INFO"/>
-    <Logger name="org.infinispan.creson" level="INFO"/>
     <Logger name="org.jgroups" level="INFO"/>
     <Logger name="org.infinispan.server.hotrod" level="ERROR"/>
     <Logger name="org.infinispan.commons.test.TestNGTestListener" level="ERROR"/>

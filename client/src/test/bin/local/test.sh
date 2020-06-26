@@ -4,7 +4,7 @@ PROJDIR=`realpath $(dirname "${BASH_SOURCE[0]}")/../../../../`
 TARGETDIR="${PROJDIR}/target"
 
 NSERVERS=1
-NAME="infinispan-creson-server"
+NAME="dso-server"
 MAINTAINER="0track"
 TAG="latest"
 IMAGE="${MAINTAINER}/${NAME}:${TAG}"
@@ -15,7 +15,7 @@ THREADS="4"
 CALLS="1000"
 EXTRA="-verbose"
 
-CLIENT="infinispan-creson-client"
+CLIENT="dso-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
 
 if [ $# -ne 1 ]; then
@@ -54,31 +54,31 @@ else
   if [[ "$1" == "-counters" ]]
   then
     echo ">>>>> Counters"
-    CLASS="org.infinispan.creson.AtomicCounter"
+    CLASS="org.crucial.dso.AtomicCounter"
   elif [[ "$1" == "-blobs" ]]
   then
     echo ">>>>> Blobs"
     EXTRA="-parameters 100 "${EXTRA}
-    CLASS="org.infinispan.creson.Blob"
+    CLASS="org.crucial.dso.Blob"
   elif [[ "$1" == "-barrier" ]]
   then
     echo ">>>>> Barrier"
-    CLASS="org.infinispan.creson.CyclicBarrier"
+    CLASS="org.crucial.dso.CyclicBarrier"
     INSTANCES=1
   elif [[ "$1" == "-sbarrier" ]]
   then
     echo ">>>>> Scalable Barrier"
-    CLASS="org.infinispan.creson.ScalableCyclicBarrier"
+    CLASS="org.crucial.dso.ScalableCyclicBarrier"
     INSTANCES=1
   elif [[ "$1" == "-countdownlatch" ]]
   then
     echo ">>>>> CountDownLatch"
-    CLASS="org.infinispan.creson.CountDownLatch"
+    CLASS="org.crucial.dso.CountDownLatch"
     CALLS=1
     INSTANCES=1
   fi
   CLASSPATH=${PROJDIR}/target/*:${PROJDIR}/target/lib/*
-  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.infinispan.creson.Benchmark -class ${CLASS} -instances ${INSTANCES} -threads ${THREADS} -calls ${CALLS}"
+  ARGS="-ea -Dlog4j2.configuration=log4j.xml org.crucial.dso.Benchmark -class ${CLASS} -instances ${INSTANCES} -threads ${THREADS} -calls ${CALLS}"
   echo "java -cp ${CLASSPATH} ${ARGS} ${EXTRA}"
   java -cp ${CLASSPATH} ${ARGS} ${EXTRA}
 fi

@@ -14,7 +14,7 @@ if [ -z "${DOCKER_USER}" ]; then
 fi
 
 DIR=$(dirname "$0")
-IMAGE=${DOCKER_USER}/infinispan-creson-client-tests:${TAG}
+IMAGE=${DOCKER_USER}/dso-client-tests:${TAG}
 DOCKERFILE=${DIR}/../docker/Dockerfile
 
 # package

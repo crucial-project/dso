@@ -2,15 +2,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-creson</artifactId>
-        <version>9.4.16.Final</version>
+        <groupId>org.crucial</groupId>
+        <artifactId>dso</artifactId>
+        <version>1.0</version>
         <relativePath>../</relativePath>
     </parent>
 
-    <artifactId>infinispan-creson-server</artifactId>
-    <name>infinispan-creson-server</name>
-    <description>Server side of the CRESON framework.</description>
+    <artifactId>dso-server</artifactId>
+    <name>dso-server</name>
+    <description>Server side of the DSO datastore.</description>
 
     <properties>
         <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
@@ -21,29 +21,29 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-creson-core</artifactId>
+            <artifactId>dso-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-commons</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-hotrod</artifactId>
-            <version>${project.version}</version>
+            <version>${version.infinispan}</version>
             <type>test-jar</type>
         </dependency>
 
@@ -58,16 +58,9 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-commons-test</artifactId>
-            <type>test-jar</type>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>${project.version}</version>
+            <version>${version.infinispan}</version>
             <type>test-jar</type>
         </dependency>
 
@@ -95,16 +88,24 @@
         <!-- TEST -->
 
         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons-test</artifactId>
+            <type>test-jar</type>
+            <version>${version.infinispan}</version>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-creson-core</artifactId>
+            <artifactId>dso-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-client-hotrod</artifactId>
+            <version>${version.infinispan}</version>
             <scope>test</scope>
         </dependency>
 
@@ -115,9 +116,9 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-commons-test</artifactId>
-            <version>${project.version}</version>
+            <version>${version.infinispan}</version>
             <scope>test</scope>
         </dependency>
 
@@ -133,12 +134,12 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-		<version>${version.aspectj-maven}</version>
+                <version>${version.aspectj-maven}</version>
                 <configuration>
                     <aspectLibraries>
                         <aspectLibrary>
-                            <groupId>org.infinispan</groupId>
-                            <artifactId>infinispan-creson-core</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>dso-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>

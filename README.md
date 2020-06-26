@@ -1,67 +1,84 @@
-#  The Creson framework
+#  DSO
 
-Creson is a general purpose synchronization framework.
-It allows to share, persist and call Java objects remotely.
-The current implementation is based on [Infinispan](http://infinispan.org/).
+The distributed shared objects (DSO) datastore allows to share, persist and call objects remotely.
+
+## For the inpatient
+
+	git clone https://github.com/crucial-project/dso
+	./dso/client/src/test/local/test.sh -create // create a server using docker
+	./dso/client/src/test/local/test.sh -[blobs|counters|countdownlatch|barrier|sbarrier]
+	./dso/client/src/test/local/test.sh -delete // delete the server
 
 ## Introduction
 
-Cloud applications are commonly split in three distinct tiers, the presentation tier, the application tier and the storage tier.
+Cloud applications are commonly split into three distinct tiers: presentation, application and storage.
 The presentation tier displays information related to the application services, such as web pages.
 The application tier contains the business logic.
-The storage tier executes the data persistence mechanisms (database servers, file shares, etc.) and the data access layer that encapsulates the persistence mechanisms and exposes the data.
+The storage tier is in charge of serving and persisting data.
 
-Traditionally, an [object-relational mapping](https://en.wikipedia.org/wiki/Object-relational_mapping
-) (ORM) [converts the data between the application and the storage tier.
+Traditionally, an [object-relational mapping](https://en.wikipedia.org/wiki/Object-relational_mapping) (ORM) converts the data between the application and storage tiers.
 The ORM materializes the frontier between the two tiers, and it reduces the coupling. 
-However, it also forces to repeatedly convert the objects between their in-memory and their serialized representations.
+However, it also forces to repeatedly convert the objects between their in-memory and their serialized representations back and forth.
 This negatively impacts performance and increases execution costs.
 
-Creson is a general purpose synchronization framework.
-With Creson, instead of fetching objects from the storage, the application directly calls them.
-Creson ensures that the objects are persisted and shared consistently among several client machines.
+DSO is a general-purpose synchronization and data sharing framework.
+With DSO, instead of fetching objects from storage, the application directly calls them.
+DSO ensures that the objects are persisted and shared consistently among several client machines.
 
-## Programming with Creson 
+## Programming with DSO 
 
-To declare a Creson object, the programmer uses the keyword `@Shared` on the field of an object.
+DSO offers several client-side programming libraries.
+The most complete one is for the Java language.
+To declare a DSO object in Java, the programmer uses the keyword `@Shared` on the field of an object.
 As an example, consider the following two classes.
 
 	class Hero{@Shared Room location;}
 	class Room{Treasure loot();}
 
 The `Hero` class contains a `location` field annotated with `@shared`.
-This tells Creson to push the `location` to the storage tier, allowing several instances of `Hero` on several application machines to access the same `location` object transparently.
+This tells DSO to push the `location` to the storage tier, allowing several instances of `Hero` on several application machines to access the same `location` object transparently.
 
-Creson ensures that the object are _strongly consistent_ over time.
-In the example above, this means that if two heroes stand in the same rooom, only one of them may loot the treasure.
-More precisely, the synchronization contract of every Creson object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
-In Java, this means that for every method `m`, `m` is called as `synchronized(o){o.m}`.
+DSO ensures that the object are _strongly consistent_ over time.
+In the example above, this means for instance that if two heroes stand in the same room, only one of them may loot the treasure.
+More precisely, the synchronization contract of every DSO object `o` is that `o` is atomic, aka. [linearizable](https://en.wikipedia.org/wiki/Linearizability).
+In Java, this is equivalent to guarding every method `m` of some object `o` with `synchronized(o){o.m}`.
 
-Notice that the creation of an Creson object is defered.
-In detail, when `new` is encountered, Creson actually defers the creation of the object at the server side until one of its methods is called.
+DSO includes a library of shared objects (counter, integer, list, maps, barrier, etc.).
+The provided objects are listed in the [client](https://github.com/crucial-project/dso/blob/master/client/src/main/java/org/infinispan/creson/client/) module.
+
+DSO follows a standard client-server architecture.
+The current server implementation is layered above  [Infinispan](http://infinispan.org/).
+
+The project includes libraries for [Python](https://github.com/crucial-project/dso/blob/master/python) and [Shell](https://github.com/crucial-project/dso/blob/master/client/src/main/java/org/infinispan/creson/client/Interpreter.java)
 
 ## Usage
 
-Creson relies on a client-server architecture.
-The current server implementation is based on [Infinispan](http://infinispan.org/).
-To build an archive containing the server, use the `mvn package` at the root of the project.
-The resulting archive, named `infinispan-creson-server-*.tar.gz`, is located in `server/target`.
-Then, to launch the server run the script `server.sh` from the root of the archive.
+Below, we explain how to use DSO in various contexts.
 
-Every class used by a client, e.g., the `Hero` class above, should be known at the server.
-This requires to add the appropriates `.class` or `jar` files to the classpath of the server.
-Alternatively, the server can dynamically load new jars (by default, they should be located in `/tmp`).
+### Docker
 
-Some examples of Creson in conjunction with AWS Lambda are available in the [slambda](https://github.com/otrack/slambda) project.
-To run them, clone the project, build a jar using `mvn package` then add it to `/tmp`.   
+There are two Docker images: [0track/dso-server](https://hub.docker.com/repository/docker/0track/dso-server) and [0track/dso-client-tests](https://hub.docker.com/repository/docker/0track/dso-client-tests).
+To run the server locally, one may type:
 
-## How to deploy Creson in Amazon EC2 ?
+	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=11222 0track/dso-server:latest
 
-The server shell script can be used inside AWS EC2.
-Internally, Creson uses Infinispan which itself relies on the [JGroups](http://www.jgroups.org/) stack for discovery and communication.
-To deploy one or more servers in EC2, Creson uses the S3 ping facility of JGroups.
+### Kubernetes
 
-The configuration file for the server is `jgroups-creson-ec2.xml`.
+To use DSO in a distributed context, the simplest approach is to rely on a containers orchestrator.
+The project includes a set of scripts for [Kubernetes](https://www.kubernetes.org) (k8s).
+To run the tests in a k8s cluster, one may use the following commands:
+
+	./client/src/test/bin/k8s/[aws,gcp]/bootstrap.sh
+	./client/src/test/bin/k8s/test.sh -create
+	./client/src/test/bin/k8s/test.sh -[blobs|counters|countdownlatch|barrier|sbarrier]
+	./client/src/test/bin/k8s/test.sh -delete
+
+### AWS EC2
+
+As pointed above DSO uses internally Infinispan which itself relies on the [JGroups](http://www.jgroups.org/) stack for discovery and communication.
+To deploy one or more servers in EC2, DSO uses the S3 ping facility of JGroups.
+
+The configuration file for the server is `jgroups-dso-ec2.xml`.
 To deploy the server in your own EC2 instances, you need to fix the following 3 parameters in this XML file. 
 
 <S3_PING   
@@ -73,15 +90,22 @@ To deploy the server in your own EC2 instances, you need to fix the following 3 
 The access key and the corresponding secret are credentials to write in the bucket.
 We advice you to [create](http://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) an IAM in EC2 for that purpose.
 
-## Advanced usage
+### Hand-made deployment
 
-Methods annotated with `@ReadOnly` allow to execute the corresponding operation at the client tier.
-This is done by fetching the full state on the client, similarly to a common ORM.
+It is also possible to build your own server, e.g., to deploy a specific library of shared objects.
+To build an archive containing the server, use the `mvn install -DskipTests` at the root of the project.
+The server archive, named `dso-server-*.tar.gz`, is located in `server/target`.
+To launch the server run the script `server.sh` from the root of the archive.
 
-A call to a `@ReadOnly` method is consistent, yet ot does not necessarily see latest state of the object.
-In other words, for the programmer the object is now [sequentially consistent](https://en.wikipedia.org/wiki/Sequential_consistency).
+Every class used by a client, e.g., the `Hero` class above, should be known at the server.
+This requires to add the appropriates `.class` or `jar` files to the classpath of the server.
+Alternatively, the server can dynamically load new jars (by default, they should be located in `/tmp`).
 
-## White paper
+## Advanced examples
 
-A white paper about Creson was published in the proceedings of the 37th IEEE International Conference on Distributed Computing Systems (ICDCS 2017). 
-A preprint is available [here](https://drive.google.com/open?id=0BwFkGepvBDQoR3FNQk9VY1U2Q1U)
+More uses cases are provided in the [examples](https://github.com/crucial-project/examples) repository of the Crucial project.
+
+The [serverless shell](https://github.com/crucial-project/serverless-shell) uses DSO to synchronize distributed shell instances executed atop a FaaS infrastructure (e.g., AWS Lambda).
+
+We used DSO to port the Random Forest classification algorithm in the [Smile](https://github.com/crucial-project/smile) library.
+
