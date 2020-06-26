@@ -2,7 +2,7 @@
 
 The distributed shared objects (DSO) datastore allows to share, call and persist objects remotely.
 
-## For the inpatient
+## For the impatient
 
 	git clone https://github.com/crucial-project/dso
 	./dso/client/src/test/local/test.sh -create // create a server using docker
