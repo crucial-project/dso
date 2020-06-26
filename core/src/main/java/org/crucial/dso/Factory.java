@@ -69,7 +69,7 @@ public class Factory {
         return get(server);
     }
 
-    public static Factory get(String server) {
+    public synchronized static Factory get(String server) {
         int port = Integer.valueOf(server.split(":")[1]);
         String host = server.split(":")[0];
         org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
