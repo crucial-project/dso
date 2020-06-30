@@ -64,7 +64,7 @@ fetch_credentials() {
 }
 
 name="dso"
-zone="europe-west2" # london
+zone="us-east4"
 sleep_time=$((i * 2)) # avoid "gcp db locked" error
 
 create_cluster ${name} ${zone} ${sleep_time}
