@@ -66,11 +66,6 @@
         </dependency>
 
         <dependency>
-          <groupId>org.aspectj</groupId>
-          <artifactId>aspectjrt</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
         </dependency>
@@ -81,6 +76,13 @@
         </dependency>
 	
         <!-- TEST -->
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dso-aspectj</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -117,6 +119,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -134,7 +142,7 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>dso-core</artifactId>
+                            <artifactId>dso-aspectj</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>
@@ -144,7 +152,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
                             <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
                         </goals>
                     </execution>
