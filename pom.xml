@@ -41,6 +41,11 @@
             <organization>Universitat Rovira I Virgili</organization>
             <organizationUrl>https://www.urv.cat/</organizationUrl>
         </developer>
+        <developer>
+            <name>Gerard París Aixalà</name>
+            <organization>Universitat Rovira I Virgili</organization>
+            <organizationUrl>https://www.urv.cat/</organizationUrl>
+        </developer>
     </developers>
 
     <modules>
