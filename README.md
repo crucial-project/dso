@@ -5,9 +5,9 @@ The distributed shared objects (DSO) datastore allows to share, call and persist
 ## For the impatient
 
 	git clone https://github.com/crucial-project/dso
-	./dso/client/src/test/local/test.sh -create // create a server using docker
-	./dso/client/src/test/local/test.sh -[blobs|counters|countdownlatch|barrier|sbarrier]
-	./dso/client/src/test/local/test.sh -delete // delete the server
+	./dso/client/src/test/bin/local/test.sh -create // create a server using docker
+	./dso/client/src/test/bin/local/test.sh -[blobs|counters|countdownlatch|barrier|sbarrier]
+	./dso/client/src/test/bin/local/test.sh -delete // delete the server
 
 ## Introduction
 
