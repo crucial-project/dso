@@ -32,7 +32,7 @@
       <directory>target</directory>
       <outputDirectory>lib</outputDirectory>
       <includes>
-        <include>dso-server.jar</include>
+        <include>dso-server*.jar</include>
       </includes>
     </fileSet>
   </fileSets>
