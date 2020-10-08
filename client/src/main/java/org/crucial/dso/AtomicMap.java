@@ -101,9 +101,7 @@ public class AtomicMap<K,V> implements MergeableMap<K,V> {
 
     @Command(name = "print")
     public void printMap() {
-        for(Map.Entry<K,V> entry: delegate.entrySet()){
-          System.out.println(entry.getKey()+ " " + entry.getValue());            
-        }
+        return delegate.toString();
     }
 
     @Override
