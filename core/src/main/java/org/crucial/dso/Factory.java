@@ -14,6 +14,7 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 import org.crucial.dso.container.BaseContainer;
+import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ public class Factory {
                 .port(port)
                 .forceReturnValues(true)
                 .addJavaSerialWhiteList(".*")
+                .marshaller(new JavaSerializationMarshaller()).addJavaSerialWhiteList(".*")
                 .connectionTimeout(3000)
                 .maxRetries(5);
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());

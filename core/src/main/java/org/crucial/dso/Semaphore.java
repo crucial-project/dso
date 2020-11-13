@@ -1,13 +1,25 @@
 package org.crucial.dso;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.io.Serializable;
+
 /**
  * @author Daniel
  */
-public class Semaphore {
+
+@Entity
+public class Semaphore implements Serializable {
+
     private int permits;
+
+    @Id
+    private String name;
+
     public Semaphore(){}
 
-    public Semaphore(int permits){
+    public Semaphore(String name, int permits){
+        this.name = name;
         this.permits = permits;
     }
 

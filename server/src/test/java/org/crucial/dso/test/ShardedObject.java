@@ -2,28 +2,27 @@ package org.crucial.dso.test;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * @author Pierre Sutra
  */
 @Entity
-public class ShardedObject {
+public class ShardedObject implements Serializable {
 
-    @Id public UUID id;
+    @Id public String id;
     private boolean value;
     private ShardedObject shard;
 
-    public ShardedObject() {
-        id = UUID.randomUUID();
-    }
+    public ShardedObject() {}
 
-    public ShardedObject(UUID id) {
+    public ShardedObject(String id) {
         this.id = id;
     }
 
-    public ShardedObject(ShardedObject shard) {
-        id = UUID.randomUUID();
+    public ShardedObject(String id, ShardedObject shard) {
+        this.id = id;
         this.shard = shard;
     }
 
@@ -35,7 +34,7 @@ public class ShardedObject {
         return shard;
     }
 
-    public UUID getID() {
+    public String getID() {
         return id;
     }
 

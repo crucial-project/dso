@@ -3,36 +3,22 @@ package org.crucial.dso.test;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import javassist.util.proxy.Proxy;
-import org.crucial.dso.Shared;
+import org.crucial.dso.*;
 import org.crucial.dso.utils.Context;
 import org.crucial.dso.utils.ContextManager;
 import org.crucial.dso.utils.ID;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.api.BasicCacheContainer;
-import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.cache.CacheMode;
-import org.crucial.dso.Factory;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.marshall.core.JBossMarshaller;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.Future;
 
 import static org.crucial.dso.Factory.DSO_CACHE_NAME;
@@ -47,8 +33,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int NCALLS = 5000;
     protected static final long MAX_ENTRIES = -1;
-    protected static final int REPLICATION_FACTOR = 2;
-    protected static final int NMANAGERS = 3;
+    protected static final int REPLICATION_FACTOR = 3;
+    protected static final int NMANAGERS = 2;
     protected static final boolean PASSIVATION = false;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/dso";
 
@@ -60,14 +46,11 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         Factory factory = Factory.forCache(cache);
 
         // 1 - basic call
-        Set<String> set = factory.getInstanceOf(HashSet.class, "set");
+        Set<String> set = factory.getInstanceOf(AtomicSet.class, "set");
         set.add("smthing");
+        System.out.println(set.size());
         assert set.contains("smthing");
         assert set.size() == 1;
-
-        // 2 - proxy marshalling
-        Marshaller marshaller = new JBossMarshaller();
-        assert marshaller.objectFromByteBuffer((marshaller.objectToByteBuffer(set))).equals(set);
 
         factory.close();
 
@@ -82,7 +65,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         int f = 1; // multiplicative factor
 
-        Map map = factory.getInstanceOf(HashMap.class, "map");
+        Map map = factory.getInstanceOf(AtomicMap.class, "map");
 
         long start = System.currentTimeMillis();
         for (int i = 0; i < NCALLS * f; i++) {
@@ -108,67 +91,40 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         BasicCache<Object, Object> cache2 = container2.getCache(DSO_CACHE_NAME);
         Factory factory2 = Factory.forCache(cache2);
 
-        HashSet set1, set2;
+        Set set1, set2;
 
         // 0 - Base persistence
-        set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, false, true);
+        set1 = factory1.getInstanceOf(AtomicSet.class, "persist1", false, false, true);
         set1.add("smthing");
-        factory1.disposeInstanceOf(HashSet.class, "persist1");
-        set1 = factory1.getInstanceOf(HashSet.class, "persist1", false, false, false);
+        factory1.disposeInstanceOf(AtomicSet.class, "persist1");
+        set1 = factory1.getInstanceOf(AtomicSet.class, "persist1", false, false, false);
         assert set1.contains("smthing");
-        factory1.disposeInstanceOf(HashSet.class, "persist1");
+        factory1.disposeInstanceOf(AtomicSet.class, "persist1");
 
         // 1 - Concurrent retrieval
-        set1 = factory1.getInstanceOf(HashSet.class, "persist2");
+        set1 = factory1.getInstanceOf(AtomicSet.class, "persist2");
         set1.add("smthing");
-        set2 = factory2.getInstanceOf(HashSet.class, "persist2", false, false, false);
+        set2 = factory2.getInstanceOf(AtomicSet.class, "persist2", false, false, false);
         assert set2.contains("smthing");
-        factory1.disposeInstanceOf(HashSet.class, "persist2");
-        factory2.disposeInstanceOf(HashSet.class, "persist2");
+        factory1.disposeInstanceOf(AtomicSet.class, "persist2");
+        factory2.disposeInstanceOf(AtomicSet.class, "persist2");
 
         // 2 - Serial storing then retrieval
-        set1 = factory1.getInstanceOf(HashSet.class, "persist3");
+        set1 = factory1.getInstanceOf(AtomicSet.class, "persist3");
         set1.add("smthing");
-        factory1.disposeInstanceOf(HashSet.class, "persist3");
-        set2 = factory2.getInstanceOf(HashSet.class, "persist3", false, false, false);
+        factory1.disposeInstanceOf(AtomicSet.class, "persist3");
+        set2 = factory2.getInstanceOf(AtomicSet.class, "persist3", false, false, false);
         assert set2.contains("smthing");
-        factory1.disposeInstanceOf(HashSet.class, "persist3");
-        factory2.disposeInstanceOf(HashSet.class, "persist3");
+        factory1.disposeInstanceOf(AtomicSet.class, "persist3");
+        factory2.disposeInstanceOf(AtomicSet.class, "persist3");
 
         // 3 - Re-creation
-        set1 = factory1.getInstanceOf(HashSet.class, "persist4");
+        set1 = factory1.getInstanceOf(AtomicSet.class, "persist4");
         set1.add("smthing");
-        factory1.disposeInstanceOf(HashSet.class, "persist4");
-        set2 = factory2.getInstanceOf(HashSet.class, "persist4", false, false, true);
+        factory1.disposeInstanceOf(AtomicSet.class, "persist4");
+        set2 = factory2.getInstanceOf(AtomicSet.class, "persist4", false, false, true);
         assert !set2.contains("smthing");
-        factory2.disposeInstanceOf(HashSet.class, "persist4");
-
-    }
-
-    @Test(groups = {"dso"})
-    public void baseReadOptimization() throws Exception {
-        SimpleObject object = new SimpleObject("baseReadOptimization");
-        object.setField("something");
-        String field = object.getField();
-        assert field.equals("something");
-    }
-
-    @Test(groups = {"dso", "stress"})
-    public void advancedReadOptimization() throws Exception {
-
-        SimpleObject object = new SimpleObject("performance");
-
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < NCALLS; i++) {
-            object.setField(Integer.toString(i));
-        }
-        System.out.println("op/sec:" + ((float) (NCALLS)) / ((float) (System.currentTimeMillis() - start)) * 1000);
-
-        start = System.currentTimeMillis();
-        for (int i = 0; i < NCALLS; i++) {
-            object.getField();
-        }
-        System.out.println("op/sec:" + ((float) (NCALLS)) / ((float) (System.currentTimeMillis() - start)) * 1000);
+        factory2.disposeInstanceOf(AtomicSet.class, "persist4");
 
     }
 
@@ -180,18 +136,18 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         BasicCache<Object, Object> cache1 = container1.getCache(DSO_CACHE_NAME);
         Factory factory1 = Factory.forCache(cache1, 1, false);
 
-        HashSet set1, set2;
+        Set set1, set2;
 
         // 0 - Base caching
-        set1 = factory1.getInstanceOf(HashSet.class, "aset", false, false, true);
+        set1 = factory1.getInstanceOf(AtomicSet.class, "aset", false, false, true);
         set1.add("smthing");
-        set2 = factory1.getInstanceOf(HashSet.class, "aset2", false, false, true);
+        set2 = factory1.getInstanceOf(AtomicSet.class, "aset2", false, false, true);
         assert set1.contains("smthing");
 
         // 1 - Caching multiple instances of the same object
-        set1 = factory1.getInstanceOf(HashSet.class, "aset3", false, false, true);
+        set1 = factory1.getInstanceOf(AtomicSet.class, "aset3", false, false, true);
         set1.add("smthing");
-        set2 = factory1.getInstanceOf(HashSet.class, "aset3", false, false, false);
+        set2 = factory1.getInstanceOf(AtomicSet.class, "aset3", false, false, false);
         assert set1.contains("smthing");
         assert set2.contains("smthing");
 
@@ -205,7 +161,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         for (BasicCacheContainer manager : containers()) {
             Set set = Factory.forCache(manager.getCache(DSO_CACHE_NAME))
-                    .getInstanceOf(HashSet.class, "concurrent");
+                    .getInstanceOf(AtomicSet.class, "concurrent");
             futures.add(service.submit(
                     new SetTask(set, NCALLS)));
         }
@@ -238,101 +194,51 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
         int n = 100;
         for (int i = 0; i < n; i++) {
-            ArrayList list = factory2.getInstanceOf(ArrayList.class, "list" + i);
+            List list = factory2.getInstanceOf(AtomicList.class, "list" + i);
             list.add(i);
         }
 
         for (int i = 0; i < n; i++) {
-            ArrayList list = factory1.getInstanceOf(ArrayList.class, "list" + i);
+            List list = factory1.getInstanceOf(AtomicList.class, "list" + i);
             assert (list.get(0).equals(i)) : list.get(0);
         }
 
     }
 
     @Test(groups = {"dso"})
-    public void baseAspectJ() throws Exception {
-
-        // 1 - constructor
-        SimpleObject object = new SimpleObject("aspectj");
-        String field = object.getField();
-        assert field.equals("aspectj");
-
-        // 2 - constructor w. arguments
-        SimpleObject object1 = new SimpleObject("aspectj2");
-        assert object1.getField().equals("aspectj2");
-
-        // 3 - equals()
-        ShardedObject object2 = new ShardedObject();
-        assert object2.equals(object2);
-
-    }
-
-    @Test(groups = {"dso"})
     public void baseComposition() throws Exception {
         assert ShardedObject.class.isAssignableFrom(ShardedObject.class);
-        ShardedObject object = new ShardedObject();
-        ShardedObject object2 = new ShardedObject(object);
+
+        Iterator<BasicCacheContainer> it = containers().iterator();
+        BasicCacheContainer container1 = it.next();
+        BasicCache<Object, Object> cache1 = container1.getCache(DSO_CACHE_NAME);
+        Factory factory1 = Factory.forCache(cache1);
+
+        ShardedObject object = factory1.getInstanceOf(ShardedObject.class, "o1");
+        ShardedObject object2 = factory1.getInstanceOf(ShardedObject.class, "o2",
+                false,
+                false,
+                true,
+                "o2", object);
         ShardedObject object3 = object2.getShard();
         assert object3.equals(object);
-
-        List<SimpleObject> list = new ArrayList<>();
-        Random random = new Random(System.currentTimeMillis());
-        for (int i = 0; i < 10; i++) {
-            list.add(new SimpleObject(Integer.toString(random.nextInt(10))));
-        }
-        for (SimpleObject simpleObject1 : list) {
-            for (SimpleObject simpleObject2 : list) {
-                if (simpleObject1.equals(simpleObject2))
-                    assert simpleObject1.getField().equals(simpleObject2.getField());
-            }
-        }
-
     }
 
-    @Test(groups = {"dso"})
-    public void advancedComposition() throws Exception {
-        ShardedObject object1 = new ShardedObject();
-        ShardedObject object2 = new ShardedObject(object1);
-
-        ShardedObject shard = object2.getShard();
-        assert shard.equals(object1);
-        assert object1.flipValue();
-        assert !(object2.getShard()).flipValue();
-        assert object2.flipValue();
-
-        ShardedObject object3 = new ShardedObject();
-        ShardedObject object4 = new ShardedObject(object3);
-        object3.addShard(object4);
-    }
-
-    @Shared
-    List<SimpleObject> l1;
-
-    @Test(groups = {"dso"})
-    public void baseAnnotation() throws Exception{
-        l1 = new ArrayList<>();
-        SimpleObject object1 = new SimpleObject();
-        l1.add(object1);
-        assert l1 instanceof Proxy;
-        assert l1.size() == 1;
-        l1.remove(0);
-        assert l1.size() == 1;
-    }
 
     @Test(groups = {"dso", "stress"}, enabled = false)
     public void baseElasticity() throws Exception {
 
-        advancedComposition();
+        baseComposition();
         baseUsage();
 
         addContainer();
         persistence();
-        advancedComposition();
+        baseComposition();
         baseUsage();
 
         deleteContainer();
         baseUsage();
-        advancedComposition();
+        baseComposition();
     }
 
     @Test(groups = {"dso", "stress"}, enabled = false)
@@ -341,8 +247,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         ExecutorService service = Executors.newCachedThreadPool();
         List<Future<Integer>> futures = new ArrayList<>();
 
-        Set set = Factory.forCache(manager(0).getCache(DSO_CACHE_NAME))
-                .getInstanceOf(HashSet.class, "elastic");
+        Set set = Factory.forCache(manager(0).getCache(DSO_CACHE_NAME)).getInstanceOf(AtomicSet.class, "elastic");
         futures.add(service.submit(
                 new SetTask(set, NCALLS)));
 
@@ -370,21 +275,14 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
 
     }
 
-    @Shared MyMap<Integer, byte[]> map;
-
-    static class MyMap<K,V> extends HashMap<K,V> {
-
-        @Override
-        public V put (K k, V v) {
-            super.put(k,v);
-            return null;
-        }
-
-    }
-
     @Test(groups = {"dso", "stress"})
     public void memoryUsage(){
-        map = new MyMap<>();
+        Iterator<BasicCacheContainer> it = containers().iterator();
+        BasicCacheContainer container1 = it.next();
+        BasicCache<Object, Object> cache1 = container1.getCache(DSO_CACHE_NAME);
+        Factory factory1 = Factory.forCache(cache1);
+
+        Map map = factory1.getInstanceOf(AtomicMap.class, "map");
         final int threads = 1;
         final int operations = 15;
 
@@ -416,17 +314,22 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     @Test(groups = {"dso"})
     public void idempotence() throws IllegalAccessException {
 
-        SimpleObject object = new SimpleObject("idempotence");
+        Iterator<BasicCacheContainer> it = containers().iterator();
+        BasicCacheContainer container1 = it.next();
+        BasicCache<Object, Object> cache1 = container1.getCache(DSO_CACHE_NAME);
+        Factory factory1 = Factory.forCache(cache1);
+
+        SimpleObject object = factory1.getInstanceOf(SimpleObject.class,"idempotence");
         object.getCount(); // to open it.
 
         RandomBasedGenerator generator = null;
 
         generator = Generators.randomBasedGenerator(new Random(42));
-        ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
+        ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(this.manager(0).getCache(DSO_CACHE_NAME))));
         object.setField("a");
 
         generator = Generators.randomBasedGenerator(new Random(42));
-        ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(cache(0))));
+        ContextManager.set(new Context(ID.threadID(), generator, Factory.forCache(this.manager(0).getCache(DSO_CACHE_NAME))));
         object.setField("a");
 
         assert object.getCount() == 1;

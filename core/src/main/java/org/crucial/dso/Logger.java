@@ -2,13 +2,14 @@ package org.crucial.dso;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 /**
  * @author Daniel
  */
 
 @Entity
-public class Logger {
+public class Logger implements Serializable {
 
     @Id
     public String name;

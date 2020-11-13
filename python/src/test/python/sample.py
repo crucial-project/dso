@@ -1,8 +1,8 @@
-from crucial.factory import Factory
+from dso.factory import Factory
 from jpype import *
 from jpype import java
 
-factory = Factory()
+factory = Factory("35.245.240.1:11222")
 
 c = factory.createCounter("cnt")
 c.reset()

@@ -1,5 +1,6 @@
 package org.crucial.dso;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -10,7 +11,7 @@ import java.util.function.BiFunction;
  *
  * @author Daniel
  */
-public interface MergeableMap<K, V> extends Map<K, V>{
+public interface MergeableMap<K, V> extends Map<K, V> {
 
     default void mergeAll(Map<? extends K, ? extends V> m, BiFunction<? super V, ? super V, ? extends V> f){
         m.forEach((k, v) -> merge(k, v, f));

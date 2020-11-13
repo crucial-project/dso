@@ -53,7 +53,7 @@ fi
 
 cp ${CONFIG} jgroups.xml
 
-JVM="${JVM_EXTRA} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP} -Dlog4j.configurationFile=\"${DIR}/log4j2.xml\""
+JVM="${JVM_EXTRA} -Djava.net.preferIPv4Stack=true -Djgroups.tcp.address=${IP}"
 CMD="java -ea -cp \"${CLASSPATH}\" ${JVM} org.crucial.dso.Server -server ${IP}:${PORT} ${EXTRA}"
 echo ${CMD}
 bash -c "$CMD"

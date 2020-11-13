@@ -2,6 +2,7 @@ package org.crucial.dso;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Entity
-public class AtomicMatrix<T> {
+public class AtomicMatrix<T> implements Serializable {
 
     @Id
     public String id;

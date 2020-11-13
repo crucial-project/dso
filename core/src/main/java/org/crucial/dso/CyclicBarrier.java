@@ -3,6 +3,8 @@ package org.crucial.dso;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.io.Serializable;
+
 @Command(name = "barrier")
 public class CyclicBarrier {
 
@@ -16,12 +18,13 @@ public class CyclicBarrier {
     private AtomicCounter counter;
     private AtomicCounter generation;
 
+    @Deprecated
     public CyclicBarrier(){}
 
-    public CyclicBarrier(String name, int parties){
+    public CyclicBarrier(String name, int parties, AtomicCounter counter, AtomicCounter generation){
         this.name = name;
-        this.counter = new AtomicCounter(name+"-counter",0);
-        this.generation = new AtomicCounter(name+"-generation",0);
+        this.counter = counter;
+        this.generation = generation;
         this.parties = parties;
     }
 
@@ -42,14 +45,12 @@ public class CyclicBarrier {
 
         int current = generation.tally();
         int backoff = (parties - Math.abs(ret % parties))/MAGIC;
-        // System.out.println(ret+" - ("+current+","+previous+")");
         while (previous == current) {
             try {
                 Thread.currentThread().sleep(backoff);
             } catch (InterruptedException e) {
                 // ignore
             }
-            // System.out.println(ret+" - ("+current+","+previous+")");
             current = generation.tally();
         }
         return ret;

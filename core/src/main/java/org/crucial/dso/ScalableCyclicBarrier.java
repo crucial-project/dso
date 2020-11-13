@@ -1,5 +1,7 @@
 package org.crucial.dso;
 
+import java.io.Serializable;
+
 /**
  * From "Two Algorithms for Barrier Synchronization", Hensgen et al.
  */
@@ -13,16 +15,15 @@ public class ScalableCyclicBarrier {
     private AtomicCounter identity;
     private ThreadLocal<Integer> myIdentifier;
 
-    public ScalableCyclicBarrier(final String name, final int parties){
+    public ScalableCyclicBarrier(final String name, final int parties, AtomicBoolean[][] answers, AtomicCounter identity){
         this.parties = parties;
         this.logParties = (int)(Math.log(parties)/Math.log(2));
-        this.answers = new AtomicBoolean[parties][parties];
+        this.answers = answers;
+        assert answers.length == parties;
         for(int p=0; p<parties; p++) {
-            for(int i=0; i<logParties; i++){
-                this.answers[p][i] = new AtomicBoolean(name+"-"+p+"-"+i,false);
-            }
+            assert answers[p].length == logParties;
         }
-        this.identity = new AtomicCounter(name+"-identity",-1);
+        this.identity = identity;
         this.myIdentifier = new ThreadLocal<>();
     }
 

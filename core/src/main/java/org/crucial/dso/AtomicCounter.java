@@ -5,10 +5,11 @@ import picocli.CommandLine.Option;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 @Entity
 @Command(name = "counter")
-public class AtomicCounter implements Comparable<AtomicCounter> {
+public class AtomicCounter implements Comparable<AtomicCounter>, Serializable {
 
     @Id
     @Option(names = "-n" )
@@ -33,7 +34,7 @@ public class AtomicCounter implements Comparable<AtomicCounter> {
     }
 
     @Command(name = "increment")
-    public int increment(@Option(names = "-i") int inc){
+    public int increment(@Option(names = "-1") int inc){
         count+=inc;
         return count;
     }

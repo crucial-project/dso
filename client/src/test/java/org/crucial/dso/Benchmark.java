@@ -1,5 +1,6 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -71,15 +72,17 @@ public class Benchmark {
             return;
         }
 
-        Factory factory = Factory.get(server, id);
-        barrier = new CyclicBarrier("benchmark", parallelism);
+        Client client = Client.getClient(server, id);
+        barrier = client.getCyclicBarrier("benchmark", parallelism);
         ExecutorService service = Executors.newFixedThreadPool(threads + 1);
         List<Task> clientTasks = new ArrayList<>();
 
         // create threads
         Class<Task> taskClazz = (Class<Task>) ClassLoader.getSystemClassLoader().loadClass(className+"Task");
         for (int i = 0; i < this.threads; i++) {
-            Task task = taskClazz.getConstructor(long.class, String[].class, int.class, int.class, int.class).newInstance(id, parameters, calls, threads, parallelism);
+            Task task =
+                    taskClazz.getConstructor(long.class, String[].class, int.class, int.class, int.class, Client.class)
+                    .newInstance(id, parameters, calls, threads, parallelism, client);
             clientTasks.add(task);
         }
 
@@ -134,8 +137,8 @@ public class Benchmark {
         } catch (InterruptedException e) {
             // ignore
         }
-        if (!persist) factory.clear();
-        factory.close();
+        if (!persist) client.clear();
+        client.close();
     }
 
     private static class TroughtputReporter implements Callable<Void> {

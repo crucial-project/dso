@@ -1,6 +1,8 @@
 package org.crucial.dso;
 
-public class AtomicReference<T> {
+import java.io.Serializable;
+
+public class AtomicReference<T> implements Serializable {
 
     public String name;
     private T value;

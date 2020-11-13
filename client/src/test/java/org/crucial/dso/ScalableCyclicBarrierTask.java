@@ -1,9 +1,11 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
+
 public class ScalableCyclicBarrierTask extends Task{
 
-    public ScalableCyclicBarrierTask(long taskId, String[] parameters, int calls, int threads, int parallelism) {
-        super(taskId, parameters, calls, threads, parallelism);
+    public ScalableCyclicBarrierTask(long taskId, String[] parameters, int calls, int threads, int parallelism, Client client) {
+        super(taskId, parameters, calls, threads, parallelism, client);
     }
 
     @Override
@@ -13,6 +15,6 @@ public class ScalableCyclicBarrierTask extends Task{
 
     @Override
     public Object newObject(int id) {
-        return new ScalableCyclicBarrier("barrier-"+id, parallelism*threads);
+        return client.getScalableCyclicBarrier("barrier-"+id, parallelism*threads);
     }
 }

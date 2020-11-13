@@ -1,6 +1,7 @@
 package org.crucial.dso;
 
 import org.crucial.dso.utils.ConfigurationHelper;
+import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -112,9 +113,20 @@ public class Server {
                         ? server.split(":")[1] : "11222");
 
         GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
+
+        //FIXME the DSO cache should be the default one.
+        gbuilder.defaultCacheName("__DEFAULT_CACHE");
+
+        // transport
         gbuilder.transport().clusterName("dso-cluster");
         gbuilder.transport().nodeName("dso-server-" + host);
         gbuilder.transport().addProperty("configurationFile", "jgroups.xml");
+
+        // marshalling
+        gbuilder.serialization()
+                .marshaller(new JavaSerializationMarshaller())
+                .whiteList()
+                .addRegexps(".*");
 
         ConfigurationBuilder cBuilder
                 = AbstractCacheTest.getDefaultClusteredCacheConfig(CacheMode.DIST_ASYNC, false);

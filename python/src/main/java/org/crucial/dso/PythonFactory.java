@@ -1,20 +1,26 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
+
 public class PythonFactory {
 
-    private Factory factory;
+    private Client client;
 
     public PythonFactory(String server){
-        factory = Factory.get(server);
+        client = Client.getClient(server);
     }
 
     public AtomicCounter createCounter(String name, int value){
-        return new AtomicCounter(name,value);
+        return client.getAtomicCounter(name,value);
     }
 
-    public AtomicMap createMap(String name){ return new AtomicMap(name);}
+    public AtomicMap createMap(String name){
+        return client.getAtomicMap(name);
+    }
 
-    public <T> AtomicMatrix<T> createMatrix(String name, Class<T> clazz, int n, int m) { return new AtomicMatrix(name, clazz, n, m);}
+    public <T> AtomicMatrix<T> createMatrix(String name, Class<T> clazz, int n, int m) {
+        return client.getAtomicMatrix(name, clazz, n, m);
+    }
 
 }
 

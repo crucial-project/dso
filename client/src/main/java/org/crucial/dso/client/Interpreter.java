@@ -21,8 +21,8 @@ public class Interpreter implements Callable<Integer> {
     public static void main(String[] args) {
 
         // 1 - parse
-        Interpreter client = new Interpreter();
-        CommandLine commandLine = new CommandLine(client);
+        Interpreter interpreter = new Interpreter();
+        CommandLine commandLine = new CommandLine(interpreter);
         AtomicCounter counter = newInstance(AtomicCounter.class);
         AtomicList list = newInstance(AtomicList.class);
         AtomicMap map = newInstance(AtomicMap.class);
@@ -35,12 +35,12 @@ public class Interpreter implements Callable<Integer> {
         commandLine.parseArgs(args);
 
         // 2 - execute
-        Factory.get(client.server);
-        commandLine = new CommandLine(client);
-        commandLine.addSubcommand("counter",new AtomicCounter(counter.name, counter.count));
-        commandLine.addSubcommand("list",new AtomicList<>(counter.name));
-        commandLine.addSubcommand("map",new AtomicMap<>(map.name));
-        commandLine.addSubcommand("barrier",new CyclicBarrier(barrier.name, barrier.parties));
+        Client client = Client.getClient(interpreter.server);
+        commandLine = new CommandLine(interpreter);
+        commandLine.addSubcommand("counter",client.getAtomicCounter(counter.name, counter.count));
+        commandLine.addSubcommand("list",client.getAtomicList(counter.name));
+        commandLine.addSubcommand("map",client.getAtomicMap(map.name));
+        commandLine.addSubcommand("barrier",client.getCyclicBarrier(barrier.name, barrier.parties));
         commandLine.registerConverter(BiFunction.class, s -> new BiFunctionTypeConverter().convert(s));
         commandLine.execute(args);
 

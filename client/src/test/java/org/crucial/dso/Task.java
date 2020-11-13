@@ -1,5 +1,7 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -9,26 +11,29 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class Task implements Callable<Double> {
 
     private long taskId;
-    protected String[] parameters;
     private int calls;
-    protected int threads;
-    protected int parallelism;
-    protected List<Object> instances;
-
     private List<Long> latencies;
     private Lock lock;
     private boolean isOver;
 
-    public Task(long taskId, String[] parameters, int calls, int threads, int parallelism) {
+    protected Client client;
+    protected String[] parameters;
+    protected int threads;
+    protected int parallelism;
+    protected List<Object> instances;
+
+    public Task(long taskId, String[] parameters, int calls, int threads, int parallelism, Client client) {
         this.taskId = taskId;
         this.threads = threads;
         this.calls = calls;
         this.parameters = parameters;
         this.parallelism = parallelism;
 
-        latencies = new ArrayList<>();
-        isOver = false;
-        lock = new ReentrantLock();
+        this.latencies = new ArrayList<>();
+        this.isOver = false;
+        this.lock = new ReentrantLock();
+
+        this.client = client;
     }
 
     public double getThroughput() {

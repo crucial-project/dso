@@ -5,11 +5,12 @@ import picocli.CommandLine.Option;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.*;
 
 @Entity
 @Command(name = "list")
-public class AtomicList<E> implements List<E> {
+public class AtomicList<E> implements List<E>, Serializable {
 
     @Id
     @Option(names = "-n" )
@@ -17,7 +18,9 @@ public class AtomicList<E> implements List<E> {
 
     private List<E> delegate;
 
-    public AtomicList(){}
+    public AtomicList(){
+        this.delegate = new ArrayList<>();
+    }
 
     public AtomicList(String name){
         this.name = name;

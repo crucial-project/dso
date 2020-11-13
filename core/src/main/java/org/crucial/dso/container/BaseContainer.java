@@ -3,7 +3,6 @@ package org.crucial.dso.container;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-import org.crucial.dso.ReadOnly;
 import org.crucial.dso.utils.Context;
 import org.crucial.dso.utils.ContextManager;
 import org.crucial.dso.utils.Reflection;
@@ -29,7 +28,7 @@ public class BaseContainer extends AbstractContainer {
     private Reference reference;
     private BasicCache<Reference, Call> cache;
 
-    public BaseContainer(BasicCache cache, Class clazz, java.lang.Object key, boolean readOptimization, boolean isIdempotent,
+    public BaseContainer(BasicCache cache, Class clazz, java.lang.Object key, @Deprecated boolean readOptimization, boolean isIdempotent,
                          boolean forceNew, java.lang.Object... initArgs)
             throws IllegalAccessException, InstantiationException,
             NoSuchMethodException, InvocationTargetException {
@@ -72,19 +71,6 @@ public class BaseContainer extends AbstractContainer {
             if (!Reflection.isMethodSupported(reference.getClazz(), m)) {
                 throw new IllegalArgumentException("Unsupported method " + m.getName() + " in " + reference.getClazz());
             }
-
-            if (this.readOptimization
-                    && state != null
-                    && (m.isAnnotationPresent(ReadOnly.class))) {
-                if (log.isTraceEnabled()) log.trace("local call: " + m.getName());
-                return Reflection.callObject(state, m.getName(), args);
-            } else {
-                if (log.isTraceEnabled())
-                    log.trace("remote call: " + m.getName() + ";reason: +"
-                            + "null state=" + new Boolean(state == null) + ", "
-                            + "isAnnotationPresent=" + new Boolean(m.isAnnotationPresent(ReadOnly.class)));
-            }
-
 
             open();
 

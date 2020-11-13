@@ -1,5 +1,6 @@
 package org.crucial.dso;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,7 @@ import java.util.function.BiFunction;
 
 @Entity
 @Command(name = "map")
-public class AtomicMap<K,V> implements MergeableMap<K,V> {
+public class AtomicMap<K,V> implements MergeableMap<K,V>, Serializable {
 
     @Id
     @Option(names = "-n" )
@@ -23,7 +24,9 @@ public class AtomicMap<K,V> implements MergeableMap<K,V> {
 
     public Map<K,V> delegate;
 
-    public AtomicMap(){}
+    public AtomicMap(){
+        this.delegate = new HashMap<>();
+    }
 
     public AtomicMap(String name){
         this.name = name;
@@ -44,7 +47,7 @@ public class AtomicMap<K,V> implements MergeableMap<K,V> {
 
     @Override
     @Command(name = "containsKey")
-    public boolean containsKey(@Option(names = "-a") Object o) {
+    public boolean containsKey(@Option(names = "-1") Object o) {
         return delegate.containsKey(o);
     }
 

@@ -1,13 +1,13 @@
 package org.crucial.dso;
 
-public class CountDownLatch {
+public class CountDownLatch{
 
     private AtomicCounter counter;
     private int parties;
 
-    public CountDownLatch(String name, int parties){
+    public CountDownLatch(String name, int parties, AtomicCounter counter){
         this.parties = parties;
-        this.counter = new AtomicCounter(name, parties);
+        this.counter = counter;
     }
 
     public int await(){
@@ -24,7 +24,7 @@ public class CountDownLatch {
     }
 
     public int getCount(){
-        return counter.tally();
+        return this.counter.tally();
     }
 
 }
