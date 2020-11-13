@@ -24,12 +24,12 @@ fail(){
 
 start
 
-#echo "Java tests"
-#${DIR}/local/test.sh -counters
-#${DIR}/local/test.sh -blobs
-#${DIR}/local/test.sh -barrier
-#${DIR}/local/test.sh -sbarrier
-#${DIR}/local/test.sh -countdownlatch
+echo "Java tests"
+${DIR}/local/test.sh -counters
+${DIR}/local/test.sh -blobs
+${DIR}/local/test.sh -barrier
+${DIR}/local/test.sh -sbarrier
+${DIR}/local/test.sh -countdownlatch
 
 echo "Shell tests"
 source ${DIR}/aliases.sh

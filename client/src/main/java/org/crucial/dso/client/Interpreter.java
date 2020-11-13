@@ -1,13 +1,11 @@
 package org.crucial.dso.client;
 
-import com.google.common.collect.ImmutableMap;
 import org.crucial.dso.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 
@@ -86,19 +84,6 @@ public class Interpreter implements Callable<Integer> {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static final Map<String, RemoteBiFunction<String,String,String>> BIFUNCTIONS = ImmutableMap.of(
-            "sum", (x,y) -> Integer.toString(Integer.valueOf(x) + Integer.valueOf(y))
-    );
-
-    public static class BiFunctionTypeConverter implements CommandLine.ITypeConverter<BiFunction> {
-
-        @Override
-        public BiFunction convert(String s) throws Exception {
-            return BIFUNCTIONS.get(s);
-        }
-
     }
 
 }

@@ -29,5 +29,5 @@ docker build \
     -t "${IMAGE}" -f "${DOCKERFILE}" .
 
 # push image
-# docker push "${IMAGE}"
+docker push "${IMAGE}"
 
