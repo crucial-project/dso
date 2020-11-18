@@ -111,6 +111,10 @@ public class Client {
         return factory.getInstanceOf(AtomicCounter.class, key, false, false, false, key, initialValue);
     }
 
+    public Map getMap(){
+        return client.factory.getCache();
+    }
+
     public AtomicMap getAtomicMap(String key) {
         return factory.getInstanceOf(AtomicMap.class, key);
     }

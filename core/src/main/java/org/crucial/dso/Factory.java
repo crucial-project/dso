@@ -131,6 +131,10 @@ public class Factory {
         log.info(this + " Created");
     }
 
+    public BasicCache getCache(){
+        return this.cache;
+    }
+
     @Deprecated
     public <T> T getInstanceOf(Class clazz) throws CacheException {
         return (T) getInstanceOf(clazz, null, false, false, false);

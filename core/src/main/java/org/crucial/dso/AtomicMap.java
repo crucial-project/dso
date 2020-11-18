@@ -118,5 +118,4 @@ public class AtomicMap<K,V> implements MergeableMap<K,V>, Serializable {
         MergeableMap.super.mergeAll(m, f);
     }
 
-
 }
