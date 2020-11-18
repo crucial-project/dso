@@ -99,8 +99,8 @@ public class AtomicMap<K,V> implements MergeableMap<K,V> {
         return new ArrayList<>(delegate.values()); // inner class
     }
 
-    @Command(name = "print")
-    public String printMap() {
+    @Command(name = "toString")
+    public String toString() {
         return delegate.toString();
     }
 
