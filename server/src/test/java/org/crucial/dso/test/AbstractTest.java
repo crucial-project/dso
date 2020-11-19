@@ -33,8 +33,8 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     protected static final CacheMode CACHE_MODE = CacheMode.DIST_SYNC;
     protected static final int NCALLS = 5000;
     protected static final long MAX_ENTRIES = -1;
-    protected static final int REPLICATION_FACTOR = 3;
-    protected static final int NMANAGERS = 2;
+    protected static final int REPLICATION_FACTOR = 2;
+    protected static final int NMANAGERS = 3;
     protected static final boolean PASSIVATION = false;
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/dso";
 

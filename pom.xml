@@ -12,8 +12,7 @@
     <description>A distributed shared objects (DSO) datastore.</description>
 
     <properties>
-        <maven.compiler.source>1.11</maven.compiler.source>
-        <maven.compiler.target>1.11</maven.compiler.target>
+        <maven.compiler.source-target>11</maven.compiler.source-target>
         <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.apache.felix.plugin>3.5.1</version.apache.felix.plugin>
@@ -26,6 +25,7 @@
         <version.infinispan>11.0.4.Final</version.infinispan>
         <version.io-kubernetes-client-java>4.0.0</version.io-kubernetes-client-java>
         <version.picocli>4.0.4</version.picocli>
+        <version.aspectj>1.9.</version.aspectj>
         <log4j.configurationFile>log4j2.xml</log4j.configurationFile>
     </properties>
 
@@ -52,6 +52,7 @@
         <module>server</module>
         <module>client</module>
         <module>python</module>
+        <module>aspectj</module>
     </modules>
 
     <dependencyManagement>
@@ -145,6 +146,18 @@
                 <version>${version.picocli}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>${aspectj.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>${aspectj.version}</version>
+            </dependency>
+
             <!-- TEST -->
 
             <dependency>
@@ -193,6 +206,68 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
+                    <configuration>
+                        <source>${maven.compiler.source-target}</source>
+                        <target>${maven.compiler.source-target}</target>
+                        <!-- IMPORTANT -->
+                        <useIncrementalCompilation>false</useIncrementalCompilation>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.nickwongdev</groupId>
+                    <artifactId>aspectj-maven-plugin</artifactId>
+                    <version>1.12.1</version>
+                    <configuration>
+                        <!--<showWeaveInfo>true</showWeaveInfo>-->
+                        <source>${maven.compiler.source-target}</source>
+                        <target>${maven.compiler.source-target}</target>
+                        <Xlint>ignore</Xlint>
+                        <complianceLevel>${maven.compiler.source-target}</complianceLevel>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <!--<verbose>true</verbose>-->
+                        <!--<warn>constructorName,packageDefaultMethod,deprecation,maskedCatchBlocks,unusedLocals,unusedArguments,unusedImport</warn>-->
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <!-- IMPORTANT -->
+                            <phase>process-sources</phase>
+                            <goals>
+                                <goal>compile</goal>
+                                <goal>test-compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjtools</artifactId>
+                            <version>${version.aspectj}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjweaver</artifactId>
+                            <version>${version.aspectj}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.9</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.4.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>
