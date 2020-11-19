@@ -59,7 +59,7 @@ public class Factory {
 
         if ((singleton == null | force) && cache.getName().equals(DSO_CACHE_NAME)) {
             singleton = factories.get(cache);
-            log.info("AOF singleton  is " + singleton);
+            log.info("Factory singleton  is " + singleton);
         }
 
         return factories.get(cache);
