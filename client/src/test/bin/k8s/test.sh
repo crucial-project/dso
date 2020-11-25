@@ -28,7 +28,7 @@ then
 elif [[ "$1" == "-delete" ]]
 then
     k8s_rs_delete ${TMPLDIR}/replicaset.yaml.tmpl
-    kubectl delete -f ${TMPLDIR}/dso-server-service.yaml
+    kubectl delete -f ${TMPLDIR}/service.yaml
     # kubectl delete  hpa dso-server
     # gsutil rm -r gs://$(config bucket)/* >&/dev/null # clean bucket
 else
