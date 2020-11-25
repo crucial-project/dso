@@ -75,4 +75,4 @@ fetch_credentials ${name} ${zone}
 # RBAC
 kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user ${USER}
 kubectl apply -f ${DIR}/../templates/role.yaml
-# kubectl apply -f ${DIR}/../templates/service.yaml
+kubectl apply -f ${DIR}/../templates/service.yaml
