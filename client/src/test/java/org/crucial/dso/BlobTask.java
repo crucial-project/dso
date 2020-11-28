@@ -25,6 +25,6 @@ public class BlobTask extends Task {
 
     @Override
     public Object newObject(int id) {
-        return client.getBlob("blob-test-"+id);
+        return client.getAtomicBlob("blob-test-"+id);
     }
 }

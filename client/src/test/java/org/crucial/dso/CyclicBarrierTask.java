@@ -10,7 +10,7 @@ public class CyclicBarrierTask extends Task{
 
     @Override
     public void doCall() {
-        ((CyclicBarrier)this.instances.get(0)).await();
+        ((CyclicBarrier)this.instances.get(0)).waiting();
     }
 
     @Override

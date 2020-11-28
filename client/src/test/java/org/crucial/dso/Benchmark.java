@@ -97,7 +97,7 @@ public class Benchmark {
         }
 
         // sync start
-        barrier.await();
+        barrier.waiting();
         long start = System.currentTimeMillis();
 
         // run threads then print results
@@ -130,7 +130,7 @@ public class Benchmark {
 
 
         // sync terminate
-        barrier.await();
+        barrier.waiting();
         System.out.println("Checksum: "+clientTasks.get(0).checksum());
         try {
             Thread.currentThread().sleep(3000);

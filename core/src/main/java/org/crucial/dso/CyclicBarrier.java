@@ -34,8 +34,8 @@ public class CyclicBarrier {
         generation.reset();
     }
 
-    @Command(name = "await")
-    public int await(){
+    @Command(name = "await") // FIXME
+    public int waiting(){
         int previous = generation.tally();
         int ret = counter.increment();
         if (ret % parties == 0) {
