@@ -102,6 +102,11 @@ public class AtomicMap<K,V> implements MergeableMap<K,V>, Serializable {
         return new ArrayList<>(delegate.values()); // inner class
     }
 
+    @Command(name = "toString")
+    public String toString() {
+        return delegate.toString();
+    }
+
     @Override
     public Set<Entry<K, V>> entrySet() {
         throw new IllegalStateException();
