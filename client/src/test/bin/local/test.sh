@@ -6,7 +6,7 @@ TARGETDIR="${PROJDIR}/target"
 NSERVERS=1
 NAME="dso-server"
 MAINTAINER="0track"
-TAG="2.0"
+TAG="latest"
 IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 

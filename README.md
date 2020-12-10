@@ -59,7 +59,7 @@ Below, we explain how to deploy a DSO server and access it in different contexts
 
 To run the server locally, one may type:
 
-	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=11222 0track/dso-server:2.0
+	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=11222 0track/dso-server:latest
 
 Local (unit) tests are available under `./dso/client/src/test/bin/local/test.sh`.
 
