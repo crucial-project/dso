@@ -88,16 +88,12 @@ public class Client {
         return factory.getInstanceOf(Semaphore.class, name, false, false, false, name, permits);
     }
 
-    public AtomicInteger getAtomicInt(String name) {
-        return factory.getInstanceOf(AtomicInteger.class, name);
-    }
-
-    public AtomicInteger getAtomicInt(String name, int initialValue) {
-        return factory.getInstanceOf(AtomicInteger.class, name, false, false, false, name, initialValue);
-    }
-
     public AtomicLong getAtomicLong(String name) {
-        return factory.getInstanceOf(AtomicLong.class, name);
+        return getAtomicLong(name, (long)0);
+    }
+
+    public AtomicLong getAtomicLong(String name, long initialValue) {
+        return factory.getInstanceOf(AtomicLong.class, name, false, false, false, name, initialValue);
     }
 
     public AtomicByteArray getAtomicByteArray(String name) {

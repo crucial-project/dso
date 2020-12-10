@@ -1,19 +1,34 @@
 package org.crucial.dso;
 
+import picocli.CommandLine;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 
 /**
  *
  * @author Daniel
  */
+@Entity
+@CommandLine.Command(name = "long")
 public class AtomicLong implements Serializable{
+
     private long value = 0;
 
-    public AtomicLong(){
+    @Id
+    @CommandLine.Option(names = "-n" )
+    public String name;
+
+    public AtomicLong(){}
+
+    public AtomicLong(String name){
+        this(name,0);
     }
 
-    public AtomicLong(long initialValue){
-        value = initialValue;
+    public AtomicLong(String name, long value){
+        this.name = name;
+        this.value = value;
     }
 
     public void printValue(){
@@ -47,6 +62,7 @@ public class AtomicLong implements Serializable{
         return value - delta;
     }
 
+    @CommandLine.Command(name = "increment")
     public long incrementAndGet(){
         return addAndGet(1);
     }

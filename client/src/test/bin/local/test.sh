@@ -19,7 +19,7 @@ CLIENT="dso-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
 
 if [ $# -ne 1 ]; then
-    echo "usage: -[create|blobs|counters|countdownlatch|barrier|sbarrier|delete]"
+    echo "usage: -[create|blobs|counters|longs|countdownlatch|barrier|sbarrier|delete]"
     exit -1
 fi
 
@@ -56,6 +56,10 @@ else
   then
     echo ">>>>> Counters"
     CLASS="org.crucial.dso.AtomicCounter"
+  elif [[ "$1" == "-longs" ]]
+  then
+    echo ">>>>> Longs"
+    CLASS="org.crucial.dso.AtomicLong"
   elif [[ "$1" == "-blobs" ]]
   then
     echo ">>>>> Blobs"

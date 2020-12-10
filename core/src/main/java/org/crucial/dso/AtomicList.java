@@ -14,7 +14,7 @@ public class AtomicList<E> implements List<E>, Serializable {
 
     @Id
     @Option(names = "-n" )
-    public String name = "list";
+    public String name;
 
     private List<E> delegate;
 

@@ -1,19 +1,28 @@
 package org.crucial.dso;
 
+import picocli.CommandLine;
+
+import javax.persistence.Id;
 import java.io.Serializable;
 
 /**
  *
  * @author Daniel
  */
+@CommandLine.Command(name = "bytearray")
 public class AtomicByteArray implements Serializable{
+
+    @Id
+    @CommandLine.Option(names = "-n" )
+    public String name = "cnt";
+
     private byte[] value;
 
-    public AtomicByteArray() {
-    }
+    public AtomicByteArray() {}
 
-    public AtomicByteArray(byte[] initialValue) {
-        value = initialValue;
+    public AtomicByteArray(String name, byte[] value) {
+        this.name = name;
+        this.value = value;
     }
 
     public void printValue() {

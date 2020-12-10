@@ -1,10 +1,14 @@
 package org.crucial.dso;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 
+
+@Entity
 public class AtomicReference<T> implements Serializable {
 
-    public String name;
+    @Id public String name;
     private T value;
 
     public AtomicReference(){}
