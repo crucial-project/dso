@@ -44,27 +44,28 @@ More precisely, the synchronization contract of every DSO object `o` is that `o`
 In Java, this is equivalent to guarding every method `m` of some object `o` with `synchronized(o){o.m}`.
 
 DSO includes a library of shared objects (counter, integer, list, maps, barrier, etc.).
-The provided objects are listed in the [client](https://github.com/crucial-project/dso/blob/master/client/src/main/java/org/infinispan/creson/client/) module.
+The provided objects are listed in the [client](https://github.com/crucial-project/dso/tree/master/client/src/main/java/org/crucial/dso) module.
 
 DSO follows a standard client-server architecture.
-The current server implementation is layered above  [Infinispan](http://infinispan.org/).
+The current server implementation is layered above [Infinispan](http://infinispan.org/).
 
-The project includes libraries for [Python](https://github.com/crucial-project/dso/blob/master/python) and [Shell](https://github.com/crucial-project/dso/blob/master/client/src/main/java/org/infinispan/creson/client/Interpreter.java)
+The project includes libraries for [Python](https://github.com/crucial-project/dso/tree/master/python) as well as the [Shell](https://github.com/crucial-project/serverless-shell) language.
 
 ## Usage
 
-Below, we explain how to use DSO in various contexts.
+Below, we explain how to deploy a DSO server and access it in different contexts.
 
 ### Docker
 
-There are two Docker images: [0track/dso-server](https://hub.docker.com/repository/docker/0track/dso-server) and [0track/dso-client-tests](https://hub.docker.com/repository/docker/0track/dso-client-tests).
 To run the server locally, one may type:
 
 	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=11222 0track/dso-server:2.0
 
+Local (unit) tests are available under `./dso/client/src/test/bin/local/test.sh`.
+
 ### Kubernetes
 
-To use DSO in a distributed context, the simplest approach is to rely on a containers orchestrator.
+To use DSO in a distributed context, the simplest approach is to rely on a container orchestrator.
 The project includes a set of scripts for [Kubernetes](https://www.kubernetes.org) (k8s).
 To run the tests in a k8s cluster, one may use the following commands:
 
