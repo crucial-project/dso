@@ -3,12 +3,16 @@ package org.crucial.dso.test;
 import org.crucial.dso.utils.ConfigurationHelper;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
+import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.commons.marshall.Marshaller;
 import org.crucial.dso.Factory;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
+import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.test.fwk.TransportFlags;
 import org.testng.annotations.Test;
 
@@ -45,9 +49,19 @@ public class RemoteTest extends AbstractTest {
         int index = servers.size();
 
         // embedded cache manager
+        GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
+        gbuilder.serialization()
+                .marshaller(new JavaSerializationMarshaller())
+                .whiteList()
+                .addRegexps(".*");
         TransportFlags flags = new TransportFlags();
         flags.withFD(true).withMerge(true);
-        EmbeddedCacheManager cm = addClusterEnabledCacheManager(flags);
+        EmbeddedCacheManager cm = TestCacheManagerFactory.createClusteredCacheManager(
+                false,
+                gbuilder,
+                (ConfigurationBuilder)null,
+                flags);
+        this.cacheManagers.add(cm);
         ConfigurationHelper.installCache(
                 cm,
                 CACHE_MODE,
@@ -70,7 +84,7 @@ public class RemoteTest extends AbstractTest {
         RemoteCacheManager manager = new RemoteCacheManager(
                 new org.infinispan.client.hotrod.configuration.ConfigurationBuilder()
                         .addServers(server.getHost() + ":" + server.getPort())
-                        .marshaller((Marshaller) null)
+                        .marshaller(new JavaSerializationMarshaller()).addJavaSerialWhiteList(".*")
                         .forceReturnValues(true)
                         .build());
         remoteCacheManagers.add(manager);
@@ -117,7 +131,7 @@ public class RemoteTest extends AbstractTest {
                     manager(j).getCache(DSO_CACHE_NAME), ComponentStatus.RUNNING, 10000);
         }
 
-        waitForClusterToForm();
+        waitForClusterToForm(DSO_CACHE_NAME);
 
         assertEquals(manager(0).getTransport().getMembers().size(), NMANAGERS);
 

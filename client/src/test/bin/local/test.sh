@@ -6,7 +6,7 @@ TARGETDIR="${PROJDIR}/target"
 NSERVERS=1
 NAME="dso-server"
 MAINTAINER="0track"
-TAG="latest"
+TAG="2.0"
 IMAGE="${MAINTAINER}/${NAME}:${TAG}"
 IMAGE_ID=$(docker images | grep ${NAME} | head -n 1 | awk '{print $3}')
 
@@ -19,7 +19,7 @@ CLIENT="dso-client"
 VERSION=$(cat ${PROJDIR}/pom.xml | grep version | head -n 1 | tr -d '[:blank:]' | sed s,\</*version\>,,g)
 
 if [ $# -ne 1 ]; then
-    echo "usage: -[create|blobs|counters|countdownlatch|barrier|sbarrier|delete]"
+    echo "usage: -[create|blobs|counters|longs|countdownlatch|barrier|sbarrier|delete]"
     exit -1
 fi
 
@@ -30,17 +30,18 @@ then
     for i in `seq 1 ${NSERVERS}`
     do
 	port=$((11221+i))
-	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=${port} ${IMAGE} 2>&1 > ${TARGETDIR}/${i}.log &
+	docker run --net host --rm \
+	  --env JVM_EXTRA="-XX:+UseG1GC -Xms64m -Xmx1024m -Dlog4j.configuration=log4j-debug.properties" \
+	  --env EXTRA="-rf 2" \
+	  --env CLOUD=local \
+	  --env PORT=${port} \
+	  ${IMAGE} 2>&1 > ${TARGETDIR}/${i}.log &
     done
     up=0
     while [ ${up} != ${NSERVERS} ]; do
 	up=$(cat ${TARGETDIR}/*.log | grep "LAUNCHED" | wc -l)
 	echo -n "."
 	sleep 1
-    done
-    for container in $(docker ps | awk '{print $1}' | tail -n ${NSERVERS})
-    do
-    docker cp ${PROJDIR}/target/${CLIENT}-${VERSION}.jar ${container}:/tmp
     done
     echo " up!"
 elif [[ "$1" == "-delete" ]]
@@ -55,6 +56,10 @@ else
   then
     echo ">>>>> Counters"
     CLASS="org.crucial.dso.AtomicCounter"
+  elif [[ "$1" == "-longs" ]]
+  then
+    echo ">>>>> Longs"
+    CLASS="org.crucial.dso.AtomicLong"
   elif [[ "$1" == "-blobs" ]]
   then
     echo ">>>>> Blobs"

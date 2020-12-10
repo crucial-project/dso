@@ -2,12 +2,13 @@ package org.crucial.dso.test;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 /**
 * @author Pierre Sutra
 */
 @Entity
-public class SimpleObject {
+public class SimpleObject implements Serializable {
 
    @Id public String field;
    public int count;

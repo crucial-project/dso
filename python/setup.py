@@ -12,7 +12,7 @@ exec(open('src/main/python/dso/version.py').read())
 
 rmtree("src/main/python/dso/java",ignore_errors=True)
 copytree("target/lib","src/main/python/dso/java")
-copy("target/dso-python-9.4.16.Final.jar","src/main/python/dso/java")
+copy("target/dso-python-2.0.jar","src/main/python/dso/java")
 
 setup(
     name='dso',
@@ -20,7 +20,7 @@ setup(
     url='https://github.com/crucial-project/dso',
     author='Pierre Sutra',
     description='Python bindings for the DSO datastore',
-    long_description="Python bindings for the DSO datastore',
+    long_description='Python bindings for the DSO datastore',
     author_email='pierre.sutra@telecom-sudparis.eu',
     package_dir={'':'src/main/python'},
     packages=find_packages('src/main/python'),

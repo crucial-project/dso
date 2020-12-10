@@ -1,14 +1,12 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: "helloworldservice"
+  name: "dso-server"
 spec:
   selector:
-    app: "hello-world"
+    app: "dso-server"
   ports:
   - protocol: TCP
-    port: 8080
-    targetPort: 80
-    nodePort: 30001
+    port: 11222
+    targetPort: 11222
   type: LoadBalancer
-

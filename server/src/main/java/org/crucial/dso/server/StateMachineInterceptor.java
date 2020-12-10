@@ -130,27 +130,11 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
         // save return value
         if (withIdempotence) responseCache.put(call,response);
 
-        // save state if required
-        if (Reflection.hasReadOnlyMethods(reference.getClazz())) { // FIXME state = byte array
-            synchronized (object) { // synchronization contract
-                byte[] buf = Marshalling.marshall(object);
-                response.setState(Marshalling.unmarshall(buf));
-                if (log.isTraceEnabled()) {
-                    log.trace(" keeping state "+buf.length+"B");
-                }
-            }
-        }
+        command.setValue(object);
+        invokeNext(ctx, command);
 
-        PutKeyValueCommand clone = cf.buildPutKeyValueCommand(
-                command.getKey(),
-                object,
-                command.getSegment(),
-                command.getMetadata(),
-                command.getFlagsBitSet());
-        invokeNext(ctx, clone);
-
-        if (log.isTraceEnabled()) {
-            log.trace(" Executed [" + call.toString() + "] = "+response.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("" + call.toString() + " = "+response.getResult());
         }
 
         return response;

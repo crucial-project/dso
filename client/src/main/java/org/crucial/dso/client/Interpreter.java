@@ -1,13 +1,11 @@
 package org.crucial.dso.client;
 
-import com.google.common.collect.ImmutableMap;
 import org.crucial.dso.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 
@@ -21,8 +19,8 @@ public class Interpreter implements Callable<Integer> {
     public static void main(String[] args) {
 
         // 1 - parse
-        Interpreter client = new Interpreter();
-        CommandLine commandLine = new CommandLine(client);
+        Interpreter interpreter = new Interpreter();
+        CommandLine commandLine = new CommandLine(interpreter);
         AtomicCounter counter = newInstance(AtomicCounter.class);
         AtomicList list = newInstance(AtomicList.class);
         AtomicMap map = newInstance(AtomicMap.class);
@@ -35,12 +33,12 @@ public class Interpreter implements Callable<Integer> {
         commandLine.parseArgs(args);
 
         // 2 - execute
-        Factory.get(client.server);
-        commandLine = new CommandLine(client);
-        commandLine.addSubcommand("counter",new AtomicCounter(counter.name, counter.count));
-        commandLine.addSubcommand("list",new AtomicList<>(counter.name));
-        commandLine.addSubcommand("map",new AtomicMap<>(map.name));
-        commandLine.addSubcommand("barrier",new CyclicBarrier(barrier.name, barrier.parties));
+        Client client = Client.getClient(interpreter.server);
+        commandLine = new CommandLine(interpreter);
+        commandLine.addSubcommand("counter",client.getAtomicCounter(counter.name, counter.count));
+        commandLine.addSubcommand("list",client.getAtomicList(counter.name));
+        commandLine.addSubcommand("map",client.getAtomicMap(map.name));
+        commandLine.addSubcommand("barrier",client.getCyclicBarrier(barrier.name, barrier.parties));
         commandLine.registerConverter(BiFunction.class, s -> new BiFunctionTypeConverter().convert(s));
         commandLine.execute(args);
 
@@ -86,19 +84,6 @@ public class Interpreter implements Callable<Integer> {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static final Map<String, RemoteBiFunction<String,String,String>> BIFUNCTIONS = ImmutableMap.of(
-            "sum", (x,y) -> Integer.toString(Integer.valueOf(x) + Integer.valueOf(y))
-    );
-
-    public static class BiFunctionTypeConverter implements CommandLine.ITypeConverter<BiFunction> {
-
-        @Override
-        public BiFunction convert(String s) throws Exception {
-            return BIFUNCTIONS.get(s);
-        }
-
     }
 
 }

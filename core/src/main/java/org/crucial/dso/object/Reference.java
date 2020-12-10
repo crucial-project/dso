@@ -1,6 +1,5 @@
 package org.crucial.dso.object;
 
-import org.crucial.dso.Shared;
 import org.crucial.dso.utils.Reflection;
 
 import javax.persistence.Id;
@@ -14,6 +13,8 @@ import java.lang.reflect.Field;
  * @author Pierre Sutra
  */
 public class Reference<T> implements Externalizable {
+
+    public static final String SEPARATOR="#";
 
     // Class methods
 
@@ -86,7 +87,7 @@ public class Reference<T> implements Externalizable {
 
     @Override
     public String toString() {
-        return  getKey().toString() + Shared.SEPARATOR + getClazz().getCanonicalName();
+        return  getKey().toString() + SEPARATOR + getClazz().getCanonicalName();
     }
 
     public Object getKey() {

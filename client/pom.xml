@@ -4,13 +4,17 @@
     <parent>
         <groupId>org.crucial</groupId>
         <artifactId>dso</artifactId>
-        <version>1.0</version>
+        <version>2.0</version>
         <relativePath>../</relativePath>
     </parent>
 
     <artifactId>dso-client</artifactId>
     <name>dso-client</name>
     <description>Client side of the DSO datastore.</description>
+
+    <properties>
+        <maven.exec.skip>true</maven.exec.skip>
+    </properties>
 
     <dependencies>
 
@@ -29,7 +33,6 @@
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.0.4</version>
         </dependency>
 
         <dependency>
@@ -80,30 +83,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-		<version>${version.aspectj-maven}</version>
-                <configuration>
-                    <aspectLibraries>
-                        <aspectLibrary>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>dso-core</artifactId>
-                        </aspectLibrary>
-                    </aspectLibraries>
-                    <complianceLevel>1.8</complianceLevel>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>       <!-- use this goal to weave all your main classes -->
-                            <goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -126,6 +105,27 @@
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <skip>${maven.exec.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>Unit test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <commandlineArgs>${basedir}/src/test/bin/unit.sh</commandlineArgs>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -3,7 +3,7 @@ FROM 0track/dso-server:latest
 MAINTAINER otrack
 
 ENV NAME=dso-client
-ENV VERSION=1.0
+ENV VERSION=2.0
 ENV JAR=$NAME-${VERSION}.jar
 ENV TESTJAR=$NAME-${VERSION}-tests.jar
 ENV THREADS=1

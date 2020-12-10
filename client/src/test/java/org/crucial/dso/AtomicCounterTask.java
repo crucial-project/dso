@@ -1,13 +1,15 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
+
 import java.util.Random;
 
 public class AtomicCounterTask extends Task {
 
     private Random random;
 
-    public AtomicCounterTask(long taskId, String[] parameters, int calls, int threads, int parallelism) {
-        super(taskId, parameters, calls, threads, parallelism);
+    public AtomicCounterTask(long taskId, String[] parameters, int calls, int threads, int parallelism, Client client) {
+        super(taskId, parameters, calls, threads, parallelism, client);
         random = new Random();
     }
 
@@ -19,7 +21,7 @@ public class AtomicCounterTask extends Task {
 
     @Override
     public Object newObject(int id) {
-        return new AtomicCounter("counter-test-"+id,0);
+        return client.getAtomicCounter("counter-test-"+id,0);
     }
 
     @Override

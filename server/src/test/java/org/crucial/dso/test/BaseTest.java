@@ -50,6 +50,7 @@ public abstract class BaseTest extends AbstractTest{
                 true);
         waitForClusterToForm(DSO_CACHE_NAME);
         Cache cache = cm.getCache(DSO_CACHE_NAME);
+        cache.start();
         caches.add(cache);
         Factory.forCache(cache);
         System.out.println("Node " + cm + " added.");

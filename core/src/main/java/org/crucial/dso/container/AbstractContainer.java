@@ -39,11 +39,11 @@ public abstract class AbstractContainer {
 
    public AbstractContainer(
          Class clazz,
-         final boolean readOptimization,
+         @Deprecated final boolean readOptimization,
          final boolean isIdempotent,
          final boolean forceNew,
          final Object... initArgs){
-      this.readOptimization = readOptimization && Reflection.hasReadOnlyMethods(clazz);
+      this.readOptimization = readOptimization;
       this.isIdempotent = isIdempotent;
       this.forceNew = forceNew;
       this.initArgs = initArgs;

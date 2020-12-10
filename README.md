@@ -60,7 +60,7 @@ Below, we explain how to use DSO in various contexts.
 There are two Docker images: [0track/dso-server](https://hub.docker.com/repository/docker/0track/dso-server) and [0track/dso-client-tests](https://hub.docker.com/repository/docker/0track/dso-client-tests).
 To run the server locally, one may type:
 
-	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=11222 0track/dso-server:latest
+	docker run --net host --rm --env EXTRA="-rf 2" --env CLOUD=local --env PORT=11222 0track/dso-server:2.0
 
 ### Kubernetes
 

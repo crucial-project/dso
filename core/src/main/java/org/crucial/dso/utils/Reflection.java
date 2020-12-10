@@ -2,7 +2,6 @@ package org.crucial.dso.utils;
 
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
-import org.crucial.dso.ReadOnly;
 import org.crucial.dso.object.Reference;
 
 import javax.persistence.Entity;
@@ -111,15 +110,6 @@ public class Reflection {
     public static boolean isMethodSynchronized(java.lang.Object obj, String method, java.lang.Object[] args)
             throws IllegalAccessException {
         return (findMethod(obj,method,args).getModifiers() & Modifier.SYNCHRONIZED) == Modifier.SYNCHRONIZED;
-    }
-
-
-    public static boolean hasReadOnlyMethods(Class clazz) {
-        for (Method m : clazz.getMethods()) {
-            if (m.isAnnotationPresent(ReadOnly.class))
-                return true;
-        }
-        return false;
     }
 
     public static boolean isMethodSupported(Class clazz, Method method) {

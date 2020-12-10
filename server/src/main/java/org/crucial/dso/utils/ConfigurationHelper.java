@@ -28,12 +28,10 @@ public class ConfigurationHelper {
             boolean withIndexing,
             boolean withIdempotence) {
 
-        manager.getClassWhiteList().addRegexps(".*");
-
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering().cacheMode(mode);
         builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
-        builder.compatibility().enabled(true); // for HotRod
+        // builder.compatibility().enabled(true); // for HotRod
         builder.expiration().lifespan(-1);
         builder.memory().size(maxEntries);
 
@@ -51,9 +49,7 @@ public class ConfigurationHelper {
         // indexing
         if (withIndexing) {
             System.out.println("indexing cannot be used w. blocking objects!");
-            builder.indexing().index(Index.LOCAL)
-                    .addProperty("default.directory_provider", "ram")
-                    .addProperty("lucene_version", "LUCENE_CURRENT");
+            builder.indexing().enable();
         }
 
         // persistence
@@ -68,6 +64,7 @@ public class ConfigurationHelper {
         }
 
         // installation
+        manager.getClassWhiteList().addRegexps(".*");
         manager.defineConfiguration(DSO_CACHE_NAME,builder.build());
         stateMachineInterceptor.setup(Factory.forCache(manager.getCache(DSO_CACHE_NAME)),withIdempotence);
 

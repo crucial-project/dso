@@ -1,18 +1,20 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
+
 public class CyclicBarrierTask extends Task{
 
-    public CyclicBarrierTask(long taskId, String[] parameters, int calls, int threads, int parallelism) {
-        super(taskId, parameters, calls, threads, parallelism);
+    public CyclicBarrierTask(long taskId, String[] parameters, int calls, int threads, int parallelism, Client client) {
+        super(taskId, parameters, calls, threads, parallelism, client);
     }
 
     @Override
     public void doCall() {
-        ((CyclicBarrier)this.instances.get(0)).await();
+        ((CyclicBarrier)this.instances.get(0)).waiting();
     }
 
     @Override
     public Object newObject(int id) {
-        return new CyclicBarrier("barrier-"+id, parallelism*threads);
+        return client.getCyclicBarrier("barrier-"+id, parallelism*threads);
     }
 }

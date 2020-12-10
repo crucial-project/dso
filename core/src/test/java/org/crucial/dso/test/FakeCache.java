@@ -233,6 +233,11 @@ public class FakeCache implements BasicCache{
     }
 
     @Override
+    public CompletableFuture<Long> sizeAsync() {
+        return null;
+    }
+
+    @Override
     public CompletableFuture putIfAbsentAsync(Object o, Object o2) {
         return null;
     }

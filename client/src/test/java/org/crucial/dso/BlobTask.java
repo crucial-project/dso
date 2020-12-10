@@ -1,5 +1,7 @@
 package org.crucial.dso;
 
+import org.crucial.dso.client.Client;
+
 import java.util.Random;
 
 public class BlobTask extends Task {
@@ -7,8 +9,8 @@ public class BlobTask extends Task {
     private Random random;
     private int size;
 
-    public BlobTask(long taskId, String[] parameters, int calls, int threads, int parallelism) {
-        super(taskId, parameters, calls, threads, parallelism);
+    public BlobTask(long taskId, String[] parameters, int calls, int threads, int parallelism, Client client) {
+        super(taskId, parameters, calls, threads, parallelism, client);
         assert parameters != null && parameters.length == 1;
         size = Integer.parseInt(parameters[0]);
         random = new Random(taskId);
@@ -23,6 +25,6 @@ public class BlobTask extends Task {
 
     @Override
     public Object newObject(int id) {
-        return new Blob("blob-test-"+id);
+        return client.getAtomicBlob("blob-test-"+id);
     }
 }
