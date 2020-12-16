@@ -27,3 +27,9 @@ except java.lang.Throwable as ex:
 
 b = client.getCyclicBarrier("b", 1)
 b.waiting()
+
+l = client.getAtomicList("list")
+l.append("hello")
+l[0] = "test"
+l[0] += "test2"
+print(l.toArray())
