@@ -33,7 +33,7 @@ public class Interpreter implements Callable<Integer> {
         commandLine.parseArgs(args);
 
         // 2 - execute
-        Client client = Client.getClient(interpreter.server);
+        Client client = new Client(interpreter.server);
         commandLine = new CommandLine(interpreter);
         commandLine.addSubcommand("counter",client.getAtomicCounter(counter.name, counter.count));
         commandLine.addSubcommand("list",client.getAtomicList(counter.name));

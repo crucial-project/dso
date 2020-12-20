@@ -72,7 +72,7 @@ public class Benchmark {
             return;
         }
 
-        Client client = Client.getClient(server, id);
+        Client client = new Client(server, id);
         barrier = client.getCyclicBarrier("benchmark", parallelism);
         ExecutorService service = Executors.newFixedThreadPool(threads + 1);
         List<Task> clientTasks = new ArrayList<>();

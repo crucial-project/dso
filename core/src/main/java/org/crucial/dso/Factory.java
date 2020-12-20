@@ -16,9 +16,11 @@ import org.infinispan.commons.logging.LogFactory;
 import org.crucial.dso.container.BaseContainer;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -26,18 +28,20 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Factory {
 
-    // Class fields
-    public static final String DSO_CACHE_NAME = "__dso";
-
     private static Log log = LogFactory.getLog(Factory.class);
     private static Factory singleton;
     private static Map<BasicCache, Factory> factories = new HashMap<>();
 
-    @Deprecated
-    public static Factory getSingleton() {
-        assert singleton != null;
-        return singleton;
-    }
+    // Server
+    public static final String DSO_SERVER_DEFAULT = "127.0.0.1:11222";
+    public static final String DSO = "DSO"; // env var
+    public static final String CONFIG_FILE = "config.properties"; // property
+    public static final String DSO_SERVER = "dso.server";
+
+    // Cache
+    public static final String DSO_CACHE_NAME = "__dso";
+
+    // Internal interface
 
     @Deprecated
     public synchronized static Factory forCache(BasicCache cache) {
@@ -65,12 +69,41 @@ public class Factory {
         return factories.get(cache);
     }
 
+    @Deprecated
+    public static Factory getSingleton() {
+        if (singleton==null) {
+            singleton = Factory.get();
+        }
+        return singleton;
+    }
+
+    // Preferred interface
+
+    public static Factory get() {
+        String server = System.getenv(DSO);
+        if (server == null) {
+            Properties properties = System.getProperties();
+            try (InputStream is = Factory.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
+                properties.load(is);
+                server = properties.containsKey(DSO_SERVER) ?
+                        properties.getProperty(DSO_SERVER) : DSO_SERVER_DEFAULT;
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        if (server == null) {
+            log.warn("Using default server: " + DSO_SERVER_DEFAULT);
+            server = DSO_SERVER_DEFAULT;
+        }
+        return get(server);
+    }
+
     public static Factory get(String server, long seed) {
         ContextManager.seedGenerator(seed);
         return get(server);
     }
 
-    public synchronized static Factory get(String server) {
+    public static Factory get(String server) {
         int port = Integer.valueOf(server.split(":")[1]);
         String host = server.split(":")[0];
         org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
