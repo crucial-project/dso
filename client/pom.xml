@@ -14,6 +14,7 @@
 
     <properties>
         <maven.exec.skip>true</maven.exec.skip>
+        <version.slf4j-simple>1.7.28</version.slf4j-simple>
     </properties>
 
     <dependencies>
@@ -45,6 +46,13 @@
             <groupId>pl.joegreen</groupId>
             <artifactId>lambda-from-string</artifactId>
             <version>1.6</version>
+        </dependency>
+
+        <!-- fixme -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${version.slf4j-simple}</version>
         </dependency>
 
         <!-- TEST -->
