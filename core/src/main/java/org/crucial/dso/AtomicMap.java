@@ -123,4 +123,9 @@ public class AtomicMap<K,V> implements MergeableMap<K,V>, Serializable {
         MergeableMap.super.mergeAll(m, f);
     }
 
+    @Command(name = "delegate")
+    public Map<K,V> delegate(){
+        return this.delegate;
+    }
+
 }
