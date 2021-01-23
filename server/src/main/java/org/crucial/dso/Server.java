@@ -12,6 +12,7 @@ import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuild
 import org.infinispan.test.AbstractCacheTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+import org.jboss.marshalling.serial.Serial;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -19,6 +20,11 @@ import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
 import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -88,14 +94,23 @@ public class Server {
             return;
         }
 
+        List<String> jars = new ArrayList<>();
         Runnable runnable = () -> {
-            File folder = new File(userLib);
-            File[] listOfFiles = folder.listFiles();
-            for (File file : listOfFiles) {
-                if (file.isFile() && file.getName().matches(".*\\.jar")) {
-                    loadLibrary(file);
+            try {
+                File folder = new File(userLib);
+                log.info("Looking for user jars in "+userLib);
+                File[] listOfFiles = folder.listFiles();
+                for (File file : listOfFiles) {
+                    if (file.isFile() && file.getName().matches(".*\\.jar") && !jars.contains(file.getName())) {
+                        loadLibrary(file);
+                        jars.add(file.getName()); // FIXME checksum for re-loading?
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
             }
+
         };
 
         try {
@@ -105,7 +120,7 @@ public class Server {
         }
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(runnable, 3, 3, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(runnable, 10, 10, TimeUnit.SECONDS);
 
         String host = server.split(":")[0];
         int port = Integer.valueOf(
@@ -192,18 +207,18 @@ public class Server {
 
     public static synchronized void loadLibrary(java.io.File jar) {
         try {
-            java.net.URLClassLoader loader = (java.net.URLClassLoader) ClassLoader.getSystemClassLoader();
-            java.net.URL url = jar.toURI().toURL();
-            for (java.net.URL it : loader.getURLs()) {
-                if (it.equals(url)) {
-                    return;
-                }
-            }
             System.out.println("Loading " + jar.getName());
-            java.lang.reflect.Method method = java.net.URLClassLoader.class.
-                    getDeclaredMethod("addURL", java.net.URL.class);
-            method.setAccessible(true); /*promote the method to public access*/
-            method.invoke(loader, url);
+            ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+            try {
+                Method method = classLoader.getClass().getDeclaredMethod("addURL", URL.class);
+                method.setAccessible(true);
+                method.invoke(classLoader, jar.toURI().toURL());
+            } catch (NoSuchMethodException e) {
+                Method method = classLoader.getClass()
+                        .getDeclaredMethod("appendToClassPathForInstrumentation", String.class);
+                method.setAccessible(true);
+                method.invoke(classLoader, jar.getPath());
+            }
         } catch (final java.lang.NoSuchMethodException |
                 java.lang.IllegalAccessException |
                 java.net.MalformedURLException |

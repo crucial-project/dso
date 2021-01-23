@@ -13,9 +13,11 @@ if [ -z "${DOCKER_USER}" ]; then
     DOCKER_USER=0track
 fi
 
-DIR=$(dirname "$0")
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IMAGE=${DOCKER_USER}/dso-client-tests:${TAG}
 DOCKERFILE=${DIR}/../docker/Dockerfile
+
+pushd ${DIR}/../../../
 
 # package
 mvn clean package -DskipTests
@@ -28,3 +30,4 @@ docker build \
 # push image
 docker push "${IMAGE}"
 
+popd

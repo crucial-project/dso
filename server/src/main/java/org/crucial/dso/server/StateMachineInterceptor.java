@@ -30,7 +30,7 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
     @Override
     public java.lang.Object visitClearCommand(InvocationContext ctx, ClearCommand command) throws Throwable {
 
-        log.trace(" Clearing all");
+        log.info(" Clearing all objects");
 
         responseCache.clearAll();
         return super.visitClearCommand(ctx, command);
