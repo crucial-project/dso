@@ -14,8 +14,17 @@ public class Pipe {
 
     private static final int BARRIER = 2;
     private AtomicCounter counter;
+
+    public Pipe() {
+
+    }
+
+    public Pipe(String name) {
+
+      this.name = name;      
+    }
     
-    public void wait()
+    public int wait()
     {
        int ret = counter.increment();
 
@@ -26,6 +35,8 @@ public class Pipe {
           // ignore
          }
        }
+
+       return 0;
     }
 
     @Override
@@ -43,4 +54,13 @@ public class Pipe {
       this.wait();
 
     }
+
+    @Override
+    @Command(name = "printName")
+    public String printName() {
+
+      return this.name;
+    }
+
+
 }
