@@ -1,6 +1,5 @@
 package org.crucial.dso;
 
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -11,6 +10,7 @@ public class Pipe {
     @Id
     @Option(names = "-n" )
     public String name = "pipe";
+    public String ipport;
 
     private static final int BARRIER = 2;
     private AtomicCounter counter;
@@ -42,7 +42,8 @@ public class Pipe {
     @Override
     @Command(name = "begin")
     public void begin(@Option(names = "-1") String ipport) {
-
+      
+      this.ipport = ipport;
       this.wait(); 
     
     }
@@ -51,6 +52,7 @@ public class Pipe {
     @Command(name = "end")
     public void end(@Option(names = "-1") String ipport) {
       
+      this.ipport = ipport;   
       this.wait();
 
     }
@@ -61,6 +63,5 @@ public class Pipe {
 
       return this.name;
     }
-
 
 }
