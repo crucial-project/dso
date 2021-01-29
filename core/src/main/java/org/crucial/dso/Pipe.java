@@ -3,25 +3,22 @@ package org.crucial.dso;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Entity
 @Command(name = "pipe")
 public class Pipe {
 
-    @Id
     @Option(names = "-n" )
     public String name = "pipe";
-    public String ipport;
-
-    private static final int BARRIER = 2;
+    
     private AtomicCounter counter;
+    private AtomicReference<String> ipport;
+    private static final int BARRIER = 2;
 
-    public Pipe() {
+    public Pipe() {}
 
-    }
-
-    public Pipe(String name) {
-
-      this.name = name;      
+    public Pipe(String name) {	
+      this.name = name;
+      this.counter = new AtomicCounter("counter-"+name);
+      this.ipport = new AtomicReference("ref-"+name);
     }
     
     public int wait()
@@ -41,26 +38,21 @@ public class Pipe {
 
     @Override
     @Command(name = "begin")
-    public void begin(@Option(names = "-1") String ipport) {
-      
-      this.ipport = ipport;
-      this.wait(); 
-    
+    public String begin() {
+	String ret = this.ipport.get();
+	this.wait(); 	
     }
    
     @Override
     @Command(name = "end")
-    public void end(@Option(names = "-1") String ipport) {
-      
-      this.ipport = ipport;   
-      this.wait();
-
+    public void end(@Option(names = "-1") String ipport) {      
+	this.ipport.set(ipport);   
+	this.wait();
     }
 
     @Override
-    @Command(name = "printName")
-    public String printName() {
-
+    @Command(name = "getName")
+    public String getName() {
       return this.name;
     }
 
