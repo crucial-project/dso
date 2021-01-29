@@ -181,7 +181,7 @@ public class AtomicTreeMap<K,V> implements MergeableMap<K,V>, Serializable, Sort
     @Command(name = "top")
     public Map<K,V> top(@Option(names = "-1") int k){
         SortedMap<K,V> ret = new TreeMap<>(delegate.comparator());
-        ret.putAll(delegate.keySet().stream().sorted().limit(k).collect(Collectors.toMap(Function.identity(), delegate::get)));
+        ret.putAll(delegate.keySet().stream().limit(k).collect(Collectors.toMap(Function.identity(), delegate::get)));
         return ret;
     }
 
