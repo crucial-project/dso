@@ -24,10 +24,12 @@ public class Interpreter implements Callable<Integer> {
         AtomicCounter counter = newInstance(AtomicCounter.class);
         AtomicList list = newInstance(AtomicList.class);
         AtomicMap map = newInstance(AtomicMap.class);
+        AtomicTreeMap treemap = newInstance(AtomicTreeMap.class);
         CyclicBarrier barrier = newInstance(CyclicBarrier.class);
         commandLine.addSubcommand("counter", counter);
         commandLine.addSubcommand("list", list);
         commandLine.addSubcommand("map", map);
+        commandLine.addSubcommand("treemap", treemap);
         commandLine.addSubcommand("barrier", barrier);
         commandLine.registerConverter(BiFunction.class, s -> new BiFunctionTypeConverter().convert(s));
         commandLine.parseArgs(args);
@@ -38,6 +40,7 @@ public class Interpreter implements Callable<Integer> {
         commandLine.addSubcommand("counter",client.getAtomicCounter(counter.name, counter.count));
         commandLine.addSubcommand("list",client.getAtomicList(counter.name));
         commandLine.addSubcommand("map",client.getAtomicMap(map.name));
+        commandLine.addSubcommand("treemap",client.getAtomicTreeMap(treemap.name));
         commandLine.addSubcommand("barrier",client.getCyclicBarrier(barrier.name, barrier.parties));
         commandLine.registerConverter(BiFunction.class, s -> new BiFunctionTypeConverter().convert(s));
         commandLine.execute(args);

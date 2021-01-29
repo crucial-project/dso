@@ -67,7 +67,7 @@ public class Client {
 
     public <T> Future<T> getFuture(String name) {
         return forceNew ? factory.getInstanceOf(Future.class, name)
-                : factory.getInstanceOf(Future.class, name, false, false, this.forceNew);
+                : factory.getInstanceOf(Future.class, name, false, false, this.forceNew, name);
     }
 
     public MonitorCyclicBarrier getMonitorCyclicBarrier(String name, int parties) {
@@ -93,7 +93,7 @@ public class Client {
     }
 
     public Semaphore getSemaphore(String name) {
-        return factory.getInstanceOf(Semaphore.class, name);
+        return factory.getInstanceOf(Semaphore.class, name, false, false, this.forceNew, name);
     }
 
     public Semaphore getSemaphore(String name, int permits) {
@@ -109,7 +109,7 @@ public class Client {
     }
 
     public AtomicByteArray getAtomicByteArray(String name) {
-        return factory.getInstanceOf(AtomicByteArray.class, name);
+        return factory.getInstanceOf(AtomicByteArray.class, name, false, false, this.forceNew, name);
     }
 
     public AtomicBoolean getAtomicBoolean(String name, boolean initialValue) {
@@ -117,7 +117,7 @@ public class Client {
     }
 
     public AtomicBoolean getAtomicBoolean(String name) {
-        return factory.getInstanceOf(AtomicBoolean.class, name);
+        return factory.getInstanceOf(AtomicBoolean.class, name, false, false, this.forceNew, name);
     }
 
     public AtomicCounter getAtomicCounter(String name, int initialValue) {
@@ -129,7 +129,11 @@ public class Client {
     }
 
     public AtomicMap getAtomicMap(String name) {
-        return factory.getInstanceOf(AtomicMap.class, name);
+        return factory.getInstanceOf(AtomicMap.class, name, false, false, this.forceNew, name);
+    }
+
+    public AtomicTreeMap getAtomicTreeMap(String name) {
+        return factory.getInstanceOf(AtomicTreeMap.class, name, false, false, this.forceNew, name);
     }
 
     public AtomicMatrix getAtomicMatrix(String name, Class clazz, Object zero, int n, int m) {
@@ -137,11 +141,11 @@ public class Client {
     }
 
     public AtomicMatrix getAtomicMatrix(String name) {
-        return factory.getInstanceOf(AtomicMatrix.class, name, false, false, this.forceNew);
+        return factory.getInstanceOf(AtomicMatrix.class, name, false, false, this.forceNew, name);
     }
 
     public Blob getAtomicBlob(String name) {
-        return factory.getInstanceOf(Blob.class, name, false, false, this.forceNew);
+        return factory.getInstanceOf(Blob.class, name, false, false, this.forceNew, name);
     }
 
     public CountDownLatch getCountDownLatch(String name, int parties) {

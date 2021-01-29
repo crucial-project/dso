@@ -20,6 +20,10 @@ map(){
     java org.crucial.dso.client.Interpreter -s ${SERVER} map $@
 }
 
+treemap(){
+    java org.crucial.dso.client.Interpreter -s ${SERVER} treemap $@
+}
+
 barrier(){
     java org.crucial.dso.client.Interpreter -s ${SERVER} barrier $@
 }
@@ -27,4 +31,5 @@ barrier(){
 export -f counter
 export -f list
 export -f map
+export -f treemap
 export -f barrier
