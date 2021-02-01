@@ -12,6 +12,10 @@ public class AtomicReference<T> implements Serializable {
     private T value;
 
     public AtomicReference(){}
+    
+    public AtomicReference(String name){
+      this.name = name;
+    }
 
     public AtomicReference(String name, T v){
         this.name = name;
