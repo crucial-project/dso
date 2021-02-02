@@ -92,6 +92,7 @@ public class Client {
         return new ScalableCyclicBarrier(name, parties, answers, identity);
     }
 
+
     public Semaphore getSemaphore(String name) {
         return factory.getInstanceOf(Semaphore.class, name, false, false, this.forceNew, name);
     }
@@ -134,6 +135,10 @@ public class Client {
 
     public AtomicTreeMap getAtomicTreeMap(String name) {
         return factory.getInstanceOf(AtomicTreeMap.class, name, false, false, this.forceNew, name);
+    }
+
+    public Pipe getPipe(String name) {
+        return factory.getInstanceOf(Pipe.class, name, false, false, this.forceNew, name);
     }
 
     public AtomicMatrix getAtomicMatrix(String name, Class clazz, Object zero, int n, int m) {
