@@ -20,11 +20,10 @@ public class Pipe {
       this.counter = new AtomicCounter("counter-"+name);
       this.ipport = new AtomicReference("ref-"+name);
     }
-   
-    
+       
     public int waiting()
     {
-       int ret = counter.increment();
+       int ret = this.counter.increment();
 
        while(ret < BARRIER) {
          try {
@@ -34,21 +33,21 @@ public class Pipe {
          }
        }
 
-       return 0;
+       return ret;
     }
     
 
     @Command(name = "begin")
     public String begin() {
-	String ret = this.ipport.get();
-	this.waiting(); 	
-	return ret;
+	    String ret = this.ipport.get();
+	    this.waiting(); 	
+	    return ret;
     }
    
     @Command(name = "end")
     public void end(@Option(names = "-1") String ipport) {      
-	this.ipport.set(ipport);   
-	this.waiting();
+	    this.ipport.set(ipport);   
+	    this.waiting();
     }
 
     @Command(name = "getName")
