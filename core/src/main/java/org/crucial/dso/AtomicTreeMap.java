@@ -25,7 +25,7 @@ public class AtomicTreeMap<K,V> implements MergeableMap<K,V>, Serializable, Sort
     @Option(names = "-n" )
     public String name = "map";
 
-    public SortedMap<K,V> delegate;
+    public TreeMap<K,V> delegate;
 
     public AtomicTreeMap(){
         this.delegate = new TreeMap<>();
@@ -175,7 +175,7 @@ public class AtomicTreeMap<K,V> implements MergeableMap<K,V>, Serializable, Sort
         for (Entry e : delegate.entrySet()){
             newmap.put(forceIntValues ? Integer.valueOf(e.getValue().toString()) : e.getValue(), e.getKey());
         }
-        this.delegate = (SortedMap<K, V>) newmap;
+        this.delegate = (TreeMap<K, V>) newmap;
     }
 
     @Command(name = "top")
