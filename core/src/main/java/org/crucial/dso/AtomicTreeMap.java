@@ -180,6 +180,7 @@ public class AtomicTreeMap<K,V> implements MergeableMap<K,V>, Serializable, Sort
 
     @Command(name = "top")
     public Map<K,V> top(@Option(names = "-1") int k){
+        boolean forceIntValues = false;
         SortedMap<K,V> tmp = new TreeMap<>(delegate.comparator());
         tmp.putAll(delegate.descendingMap().keySet().stream().limit(k).collect(Collectors.toMap(Function.identity(), delegate::get)));
         Map<K,V> reverseSortedMap = new TreeMap<K,V>(Collections.reverseOrder());
