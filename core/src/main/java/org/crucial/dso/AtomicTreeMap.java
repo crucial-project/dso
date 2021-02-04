@@ -182,9 +182,14 @@ public class AtomicTreeMap<K,V> implements MergeableMap<K,V>, Serializable, Sort
     public Map<K,V> top(@Option(names = "-1") int k){
         SortedMap<K,V> tmp = new TreeMap<>(delegate.comparator());
         tmp.putAll(delegate.descendingMap().keySet().stream().limit(k).collect(Collectors.toMap(Function.identity(), delegate::get)));
-        Map<String, Integer> reverseSortedMap = new TreeMap<String, Integer>(Collections.reverseOrder());
+        Map<K,V> reverseSortedMap = new TreeMap<K,V>(Collections.reverseOrder());
         reverseSortedMap.putAll(tmp);
-        return reverseSortedMap;
+        SortedMap ret = new TreeMap<>();
+        for (Entry e : reverseSortedMap.entrySet()){
+            ret.put(forceIntValues ? Integer.valueOf(e.getValue().toString()) : e.getValue(), e.getKey());
+        }
+
+        return ret;
     }
 
 }
