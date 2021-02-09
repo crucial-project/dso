@@ -10,29 +10,38 @@ public class Pipe {
     public String name = "pipe";
     
     private AtomicCounter counter;
+    private AtomicCounter generation;
     private AtomicReference<String> ipport;
     private static final int BARRIER = 2;
+    public int parties = 1;
 
     public Pipe() {}
 
     public Pipe(String name) {	
       this.name = name;
       this.counter = new AtomicCounter("counter-"+name);
+      this.generation = new AtomicCounter("generation-"+name);
       this.ipport = new AtomicReference("ref-"+name);
     }
        
     public int waiting()
     {
-       int ret = this.counter.increment();
+      int previous = generation.tally();
+      int ret = counter.increment();
+      if (ret % parties == 0) {
+          counter.reset();
+          generation.increment();
+      }
 
-       while(ret < BARRIER) {
-         try {
-           Thread.currentThread().sleep(500);
-         } catch (InterruptedException e) {
-          // ignore
-         }
-       }
-
+      int current = generation.tally();
+      while (previous == current) {
+          try {
+              Thread.currentThread().sleep(500);
+          } catch (InterruptedException e) {
+              // ignore
+          }
+          current = generation.tally();
+      }
        return ret;
     }
     
