@@ -55,7 +55,7 @@ public class Pipe {
     @Command(name = "begin")
     public String begin() {
 	    String ret = this.ipport.get();
-      System.out.println("Pipe begin: call barrier");
+      System.out.println("Pipe begin: call barrier, ret="+ret);
 	    this.waiting(); 	
 	    return ret;
     }
@@ -63,7 +63,7 @@ public class Pipe {
     @Command(name = "end")
     public void end(@Option(names = "-1") String ipport) {      
 	    this.ipport.set(ipport);   
-      System.out.println("Pipe end: call barrier");
+      System.out.println("Pipe end: call barrier, ipport="+ipport);
 	    this.waiting();
     }
 
