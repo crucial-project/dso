@@ -18,6 +18,7 @@ public class Pipe {
     public Pipe() {}
 
     public Pipe(String name) {	
+      System.out.println("Pipe constructor");
       this.name = name;
       this.counter = new AtomicCounter("counter-"+name);
       this.generation = new AtomicCounter("generation-"+name);
