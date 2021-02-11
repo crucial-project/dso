@@ -34,7 +34,7 @@ public class Pipe {
           generation.increment();
       }
 
-      System.out.println("counter="+counter+", generation="+generation+", parties="+parties);
+      System.out.println("counter="+counter.tally()+", generation="+generation.tally()+", parties="+parties);
 
       int current = generation.tally();
       while (previous == current) {
