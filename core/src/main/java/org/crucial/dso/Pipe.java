@@ -13,7 +13,7 @@ public class Pipe {
     private AtomicCounter generation;
     private AtomicReference<String> ipport;
     private static final int BARRIER = 2;
-    private static int parties = 2;
+    public int parties = 2;
 
     public Pipe() {}
 
@@ -33,6 +33,8 @@ public class Pipe {
           generation.increment();
       }
 
+      System.out.println("counter="+counter+", generation="+generation+", parties="+parties);
+
       int current = generation.tally();
       while (previous == current) {
           try {
@@ -42,6 +44,8 @@ public class Pipe {
           }
           current = generation.tally();
       }
+
+      System.out.println("Pipe: barrier return");
         
       return ret;
     }
