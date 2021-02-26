@@ -18,7 +18,6 @@ public class Pipe {
     public Pipe() {}
 
     public Pipe(String name) {	
-      System.out.println("Pipe constructor");
       this.name = name;
       this.counter = new AtomicCounter("counter-"+name);
       this.generation = new AtomicCounter("generation-"+name);
@@ -34,7 +33,6 @@ public class Pipe {
           generation.increment();
       }
 
-      System.out.println("counter="+counter.tally()+", generation="+generation.tally()+", parties="+parties);
 
       int current = generation.tally();
       while (previous == current) {
@@ -45,8 +43,6 @@ public class Pipe {
           }
           current = generation.tally();
       }
-
-      System.out.println("Pipe: barrier return");
         
       return ret;
     }
@@ -55,7 +51,6 @@ public class Pipe {
     @Command(name = "begin")
     public String begin() {
 	    String ret = this.ipport.get();
-      System.out.println("Pipe begin: call barrier, ret="+ret);
 	    this.waiting(); 	
 	    return ret;
     }
@@ -63,7 +58,6 @@ public class Pipe {
     @Command(name = "end")
     public void end(@Option(names = "-1") String ipport) {      
 	    this.ipport.set(ipport);   
-      System.out.println("Pipe end: call barrier, ipport="+ipport);
 	    this.waiting();
     }
 
