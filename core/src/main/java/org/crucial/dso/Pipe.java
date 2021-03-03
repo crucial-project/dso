@@ -50,14 +50,18 @@ public class Pipe {
 
     @Command(name = "begin")
     public String begin() {
+      System.out.println("Call Pipe begin method");
 	    String ret = this.ipport.get();
+      System.out.println("Call Pipe begin method - call waiting()");
 	    this.waiting(); 	
 	    return ret;
     }
    
     @Command(name = "end")
     public void end(@Option(names = "-1") String ipport) {      
+      System.out.println("Call Pipe end method");
 	    this.ipport.set(ipport);   
+      System.out.println("Call Pipe end method - call waiting()");
 	    this.waiting();
     }
 
