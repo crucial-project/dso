@@ -180,9 +180,12 @@ public class AtomicTreeMap<K,V> implements MergeableMap<K,V>, Serializable, Sort
 
     @Command(name = "top")
     public Map<K,V> top(@Option(names = "-1") int k){
-        SortedMap<K,V> ret = new TreeMap<>(delegate.comparator());
-        ret.putAll(delegate.descendingMap().keySet().stream().limit(k).collect(Collectors.toMap(Function.identity(), delegate::get)));
-        return ret;
+        SortedMap<K,V> tmp = new TreeMap<>(delegate.comparator());
+        tmp.putAll(delegate.descendingMap().keySet().stream().limit(k).collect(Collectors.toMap(Function.identity(), delegate::get)));
+        Map<K,V> reverseSortedMap = new TreeMap<K,V>(Collections.reverseOrder());
+        reverseSortedMap.putAll(tmp);
+
+        return reverseSortedMap;
     }
 
 }

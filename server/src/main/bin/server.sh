@@ -9,7 +9,7 @@ CONFIG="jgroups-dso-tcp.xml"
 if [[ "${CLOUD}" == "" ]];
 then
     CLOUD="$1"
-    IP='127.0.0.1'
+    IP='0.0.0.0'
     PORT='11222'
     CONFIG='jgroups-dso-udp.xml'
 fi
