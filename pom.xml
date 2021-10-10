@@ -31,9 +31,9 @@
 
     <developers>
         <developer>
-            <name>Pierre Sutra</name>
-            <organization>Télécom SudParis</organization>
-            <organizationUrl>https://github.com/otrack</organizationUrl>
+  	    <name>Pierre Sutra</name>
+	    <organization>Institut Polytechnique de Paris</organization>
+            <organizationUrl>https://www.ip-paris.fr/</organizationUrl>
         </developer>
         <developer>
             <name>Daniel Barcelona-Pons</name>
