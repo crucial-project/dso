@@ -1,11 +1,10 @@
 package org.crucial.dso.utils;
 
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.Index;
-import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.crucial.dso.Factory;
 import org.crucial.dso.server.StateMachineInterceptor;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.interceptors.impl.CallInterceptor;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;

@@ -1,9 +1,8 @@
 package org.crucial.dso.test;
 
-import org.crucial.dso.utils.ConfigurationHelper;
+import org.crucial.dso.Factory;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCacheContainer;
-import org.crucial.dso.Factory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.fwk.TransportFlags;
 import org.testng.annotations.Test;
@@ -39,15 +38,6 @@ public abstract class BaseTest extends AbstractTest{
         TransportFlags flags = new TransportFlags();
         flags.withFD(true).withMerge(true);
         EmbeddedCacheManager cm = addClusterEnabledCacheManager(flags);
-        ConfigurationHelper.installCache(
-                cm,
-                CACHE_MODE,
-                REPLICATION_FACTOR, MAX_ENTRIES,
-                PASSIVATION,
-                PERSISTENT_STORAGE_DIR + "/" + containers().size(),
-                true,
-                false,
-                true);
         waitForClusterToForm(DSO_CACHE_NAME);
         Cache cache = cm.getCache(DSO_CACHE_NAME);
         cache.start();

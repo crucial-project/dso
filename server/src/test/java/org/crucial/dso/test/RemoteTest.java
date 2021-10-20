@@ -1,12 +1,10 @@
 package org.crucial.dso.test;
 
-import org.crucial.dso.utils.ConfigurationHelper;
+import org.crucial.dso.Factory;
+import org.crucial.dso.server.DSOConfigurationBuilder;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.api.BasicCacheContainer;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
-import org.infinispan.commons.marshall.Marshaller;
-import org.crucial.dso.Factory;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -52,26 +50,17 @@ public class RemoteTest extends AbstractTest {
         GlobalConfigurationBuilder gbuilder = GlobalConfigurationBuilder.defaultClusteredBuilder();
         gbuilder.serialization()
                 .marshaller(new JavaSerializationMarshaller())
-                .whiteList()
+                .allowList()
                 .addRegexps(".*");
+        gbuilder.addModule(DSOConfigurationBuilder.class).idempotent(true);
         TransportFlags flags = new TransportFlags();
         flags.withFD(true).withMerge(true);
         EmbeddedCacheManager cm = TestCacheManagerFactory.createClusteredCacheManager(
                 false,
                 gbuilder,
-                (ConfigurationBuilder)null,
+                null,
                 flags);
         this.cacheManagers.add(cm);
-        ConfigurationHelper.installCache(
-                cm,
-                CACHE_MODE,
-                REPLICATION_FACTOR,
-                MAX_ENTRIES,
-                PASSIVATION,
-                PERSISTENT_STORAGE_DIR + "/" + index,
-                true,
-                false,
-                true);
         waitForClusterToForm(DSO_CACHE_NAME);
 
         // hotrod server
@@ -84,7 +73,7 @@ public class RemoteTest extends AbstractTest {
         RemoteCacheManager manager = new RemoteCacheManager(
                 new org.infinispan.client.hotrod.configuration.ConfigurationBuilder()
                         .addServers(server.getHost() + ":" + server.getPort())
-                        .marshaller(new JavaSerializationMarshaller()).addJavaSerialWhiteList(".*")
+                        .marshaller(new JavaSerializationMarshaller()).addJavaSerialAllowList(".*")
                         .forceReturnValues(true)
                         .build());
         remoteCacheManagers.add(manager);

@@ -114,8 +114,8 @@ public class Factory {
                 .host(host)
                 .port(port)
                 .forceReturnValues(true)
-                .addJavaSerialWhiteList(".*")
-                .marshaller(new JavaSerializationMarshaller()).addJavaSerialWhiteList(".*")
+                .addJavaSerialAllowList(".*")
+                .marshaller(new JavaSerializationMarshaller())
                 .connectionTimeout(3000)
                 .maxRetries(5);
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());

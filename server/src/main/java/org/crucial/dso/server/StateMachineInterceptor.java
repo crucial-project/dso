@@ -1,25 +1,21 @@
 package org.crucial.dso.server;
 
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import org.crucial.dso.Factory;
+import org.crucial.dso.object.*;
 import org.crucial.dso.utils.Context;
 import org.crucial.dso.utils.ContextManager;
 import org.crucial.dso.utils.Reflection;
 import org.infinispan.commands.write.ClearCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.context.InvocationContext;
-import org.crucial.dso.Factory;
-import org.crucial.dso.object.Call;
-import org.crucial.dso.object.CallConstruct;
-import org.crucial.dso.object.CallInvoke;
-import org.crucial.dso.object.CallResponse;
-import org.crucial.dso.object.Reference;
-import org.infinispan.interceptors.impl.ClusteringInterceptor;
+import org.infinispan.interceptors.BaseCustomAsyncInterceptor;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import java.util.Random;
 
-public class StateMachineInterceptor extends ClusteringInterceptor {
+public class StateMachineInterceptor extends BaseCustomAsyncInterceptor {
 
     private static final Log log = LogFactory.getLog(StateMachineInterceptor.class);
 
@@ -143,12 +139,5 @@ public class StateMachineInterceptor extends ClusteringInterceptor {
     public void setup(Factory factory, boolean useIdempotence){
         this.factory = factory;
         this.withIdempotence = useIdempotence;
-    }
-
-    // utils
-
-    @Override
-    protected Log getLog() {
-        return log;
     }
 }

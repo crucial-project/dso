@@ -4,7 +4,6 @@ import javassist.util.proxy.MethodFilter;
 import org.crucial.dso.object.Call;
 import org.crucial.dso.object.CallResponse;
 import org.crucial.dso.object.Reference;
-import org.crucial.dso.utils.Reflection;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 
