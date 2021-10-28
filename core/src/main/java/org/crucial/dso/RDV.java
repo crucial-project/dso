@@ -7,17 +7,22 @@ import picocli.CommandLine.Option;
 @Command(name = "rdv")
 public class RDV
 {
-    public String id;
+    @Id
+    @Option(names = "-n" )
+    public String name = "rdv";
     public String host;
 
-    public void put(String h)
+    @Override
+    @Command(name = "put")
+    public void put(@Option(names = "-1") String h)
     {
-        host = h;
+        this.host = h;
     }
 
+    @Command(name = "get")
     public String get()
     {
-        return host;
+        return this.host;
     }
 
     public void clear()
