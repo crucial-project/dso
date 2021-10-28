@@ -1,5 +1,7 @@
 package org.crucial.dso;
 
+import java.util.concurrent.TimeUnit;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -22,6 +24,11 @@ public class RDV
     @Command(name = "get")
     public String get()
     {
+        while (this.host == "")
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+
         return this.host;
     }
 
