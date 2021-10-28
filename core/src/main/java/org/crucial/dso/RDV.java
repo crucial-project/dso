@@ -9,10 +9,13 @@ import picocli.CommandLine.Option;
 @Command(name = "rdv")
 public class RDV
 {
-    @Id
-    @Option(names = "-n" )
     public String name = "rdv";
     public String host;
+
+    public RDV(String name)
+    {
+        this.name = name;
+    }
 
     @Override
     @Command(name = "put")
@@ -26,7 +29,7 @@ public class RDV
     {
         while (this.host == "")
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(500);
         }
 
         return this.host;
