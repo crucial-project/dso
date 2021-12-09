@@ -1,5 +1,16 @@
 package org.crucial.dso;
 
+import static org.crucial.dso.Factory.DSO_CACHE_NAME;
+
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.crucial.dso.utils.ConfigurationHelper;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
@@ -12,24 +23,12 @@ import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuild
 import org.infinispan.test.AbstractCacheTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-import org.jboss.marshalling.serial.Serial;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static org.crucial.dso.Factory.DSO_CACHE_NAME;
 
 /**
  * @author Pierre Sutra
@@ -140,7 +139,7 @@ public class Server {
         // marshalling
         gbuilder.serialization()
                 .marshaller(new JavaSerializationMarshaller())
-                .whiteList()
+                .allowList()
                 .addRegexps(".*");
 
         ConfigurationBuilder cBuilder
@@ -160,7 +159,6 @@ public class Server {
                 false);
 
         HotRodServerConfigurationBuilder hbuilder = new HotRodServerConfigurationBuilder();
-        hbuilder.topologyStateTransfer(true);
         hbuilder.host(host);
         hbuilder.port(port);
         hbuilder.recvBufSize(1000000);
