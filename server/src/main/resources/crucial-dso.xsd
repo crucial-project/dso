@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema elementFormDefault="qualified" version="1.0"
+           targetNamespace="urn:crucial:dso::13.0"
+           xmlns:tns="urn:crucial:dso::13.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="dso" type="tns:dso"/>
+
+    <xs:complexType name="dso">
+        <xs:attribute name="idempotent" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Enables idempotency.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+</xs:schema>

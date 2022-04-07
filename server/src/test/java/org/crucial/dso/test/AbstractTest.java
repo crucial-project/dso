@@ -2,7 +2,6 @@ package org.crucial.dso.test;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
-import javassist.util.proxy.Proxy;
 import org.crucial.dso.*;
 import org.crucial.dso.utils.Context;
 import org.crucial.dso.utils.ContextManager;
@@ -39,7 +38,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     protected static final String PERSISTENT_STORAGE_DIR = "/tmp/dso";
 
     @Test(groups = {"dso"})
-    public void baseUsage() throws Exception {
+    public void baseUsage() {
 
         BasicCacheContainer cacheManager = containers().iterator().next();
         BasicCache<Object, Object> cache = cacheManager.getCache(DSO_CACHE_NAME);
@@ -57,7 +56,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"dso", "stress"})
-    public void basePerformance() throws Exception {
+    public void basePerformance() {
 
         BasicCacheContainer cacheManager = containers().iterator().next();
         BasicCache<Object, Object> cache = cacheManager.getCache(DSO_CACHE_NAME);
@@ -77,7 +76,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"dso"})
-    public void persistence() throws Exception {
+    public void persistence() {
 
         assertTrue(containers().size() >= 2);
 
@@ -129,7 +128,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"dso"})
-    public void baseCacheTest() throws Exception {
+    public void baseCacheTest() {
 
         Iterator<BasicCacheContainer> it = containers().iterator();
         BasicCacheContainer container1 = it.next();
@@ -178,7 +177,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"dso"})
-    public void multipleCreation() throws Exception {
+    public void multipleCreation() {
 
         assertTrue(containers().size() >= 2);
 
@@ -206,7 +205,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"dso"})
-    public void baseComposition() throws Exception {
+    public void baseComposition() {
         assert ShardedObject.class.isAssignableFrom(ShardedObject.class);
 
         Iterator<BasicCacheContainer> it = containers().iterator();
@@ -312,7 +311,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
     }
 
     @Test(groups = {"dso"})
-    public void idempotence() throws IllegalAccessException {
+    public void idempotence() {
 
         Iterator<BasicCacheContainer> it = containers().iterator();
         BasicCacheContainer container1 = it.next();
@@ -371,9 +370,9 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         for (Cache c : caches()) {
             Object realVal = c.get(key);
             if (value == null) {
-                assert realVal == null : "Expecting [" + key + "] to equal [" + value + "] on cache " + c.toString();
+                assert realVal == null : "Expecting [" + key + "] to equal [" + value + "] on cache " + c;
             } else {
-                assert value.equals(realVal) : "Expecting [" + key + "] to equal [" + value + "] on cache " + c.toString();
+                assert value.equals(realVal) : "Expecting [" + key + "] to equal [" + value + "] on cache " + c;
             }
         }
         // Allow some time for all ClusteredGetCommands to finish executing
@@ -391,7 +390,7 @@ public abstract class AbstractTest extends MultipleCacheManagersTest {
         }
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call() {
 
             int ret = 0;
             for (int i = 0; i < ncalls; i++) {

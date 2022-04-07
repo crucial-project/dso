@@ -3,16 +3,11 @@ package org.crucial.dso.container;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
+import org.crucial.dso.object.*;
 import org.crucial.dso.utils.Context;
 import org.crucial.dso.utils.ContextManager;
 import org.crucial.dso.utils.Reflection;
 import org.infinispan.commons.api.BasicCache;
-import org.crucial.dso.object.BoxedReference;
-import org.crucial.dso.object.Call;
-import org.crucial.dso.object.CallConstruct;
-import org.crucial.dso.object.CallInvoke;
-import org.crucial.dso.object.CallResponse;
-import org.crucial.dso.object.Reference;
 
 import javax.persistence.Entity;
 import java.lang.reflect.InvocationTargetException;
@@ -154,7 +149,7 @@ public class BaseContainer extends AbstractContainer {
         if (!isOpen) {
 
             if (log.isTraceEnabled())
-                log.trace(" Opening - "+this.toString());
+                log.trace(" Opening - " + this);
 
             CallConstruct construct = new CallConstruct(reference,
                     generateCallID(), forceNew, initArgs, readOptimization, isIdempotent);
@@ -164,7 +159,7 @@ public class BaseContainer extends AbstractContainer {
             isOpen = true;
 
             if (log.isTraceEnabled())
-                log.trace(" Opened - "+this.toString());
+                log.trace(" Opened - " + this);
 
         }
 
