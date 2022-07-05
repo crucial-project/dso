@@ -9,25 +9,27 @@ public class Dine {
 
     public static void main(String[] args) {
 
-        Factory.get("127.0.01:11222");
+        String address = args.length> 0 ? args[0] : "127.0.0.1:11222";
+
+        Factory.get(address);
 
         int x = 10;
 
         Log.msg(String.valueOf(x));
 
-        Chopstick[] chopistics = new Chopstick[5];
+        Chopstick[] chopsticks = new Chopstick[5];
 
-        //initlize the chopistics
-        for (int i = 0; i < chopistics.length; i++) {
-            chopistics[i] = new Chopstick("C: " + i);
+        //initialize the chopsticks
+        for (int i = 0; i < chopsticks.length; i++) {
+            chopsticks[i] = new Chopstick("C: " + i);
         }
         Philosopher[] philosophers = new Philosopher[5];
         //for(i=0; i<philosophers.length; i++){
-        philosophers[0] = new Philosopher("P: 0 - ", chopistics[0], chopistics[1]);
-        philosophers[1] = new Philosopher("P: 1 - ", chopistics[1], chopistics[2]);
-        philosophers[2] = new Philosopher("P: 2 - ", chopistics[2], chopistics[3]);
-        philosophers[3] = new Philosopher("P: 3 - ", chopistics[3], chopistics[4]);
-        philosophers[4] = new Philosopher("P: 4 - ", chopistics[4], chopistics[0]);
+        philosophers[0] = new Philosopher("P: 0 - ", chopsticks[0], chopsticks[1]);
+        philosophers[1] = new Philosopher("P: 1 - ", chopsticks[1], chopsticks[2]);
+        philosophers[2] = new Philosopher("P: 2 - ", chopsticks[2], chopsticks[3]);
+        philosophers[3] = new Philosopher("P: 3 - ", chopsticks[3], chopsticks[4]);
+        philosophers[4] = new Philosopher("P: 4 - ", chopsticks[4], chopsticks[0]);
 
         List<Thread> threads = new ArrayList<>();
 
@@ -42,7 +44,7 @@ public class Dine {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                e.printStackTrace();  // TODO: Customise this generated block
+                Log.msg(e);
             }
         }
 
@@ -97,5 +99,10 @@ class Log {
 
     public static void msg(String msg) {
         System.out.println(msg);
+    }
+
+    public static void msg(Throwable t) {
+        System.err.println(t.getMessage());
+        t.printStackTrace();
     }
 }
