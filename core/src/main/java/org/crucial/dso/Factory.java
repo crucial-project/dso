@@ -1,8 +1,9 @@
 package org.crucial.dso;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalListener;
 import org.crucial.dso.container.AbstractContainer;
+import org.crucial.dso.container.BaseContainer;
 import org.crucial.dso.object.Reference;
 import org.crucial.dso.utils.ContextManager;
 import org.crucial.dso.utils.Reflection;
@@ -13,7 +14,6 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
-import org.crucial.dso.container.BaseContainer;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 
 import java.io.InputStream;
@@ -28,9 +28,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Factory {
 
-    private static Log log = LogFactory.getLog(Factory.class);
+    private static final Log log = LogFactory.getLog(Factory.class);
     private static Factory singleton;
-    private static Map<BasicCache, Factory> factories = new HashMap<>();
+    private static final Map<BasicCache<?, ?>, Factory> factories = new HashMap<>();
 
     // Server
     public static final String DSO_SERVER_DEFAULT = "127.0.0.1:11222";
@@ -56,7 +56,7 @@ public class Factory {
     @Deprecated
     public synchronized static Factory forCache(BasicCache cache, int maxContainers, boolean force) {
         assert !(cache instanceof RemoteCache) ||
-                ((RemoteCache)cache).getRemoteCacheManager().getConfiguration().forceReturnValues();
+                ((RemoteCache) cache).getRemoteCacheManager().getConfiguration().forceReturnValues();
 
         if (!factories.containsKey(cache))
             factories.put(cache, new Factory(cache, maxContainers));
@@ -71,7 +71,7 @@ public class Factory {
 
     @Deprecated
     public static Factory getSingleton() {
-        if (singleton==null) {
+        if (singleton == null) {
             singleton = Factory.get();
         }
         return singleton;
@@ -104,7 +104,7 @@ public class Factory {
     }
 
     public static Factory get(String server) {
-        int port = Integer.valueOf(server.split(":")[1]);
+        int port = Integer.parseInt(server.split(":")[1]);
         String host = server.split(":")[0];
         org.infinispan.client.hotrod.configuration.ConfigurationBuilder cb
                 = new org.infinispan.client.hotrod.configuration.ConfigurationBuilder();
@@ -127,9 +127,8 @@ public class Factory {
 
     // Object fields
 
-    private BasicCache cache;
-    private final ConcurrentMap<Reference, AbstractContainer> registeredContainers;
-    private int maxSize;
+    private final BasicCache<?, ?> cache;
+    private final ConcurrentMap<Reference<?>, AbstractContainer> registeredContainers;
 
     /**
      * Return an Factory built on top of cache <i>c</i>.
@@ -150,36 +149,33 @@ public class Factory {
      */
     private Factory(BasicCache<Object, Object> c, int m) throws CacheException {
         cache = c;
-        maxSize = m;
-        registeredContainers = CacheBuilder.newBuilder()
-                .maximumSize(MAX_CONTAINERS)
-                .removalListener((RemovalListener<Reference, AbstractContainer>) notifiication -> {
-                    try {
-                        disposeInstanceOf(notifiication.getValue().getReference());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                })
-                .build().asMap();
+        RemovalListener<Reference<?>, AbstractContainer> listener = (k, v, cause) -> {
+            try {
+                disposeInstanceOf(v.getReference());
+            } catch (Exception e) {
+                log.debug("Error while disposing container reference", e);
+            }
+        };
+        registeredContainers = Caffeine.newBuilder().maximumSize(m).removalListener(listener).build().asMap();
         log.info(this + " Created");
     }
 
-    public BasicCache getCache(){
+    public BasicCache<?, ?> getCache() {
         return this.cache;
     }
 
     @Deprecated
-    public <T> T getInstanceOf(Class clazz) throws CacheException {
-        return (T) getInstanceOf(clazz, null, false, false, false);
+    public <T> T getInstanceOf(Class<T> clazz) throws CacheException {
+        return getInstanceOf(clazz, null, false, false, false);
     }
 
     @Deprecated
-    public <T> T getInstanceOf(Reference reference) throws CacheException {
+    public <T> T getInstanceOf(Reference<T> reference) throws CacheException {
         return (T) getInstanceOf(reference.getClazz(), reference.getKey(), false, false, false);
     }
 
     @Deprecated
-    public <T> T getInstanceOf(Class clazz, Object key) throws CacheException {
+    public <T> T getInstanceOf(Class<T> clazz, Object key) throws CacheException {
         return (T) getInstanceOf(clazz, key, false, false, false);
     }
 
@@ -225,12 +221,12 @@ public class Factory {
     public <T> T getInstanceOf(Class<T> clazz, Object key, boolean withReadOptimization, boolean withIdempotence,
                                boolean forceNew, Object... initArgs) throws CacheException {
 
-        Reference reference;
+        Reference<?> reference;
         AbstractContainer container = null;
 
         try {
 
-            reference = new Reference(clazz, key);
+            reference = new Reference<>(clazz, key);
 
             if (forceNew) {
                 registeredContainers.remove(reference);
@@ -240,9 +236,9 @@ public class Factory {
 
             if (container == null) {
                 try {
-                    Reflection.getConstructor(clazz,initArgs);
+                    Reflection.getConstructor(clazz, initArgs);
                 } catch (Exception e) {
-                    throw new CacheException(clazz + " no constructor with "+ Arrays.toString(initArgs));
+                    throw new CacheException(clazz + " no constructor with " + Arrays.toString(initArgs));
                 }
                 container = new BaseContainer(cache, clazz, key, withReadOptimization, withIdempotence, forceNew, initArgs);
                 reference = container.getReference();
@@ -275,7 +271,7 @@ public class Factory {
     public void disposeInstanceOf(Class clazz, Object key)
             throws CacheException {
 
-        Reference reference = new Reference<>(clazz, key);
+        Reference<?> reference = new Reference<>(clazz, key);
 
         AbstractContainer container = registeredContainers.get(reference);
 
@@ -297,7 +293,7 @@ public class Factory {
         return "Factory[" + cache.toString() + "]";
     }
 
-    public void clear(){
+    public void clear() {
         log.info("cleared");
         cache.clear();
     }
