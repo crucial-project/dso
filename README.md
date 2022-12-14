@@ -91,10 +91,11 @@ To deploy the server in your own EC2 instances, you need to fix the following 3 
 The access key and the corresponding secret are credentials to write in the bucket.
 We advice you to [create](http://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html) an IAM in EC2 for that purpose.
 
-### Hand-made deployment
+### Hand-made deployment (deprecated)
 
 It is also possible to build your own server, e.g., to deploy a specific library of shared objects.
-To build an archive containing the server, use the `mvn install -DskipTests` at the root of the project.
+First, move to version `ispn13-standalone`, using `git ispn13-standalone`.
+Then, to build an archive containing the server, use the `mvn install -DskipTests` at the root of the project.
 The server archive, named `dso-server-*.tar.gz`, is located in `server/target`.
 To launch the server run the script `server.sh` from the root of the archive.
 
