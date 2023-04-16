@@ -20,7 +20,7 @@
         <version.javax-persistance-api>2.2</version.javax-persistance-api>
         <version.args4j>2.32</version.args4j>
         <version.javassist>3.28.0-GA</version.javassist>
-        <version.testng>6.14.3</version.testng>
+        <version.testng>7.7.0</version.testng>
         <version.infinispan>13.0.6.Final</version.infinispan>
         <version.io-kubernetes-client-java>4.0.0</version.io-kubernetes-client-java>
         <version.picocli>4.0.4</version.picocli>
